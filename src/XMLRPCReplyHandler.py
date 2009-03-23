@@ -1,5 +1,5 @@
 '''
-unisono.py
+XMLRPCReplyHandler.py
 
  Created on: Mar 23, 2009
  Authors: dh
@@ -27,13 +27,21 @@ unisono.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+import threading
 
+class XMLRPCReplyHandler:
+    def run(self):
+        '''
+        get events from unisono and forward them to the corresponding connector
+        '''
 
-if __name__ == '__main__':
-    # that's enough to start our request listener
-    import XMLRPCListener
-    import XMLRPCReplyHandler
+# Create server
+replyhandler = XMLRPCReplyHandler()
 
-    # run until key pressed
-    from sys import stdin
-    ch = stdin.read(1)
+# Start a thread with the server -- that thread will then start one
+# more thread for each request
+reply_thread = threading.Thread(target=replyhandler.run)
+# Exit the server thread when the main thread terminates
+reply_thread.setDaemon(True)
+reply_thread.start()
+print("XMLRPC reply handler loop running in thread:", reply_thread.name)

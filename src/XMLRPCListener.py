@@ -1,5 +1,5 @@
 '''
-xmlrpclistener.py
+XMLRPCListener.py
 
  Created on: Mar 23, 2009
  Authors: dh
@@ -32,8 +32,8 @@ import socketserver
 import threading
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
  
-# Threaded mix-in
-class AsyncXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer): 
+# Threaded XMPRPC server
+class XMLRPCListener(socketserver.ThreadingMixIn, SimpleXMLRPCServer): 
     '''
     non-blocking xmlrpc-server to handle concurrent requests
     '''
@@ -96,7 +96,7 @@ class ConnectorFunctions:
         return status
 
 # Create server
-server = AsyncXMLRPCServer(("localhost", 45312), requestHandler=RequestHandler)
+server = XMLRPCListener(("localhost", 45312), requestHandler=RequestHandler)
 #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
 server.register_introspection_functions()
 
