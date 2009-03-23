@@ -34,6 +34,11 @@ class XMLRPCReplyHandler:
         '''
         get events from unisono and forward them to the corresponding connector
         '''
+        # block until event
+        # find correct connector
+        # get functions
+        # check whether required function is available
+        # deliver event
 
 # Create server
 replyhandler = XMLRPCReplyHandler()
