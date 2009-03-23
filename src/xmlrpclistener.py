@@ -7,6 +7,7 @@ xmlrpclistener.py
  $LastChangedBy$
  $LastChangedDate$
  $Revision$
+ 
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  
  This file is part of UNISONO Unified Information Service for Overlay 
@@ -32,7 +33,7 @@ import threading
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
  
 # Threaded mix-in
-class AsyncXMLRPCServer(socketserver.ThreadingMixIn,SimpleXMLRPCServer): 
+class AsyncXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer): 
     '''
     non-blocking xmlrpc-server to handle concurrent requests
     '''
@@ -47,31 +48,47 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 class ConnectorFunctions:
     '''
     functions available for connectors
+    most of the functions reply with a status number. Results are received via
+    the listener in the connectors.
     '''
-    def list_available_dataitems(self):
-        ''' Lists the dataitems provided by the local unisono daemon
-        
-        returns string
+    def register_connector(self, callerid, port):
         '''
-        import time
-        time.sleep(5)
+        register a connector to the overlay for callbacks
+        we require this because XMLRPC has no persistent connection and we want 
+        to work asynchronous
+        '''
+        # TODO: show 
+        status = 0
+        return status
+    def list_available_dataitems(self):
+        '''
+        Lists the data items provided by the local unisono daemon
+        
+        returns string all available data items
+        '''
         return "we should return something useful here"
-    def set_order(self):
-        ''' start an order
+    def commit_order(self, callerid, orderid, dataitem, identifier1,
+                     identifier2 = None, type='oneshot', parameter=0,
+                     accuracy=100, lifetime = 600):
+        '''
+        commit an order to the daemon
         
         returns int the status of the request
         '''
         status = 0
         return status
-    def cancel_order(self, id):
-        ''' cancel an already running order
+    def cancel_order(self, callerid, orderid):
+        '''
+        cancel an already running order
         
         returns int the status of the request
         '''
         status = 0
         return status
     def forward_received_packet(self, packet):
-        ''' forward packets received for the unisono daemon
+        '''
+        forward packets received for the unisono daemon
+        this wil be used by the daemon to communicate between different hosts
         
         returns int the status of the request
         '''
@@ -79,7 +96,7 @@ class ConnectorFunctions:
         return status
 
 # Create server
-server = AsyncXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
+server = AsyncXMLRPCServer(("localhost", 45312), requestHandler=RequestHandler)
 #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
 server.register_introspection_functions()
 
