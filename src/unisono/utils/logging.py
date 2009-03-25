@@ -27,12 +27,14 @@ logging.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+import logging
 from unisono.utils import configuration
 
 logfile = configuration.config.get('Logging', 'file')
 loglevel = configuration.config.get('Logging', 'level')
-# set log file
-print('logfile: ' + logfile)
-# set log level
-print('loglevel: ' + loglevel)
-# set log style
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    filename=logfile,
+                    filemode='w')
+logging.info('UNISONO logging started')

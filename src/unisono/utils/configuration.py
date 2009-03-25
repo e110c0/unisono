@@ -28,7 +28,12 @@ configuration.py
  
 '''
 import configparser
+import os.path
 
-config = configparser.RawConfigParser()
-config.read('../etc/unisono.cfg')
 
+config = configparser.SafeConfigParser()
+if os.path.isfile('../etc/unisono.cfg'):
+    config.readfp(open('../etc/unisono.cfg'))
+    print("logfile read: ../etc/unisono.cfg")
+else:
+    print("file not found")
