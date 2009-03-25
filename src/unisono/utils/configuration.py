@@ -1,7 +1,7 @@
 '''
-unisono.py
+configuration.py
 
- Created on: Mar 23, 2009
+ Created on: Mar 25, 2009
  Authors: dh
  
  $LastChangedBy$
@@ -27,14 +27,8 @@ unisono.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+import configparser
 
+config = configparser.RawConfigParser()
+config.read('../etc/unisono.cfg')
 
-if __name__ == '__main__':
-    # that's enough to start our request listener
-    import XMLRPCListener
-    import XMLRPCReplyHandler
-    import unisono.utils.configuration
-    import unisono.utils.logging
-    # run until key pressed
-    from sys import stdin
-    ch = stdin.read(1)

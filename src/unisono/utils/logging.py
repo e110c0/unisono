@@ -1,7 +1,7 @@
 '''
-unisono.py
+logging.py
 
- Created on: Mar 23, 2009
+ Created on: Mar 25, 2009
  Authors: dh
  
  $LastChangedBy$
@@ -27,14 +27,12 @@ unisono.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+from unisono.utils import configuration
 
-
-if __name__ == '__main__':
-    # that's enough to start our request listener
-    import XMLRPCListener
-    import XMLRPCReplyHandler
-    import unisono.utils.configuration
-    import unisono.utils.logging
-    # run until key pressed
-    from sys import stdin
-    ch = stdin.read(1)
+logfile = configuration.config.get('Logging', 'file')
+loglevel = configuration.config.get('Logging', 'level')
+# set log file
+print('logfile: ' + logfile)
+# set log level
+print('loglevel: ' + loglevel)
+# set log style
