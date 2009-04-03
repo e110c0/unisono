@@ -28,13 +28,21 @@ logging.py
  
 '''
 import logging
+import sys
 from unisono.utils import configuration
 
-logfile = configuration.config.get('Logging', 'file')
-loglevel = configuration.config.get('Logging', 'level')
 
-logging.basicConfig(level=logging.DEBUG,
+try:
+    loglevel = configuration.config.get('Logging', 'level')
+    loglevel = getattr(logging,loglevel.upper())
+except:
+    loglevel = logging.INFO
+try:
+    logfile = configuration.config.get('Logging', 'file')
+except:
+    logfile = sys.stdout
+logging.basicConfig(level=loglevel,
                     format='%(asctime)s %(levelname)s %(message)s',
                     filename=logfile,
-                    filemode='w')
+                    filemode='w+')
 logging.info('UNISONO logging started')
