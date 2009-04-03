@@ -40,6 +40,7 @@ except:
 try:
     logfile = configuration.config.get('Logging', 'file')
 except:
+    # TODO: This won't work
     logfile = sys.stdout
 logging.basicConfig(level=loglevel,
                     format='%(asctime)s %(levelname)s %(message)s',
