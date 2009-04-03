@@ -34,7 +34,9 @@ if __name__ == '__main__':
     import XMLRPCListener
     import XMLRPCReplyHandler
     import unisono.utils.configuration
-    import unisono.utils.logging
+    from unisono.utils import logging
+    logging.info("starting XMLRPC listener")
+    XMLRPCListener.create_server()
     # run until key pressed
     from sys import stdin
     ch = stdin.read(1)

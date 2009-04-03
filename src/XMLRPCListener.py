@@ -95,20 +95,24 @@ class ConnectorFunctions:
         status = 0
         return status
 
-# Create server
-server = XMLRPCListener(("localhost", 45312), requestHandler=RequestHandler)
-#server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
-server.register_introspection_functions()
-
-# Register an instance; all the methods of the instance are
-# published as XML-RPC methods (in this case, just 'div').
-
-server.register_instance(ConnectorFunctions())
-
-# Start a thread with the server -- that thread will then start one
-# more thread for each request
-server_thread = threading.Thread(target=server.serve_forever)
-# Exit the server thread when the main thread terminates
-server_thread.setDaemon(True)
-server_thread.start()
-print("XMLRPC listener loop running in thread:", server_thread.name)
+def create_server():
+    '''
+    start the XMLRPC server thread
+    '''
+    # Create server
+    server = XMLRPCListener(("localhost", 45312), requestHandler=RequestHandler)
+    #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
+    server.register_introspection_functions()
+    
+    # Register an instance; all the methods of the instance are
+    # published as XML-RPC methods (in this case, just 'div').
+    
+    server.register_instance(ConnectorFunctions())
+    
+    # Start a thread with the server -- that thread will then start one
+    # more thread for each request
+    server_thread = threading.Thread(target=server.serve_forever)
+    # Exit the server thread when the main thread terminates
+    server_thread.setDaemon(True)
+    server_thread.start()
+    print("XMLRPC listener loop running in thread:", server_thread.name)
