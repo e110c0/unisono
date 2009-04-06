@@ -33,11 +33,34 @@ import threading
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
  
 # Threaded XMPRPC server
-class XMLRPCListener(socketserver.ThreadingMixIn, SimpleXMLRPCServer): 
+class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer): 
     '''
     non-blocking xmlrpc-server to handle concurrent requests
     '''
     pass
+
+class XMLRPServer:
+    __server
+    def __init__(self):
+        '''
+        create and start a XMLRPC server thread
+        '''
+        # Create server
+        __server = ThreadedXMLRPCserver(("localhost", 45312), requestHandler=RequestHandler)
+        #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
+        __server.register_introspection_functions()
+        
+        # Register an instance; all the methods of the instance are
+        __server.register_instance(ConnectorFunctions())
+        
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        server_thread = threading.Thread(target=server.serve_forever)
+        # Exit the server thread when the main thread terminates
+        server_thread.setDaemon(True)
+        server_thread.start()
+        print("XMLRPC listener loop running in thread:", server_thread.name)
+
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
     '''
@@ -94,25 +117,3 @@ class ConnectorFunctions:
         '''
         status = 0
         return status
-
-def create_server():
-    '''
-    start the XMLRPC server thread
-    '''
-    # Create server
-    server = XMLRPCListener(("localhost", 45312), requestHandler=RequestHandler)
-    #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
-    server.register_introspection_functions()
-    
-    # Register an instance; all the methods of the instance are
-    # published as XML-RPC methods (in this case, just 'div').
-    
-    server.register_instance(ConnectorFunctions())
-    
-    # Start a thread with the server -- that thread will then start one
-    # more thread for each request
-    server_thread = threading.Thread(target=server.serve_forever)
-    # Exit the server thread when the main thread terminates
-    server_thread.setDaemon(True)
-    server_thread.start()
-    print("XMLRPC listener loop running in thread:", server_thread.name)

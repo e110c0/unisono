@@ -30,10 +30,17 @@ configuration.py
 import configparser
 import os.path
 
+def init_configuration():
+    files = ['/etc/unisono.cfg', '~/.unisono.cfg', '../etc/unisono.cfg']
+    
+    for i in range(len(files)):
+        try:
+            __unisonoconfig.readfp(open(files[i]))
+            print("config file read: ../etc/unisono.cfg")
+        except:
+            print('config file ', files[i], ' not found')
 
-config = configparser.SafeConfigParser()
-if os.path.isfile('../etc/unisono.cfg'):
-    config.readfp(open('../etc/unisono.cfg'))
-    print("logfile read: ../etc/unisono.cfg")
-else:
-    print("file not found")
+def get_configparser():
+    return __unisonoconfig
+
+__unisonoconfig = configparser.SafeConfigParser()

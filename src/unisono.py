@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 unisono.py
 
@@ -31,12 +32,15 @@ unisono.py
 
 if __name__ == '__main__':
     # that's enough to start our request listener
-    import XMLRPCListener
-    import XMLRPCReplyHandler
-    import unisono.utils.configuration
-    from unisono.utils import logging
-    logging.info("starting XMLRPC listener")
-    XMLRPCListener.create_server()
+    from unisono import XMLRPCListener
+    from unisono.XMLRPCReplyHandler import XMLRPCReplyHandler
+    from unisono.utils import configuration
+    from unisono.utils import unilog
+    configuration.init_configuration()
+    unilog.init_logging()
+    rpcserver = XMLRPCListener.XMLRPServer()
+    rpcclient = XMLRPCReplyHandler()
     # run until key pressed
     from sys import stdin
     ch = stdin.read(1)
+    print('shutting down.')

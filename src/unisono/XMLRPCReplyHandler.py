@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 '''
-file_name
+XMLRPCReplyHandler.py
 
  Created on: Mar 23, 2009
  Authors: dh
@@ -28,13 +27,28 @@ file_name
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+import threading
 
+class XMLRPCReplyHandler:
+    def __init__(self):
+        # Create server
+#        replyhandler = XMLRPCReplyHandler()
+        
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        reply_thread = threading.Thread(target=self.run)
+        # Exit the server thread when the main thread terminates
+        reply_thread.setDaemon(True)
+        reply_thread.start()
+        print("XMLRPC reply handler loop running in thread:", reply_thread.name)
 
-if __name__ == '__main__':
-    import xmlrpc.client
-    s = xmlrpc.client.ServerProxy('http://localhost:45312')
-    # Print list of available methods
-    print("we do some stuff")
-    print(s.system.listMethods())
-    print(s.system.methodHelp('list_available_dataitems'))
-    print(s.list_available_dataitems())
+    def run(self):
+        '''
+        get events from unisono and forward them to the corresponding connector
+        '''
+        # block until event
+        # find correct connector
+        # get functions
+        # check whether required function is available
+        # deliver event
+

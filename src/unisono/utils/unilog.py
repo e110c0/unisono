@@ -1,7 +1,7 @@
 '''
-XMLRPCReplyHandler.py
+unilog.py
 
- Created on: Mar 23, 2009
+ Created on: Mar 25, 2009
  Authors: dh
  
  $LastChangedBy$
@@ -27,26 +27,24 @@ XMLRPCReplyHandler.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
-import threading
+import logging
+import sys
+from unisono.utils import configuration
 
-class XMLRPCReplyHandler:
-    def run(self):
-        '''
-        get events from unisono and forward them to the corresponding connector
-        '''
-        # block until event
-        # find correct connector
-        # get functions
-        # check whether required function is available
-        # deliver event
-
-# Create server
-replyhandler = XMLRPCReplyHandler()
-
-# Start a thread with the server -- that thread will then start one
-# more thread for each request
-reply_thread = threading.Thread(target=replyhandler.run)
-# Exit the server thread when the main thread terminates
-reply_thread.setDaemon(True)
-reply_thread.start()
-print("XMLRPC reply handler loop running in thread:", reply_thread.name)
+def init_logging():
+    config = configuration.get_configparser()
+    try:
+        loglevel = config.get('Logging', 'level')
+        loglevel = getattr(logging,loglevel.upper())
+    except:
+        loglevel = logging.INFO
+    try:
+        logfile = config.get('Logging', 'file')
+    except:
+        # TODO: This won't work
+        logfile = sys.stdout
+    logging.basicConfig(level=loglevel,
+                        format='%(asctime)s %(levelname)s %(message)s',
+                        filename=logfile,
+                        filemode='w+')
+    logging.info('UNISONO logging started')
