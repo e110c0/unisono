@@ -55,6 +55,7 @@ class XMLRPServer:
         
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
+        # TODO: check whether this is no problem
         server_thread = threading.Thread(target=server.serve_forever)
         # Exit the server thread when the main thread terminates
         server_thread.setDaemon(True)

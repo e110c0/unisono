@@ -1,7 +1,7 @@
 '''
-XMLRPCReplyHandler.py
+scheduler.py
 
- Created on: Mar 23, 2009
+ Created on: Apr 6, 2009
  Authors: dh
  
  $LastChangedBy$
@@ -27,25 +27,3 @@ XMLRPCReplyHandler.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
-import threading
-
-class XMLRPCReplyHandler:
-    def __init__(self):
-        # Start a thread with the server -- that thread will then start one
-        # more thread for each request
-        reply_thread = threading.Thread(target=self.run)
-        # Exit the server thread when the main thread terminates
-        reply_thread.setDaemon(True)
-        reply_thread.start()
-        print("XMLRPC reply handler loop running in thread:", reply_thread.name)
-
-    def run(self):
-        '''
-        get events from unisono and forward them to the corresponding connector
-        '''
-        # block until event
-        # find correct connector
-        # get functions
-        # check whether required function is available
-        # deliver event
-
