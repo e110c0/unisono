@@ -32,6 +32,16 @@ import sys
 from os.path import expanduser
 from unisono.utils import configuration
 
+'''
+global logging for unisono
+usage:
+
+import logging
+logger = logging.getLogger(__name__) <-- this sets the class name in the logger
+logger.setLevel(logging.INFO) <-- set the loglevel:
+                                  DEBUG, INFO, WARNING, ERROR, CRITICAL
+                                  global level might ommit messages!
+'''
 def init_logging():
     config = configuration.get_configparser()
     # configure the root logger
