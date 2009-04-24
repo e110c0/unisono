@@ -27,3 +27,37 @@ DataHandler.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+
+from unisono.utils import configuration
+from unisono.mmplugins.mmtemplates import mmtemplate
+
+import logging
+from queue import Queue
+
+class DataHandler:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    def __init__(self):
+        self.resultq = Queue()
+        self.plugins = {}
+        self.dataitems = {}
+        try:
+            active_plugins = configparser.get('M&Ms','active_plugins')
+        except:
+            # TODO get all
+            active_plugins = 'cvalues'
+            pass
+        for p in active_plugins.split(','):
+            try:
+                p = p.strip()
+                mod = __import__('unisono.mmplugins', globals(), locals(), p)
+            except:
+                # FIXME: logging
+                pass
+            for n,v in vars(getattr(mod, p)).items():
+                if type(v) == type and issubclass(v, mmtemplate):
+                    self.logger.debug(':-)')
+                    iq = Queue()
+                    o = v(iq,self.resultq)
+                    self.plugins[n]=o,iq
+        self.logger.debug('plugin list: %r'%self.plugins)

@@ -29,6 +29,7 @@ mmtemplates.py
 '''
 import threading
 import logging
+from queue import Queue
 
 class mmtemplate:
     '''
@@ -37,26 +38,28 @@ class mmtemplate:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     name = ""
-    def __init__(self,name):
+    def __init__(self, inq, outq):
         '''
         init the M&M and start the thread
         '''
-        self.name = name
+        self.logger.info("started " + self.__class__.__name__ +"!")
+        self.dataitems = []
+        self.inq = inq
+        self.outq = outq
         mm_thread = threading.Thread(target=self.run)
         # Exit the server thread when the main thread terminates
         mm_thread.setDaemon(True)
         mm_thread.start()
         self.logger.info("M&M %s loop running in thread: %s", self.name, mm_thread.name)
     def run(self):
-        pass
-    def provideDataItems(self):
-        pass
-    def provideMMname(self):
-        pass
-
-class mmnettemplate(mmtemplate):
-    '''
-    template for all net-based M&Ms. These require an additional identifier 
-    (i.e. IP address) to perform their task.
-    '''
-    pass
+        while (True):
+            # wait for event
+            
+            # read values
+            
+            # so the measurement
+            result = self.measure()
+            # send event with result
+            
+    def measure(self):
+        raise NotImplementedError("Your M&M lacks a measure() method!")

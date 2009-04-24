@@ -29,8 +29,11 @@ configuration.py
 '''
 import configparser
 import os.path
+__unisonoconfig = None
 
 def init_configuration():
+    global __unisonoconfig
+    __unisonoconfig = configparser.SafeConfigParser()
     files = ['/etc/unisono.cfg', '~/.unisono.cfg', '../etc/unisono.cfg']
     foundany = 0
     for i in range(len(files)):
@@ -44,6 +47,7 @@ def init_configuration():
         print('WARNING: no configuration found, using default values!')
 
 def get_configparser():
+    if __unisonoconfig == None:
+        init_configuration()
     return __unisonoconfig
 
-__unisonoconfig = configparser.SafeConfigParser()

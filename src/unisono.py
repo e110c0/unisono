@@ -30,22 +30,25 @@ unisono.py
 '''
 
 
-if __name__ == '__main__':
+def main():
     from unisono import XMLRPCListener
 ##    from unisono.XMLRPCReplyHandler import XMLRPCReplyHandler
     from unisono.utils import configuration
     from unisono.utils import unilog
     from unisono.mmplugins import cvalues
+    from unisono.DataHandler import DataHandler
     import logging
-    configuration.init_configuration()
     unilog.init_logging()
 
     logger = logging.getLogger(__name__)
     logger.info("UNISONO ---- start daemon")
     rpcserver = XMLRPCListener.XMLRPCServer()
-    mm = cvalues.cValues()
+    mm = DataHandler()
 ##    rpcclient = XMLRPCReplyHandler()
     # run until key pressed
     from sys import stdin
     ch = stdin.read(1)
     logger.info('shutting down.')
+
+if __name__ == '__main__':
+    main()
