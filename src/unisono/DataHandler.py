@@ -31,6 +31,7 @@ DataHandler.py
 from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import mmtemplate
 
+import threading
 import logging
 from queue import Queue
 
@@ -43,8 +44,10 @@ class DataHandler:
         self.dataitems = {}
         try:
             active_plugins = configparser.get('M&Ms','active_plugins')
+            self.logger.info('Loading plugins: %s', active_plugins)
         except:
             # TODO get all
+            self.logger.info('No plugins configured, loading defaults.')
             active_plugins = 'cvalues'
             pass
         for p in active_plugins.split(','):
@@ -56,8 +59,16 @@ class DataHandler:
                 pass
             for n,v in vars(getattr(mod, p)).items():
                 if type(v) == type and issubclass(v, mmtemplate):
-                    self.logger.debug(':-)')
                     iq = Queue()
-                    o = v(iq,self.resultq)
-                    self.plugins[n]=o,iq
+                    mm = v(iq,self.resultq)
+                    self.plugins[n]=mm,iq
+                    self.logger.debug('%s %s', n , v)
+                    mm_thread = threading.Thread(target=mm.run)
+                    # Exit the server thread when the main thread terminates
+                    mm_thread.setDaemon(True)
+                    mm_thread.start()
+                    self.logger.info("M&M %s loop running in thread: %s", mm.name, mm_thread.name)
         self.logger.debug('plugin list: %r'%self.plugins)
+    def run(self):
+        self.plugins['cValues'][1].put(None)
+        self.logger.debug('The result is: %s', self.resultq.get())

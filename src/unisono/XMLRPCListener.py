@@ -71,6 +71,8 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
 class ConnectorFunctions:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
     '''
     functions available for connectors
     most of the functions reply with a status number. Results are received via
@@ -82,6 +84,7 @@ class ConnectorFunctions:
         we require this because XMLRPC has no persistent connection and we want
         to work asynchronous
         '''
+        self.logger.debug('RPC function ' + __name__ + '.')
         # TODO: show
         status = 0
         return status
@@ -91,6 +94,7 @@ class ConnectorFunctions:
 
         returns string all available data items
         '''
+        self.logger.debug('RPC function ' + __name__ + '.')
         return "we should return something useful here"
     def commit_order(self, paramap):
         '''
@@ -100,6 +104,7 @@ class ConnectorFunctions:
         
         returns int the status of the request
         '''
+        self.logger.debug('RPC function ' + __name__ + '.')
         status = 0
         return status
     def cancel_order(self, callerid, orderid):
@@ -108,6 +113,7 @@ class ConnectorFunctions:
 
         returns int the status of the request
         '''
+        self.logger.debug('RPC function ' + __name__ + '.')
         status = 0
         return status
     def forward_received_packet(self, packet):
@@ -117,5 +123,6 @@ class ConnectorFunctions:
 
         returns int the status of the request
         '''
+        self.logger.debug('RPC function ' + __name__ + '.')
         status = 0
         return status

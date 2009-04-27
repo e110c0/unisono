@@ -27,7 +27,7 @@ mmtemplates.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
-import threading
+
 import logging
 from queue import Queue
 
@@ -36,30 +36,35 @@ class mmtemplate:
     generic template for all M&Ms
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     name = ""
     def __init__(self, inq, outq):
         '''
         init the M&M and start the thread
         '''
-        self.logger.info("started " + self.__class__.__name__ +"!")
+        
         self.dataitems = []
         self.inq = inq
         self.outq = outq
-        mm_thread = threading.Thread(target=self.run)
-        # Exit the server thread when the main thread terminates
-        mm_thread.setDaemon(True)
-        mm_thread.start()
-        self.logger.info("M&M %s loop running in thread: %s", self.name, mm_thread.name)
+        self.logger.info("started " + self.__class__.__name__ + "!")
     def run(self):
         while (True):
             # wait for event
-            
+            self.logger.debug('waiting for an order')
+            self.request = self.inq.get()
             # read values
-            
-            # so the measurement
-            result = self.measure()
+            self.logger.debug('got an order')
+            # check the request
+            if self.checkrequest(self.request):
+                # do the measurement
+                self.logger.debug('request is valid, starting measurement')
+                result = self.measure()
+            else:
+                # set result to nul and set errorcode
+                result = {}
             # send event with result
-            
+            self.outq.put(result)
     def measure(self):
         raise NotImplementedError("Your M&M lacks a measure() method!")
+    def checkrequest(self, request):
+        raise NotImplementedError('Your M&M lacks a check_request() method!')

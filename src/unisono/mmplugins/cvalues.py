@@ -31,7 +31,7 @@ import logging
 from unisono.mmplugins import mmtemplates
 class cValues(mmtemplates.mmtemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     '''
     This class provides user-definde (==configured) values for the applications
     each value will be found in the cvalue section of unisono.cfg
@@ -40,6 +40,8 @@ class cValues(mmtemplates.mmtemplate):
     '''
     def __init__(self, *args):
         super().__init__(*args)
+    def checkrequest(self,request):
+        return True
     def measure(self):
         self.logger.info("did measurement")
         return {"shared_bandwidth":4723894,"error_code":0}

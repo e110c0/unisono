@@ -44,6 +44,7 @@ def main():
     logger.info("UNISONO ---- start daemon")
     rpcserver = XMLRPCListener.XMLRPCServer()
     mm = DataHandler()
+    mm.run()
 ##    rpcclient = XMLRPCReplyHandler()
     # run until key pressed
     from sys import stdin
