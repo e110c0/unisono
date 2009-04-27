@@ -51,8 +51,13 @@ class cValues(mmtemplates.mmtemplate):
         config = configuration.get_configparser()
         options = config.options('cValues')
         self.logger.debug('cValues options: %s', options)
-        for o in options:
-            self.request[o] = config.get('cValues', o)
+        try:
+            di = self.request['dataitem']
+            self.request[di] = config.get('cValues', di)
             self.logger.debug('the values are: %s', self.request)
-        self.request['errorcode'] = 0
-        self.request['errortext'] = 'Measurement successful'
+            self.request['errorcode'] = 0
+            self.request['errortext'] = 'Measurement successful'
+        except:
+            self.request['errorcode'] = 312
+            self.request['errortext'] = 'No value configured'
+
