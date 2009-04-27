@@ -92,12 +92,12 @@ class ConnectorFunctions:
         returns string all available data items
         '''
         return "we should return something useful here"
-    def commit_order(self, callerid, orderid, dataitem, identifier1,
-                     identifier2 = None, type='oneshot', parameter=0,
-                     accuracy=100, lifetime = 600):
+    def commit_order(self, paramap):
         '''
         commit an order to the daemon
-
+        the paramap includes the complete orde in key:value pairs (i.e. a python
+        dictionary)
+        
         returns int the status of the request
         '''
         status = 0
