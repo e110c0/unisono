@@ -81,6 +81,7 @@ class DataHandler:
         self.logger.debug('Data items: %s', di)
         self.logger.debug('Cost: %s', cost)
         # merge with current dataitem list
+        
 
     def unregisterMM(self,mm):
         pass
