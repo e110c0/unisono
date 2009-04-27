@@ -42,7 +42,7 @@ class mmtemplate:
         '''
         init the M&M and start the thread
         '''
-        
+        self.cost = 0
         self.dataitems = []
         self.inq = inq
         self.outq = outq
@@ -58,13 +58,22 @@ class mmtemplate:
             if self.checkrequest(self.request):
                 # do the measurement
                 self.logger.debug('request is valid, starting measurement')
-                result = self.measure()
+                self.measure()
             else:
                 # set result to nul and set errorcode
-                result = {}
+                self.result['errorcode'] = 42
+                self.result['errortext'] = 'Order invalid'
             # send event with result
-            self.outq.put(result)
+            self.outq.put(self.request)
+
     def measure(self):
         raise NotImplementedError("Your M&M lacks a measure() method!")
+
     def checkrequest(self, request):
         raise NotImplementedError('Your M&M lacks a check_request() method!')
+
+    def availableDataItems(self):
+        return self.dataitems
+
+    def getCost(self):
+        return self.cost

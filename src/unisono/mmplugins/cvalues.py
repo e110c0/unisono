@@ -29,6 +29,8 @@ cvalues.py
 '''
 import logging
 from unisono.mmplugins import mmtemplates
+from unisono.utils import configuration
+
 class cValues(mmtemplates.mmtemplate):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -40,8 +42,17 @@ class cValues(mmtemplates.mmtemplate):
     '''
     def __init__(self, *args):
         super().__init__(*args)
-    def checkrequest(self,request):
+        self.dataitems = ['max_shared_upstream_bandwidth', 'max_shared_downstream_bandwidth']
+
+    def checkrequest(self, request):
         return True
+
     def measure(self):
-        self.logger.info("did measurement")
-        return {"shared_bandwidth":4723894,"error_code":0}
+        config = configuration.get_configparser()
+        options = config.options('cValues')
+        self.logger.debug('cValues options: %s', options)
+        for o in options:
+            self.request[o] = config.get('cValues', o)
+            self.logger.debug('the values are: %s', self.request)
+        self.request['errorcode'] = 0
+        self.request['errortext'] = 'Measurement successful'

@@ -63,13 +63,27 @@ class DataHandler:
                     iq = Queue()
                     mm = v(iq,self.resultq)
                     self.plugins[n]=mm,iq
-                    self.logger.debug('%s %s', n , v)
+                    self.registerMM(mm)
                     mm_thread = threading.Thread(target=mm.run)
                     # Exit the server thread when the main thread terminates
                     mm_thread.setDaemon(True)
                     mm_thread.start()
                     self.logger.info("M&M %s loop running in thread: %s", mm.name, mm_thread.name)
         self.logger.debug('plugin list: %r'%self.plugins)
+
     def run(self):
-        self.plugins['cValues'][1].put(None)
+        self.plugins['cValues'][1].put({'dataitem':'max_shared_upstream_bandwidth'})
         self.logger.debug('The result is: %s', self.resultq.get())
+
+    def registerMM(self,mm):
+        di = mm.availableDataItems()
+        cost = mm.getCost()
+        self.logger.debug('Data items: %s', di)
+        self.logger.debug('Cost: %s', cost)
+        # merge with current dataitem list
+
+    def unregisterMM(self,mm):
+        pass
+
+    def unregisterAllMM(self):
+        pass
