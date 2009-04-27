@@ -42,8 +42,9 @@ class DataHandler:
         self.resultq = Queue()
         self.plugins = {}
         self.dataitems = {}
+        config = configuration.get_configparser()
         try:
-            active_plugins = configparser.get('M&Ms','active_plugins')
+            active_plugins = config.get('M&Ms','active_plugins')
             self.logger.info('Loading plugins: %s', active_plugins)
         except:
             # TODO get all

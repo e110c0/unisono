@@ -29,6 +29,7 @@ configuration.py
 '''
 import configparser
 import os.path
+
 __unisonoconfig = None
 
 def init_configuration():
