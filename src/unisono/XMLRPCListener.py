@@ -85,6 +85,7 @@ class ConnectorFunctions:
         to work asynchronous
         '''
         self.logger.debug('RPC function ' + __name__ + '.')
+        self.logger.debug('Connector requested registration: %s - Port %s', callerid, port)
         # TODO: show
         status = 0
         return status

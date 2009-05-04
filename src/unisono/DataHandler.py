@@ -44,11 +44,11 @@ class DataHandler:
         self.dataitems = {}
         config = configuration.get_configparser()
         try:
-            active_plugins = config.get('M&Ms','active_plugins')
+            active_plugins = config.get('M&Ms', 'active_plugins')
             self.logger.info('Loading plugins: %s', active_plugins)
         except:
-            # TODO get all
             self.logger.info('No plugins configured, loading defaults.')
+            # TODO get all available by default
             active_plugins = 'cvalues'
             pass
         for p in active_plugins.split(','):
@@ -58,33 +58,42 @@ class DataHandler:
             except:
                 # FIXME: logging
                 pass
-            for n,v in vars(getattr(mod, p)).items():
+            for n, v in vars(getattr(mod, p)).items():
                 if type(v) == type and issubclass(v, mmtemplate):
                     iq = Queue()
-                    mm = v(iq,self.resultq)
-                    self.plugins[n]=mm,iq
+                    mm = v(iq, self.resultq)
+                    self.plugins[n] = mm, iq
                     self.registerMM(mm)
                     mm_thread = threading.Thread(target=mm.run)
                     # Exit the server thread when the main thread terminates
                     mm_thread.setDaemon(True)
                     mm_thread.start()
                     self.logger.info("M&M %s loop running in thread: %s", mm.name, mm_thread.name)
-        self.logger.debug('plugin list: %r'%self.plugins)
-
+        self.logger.debug('plugin list: %r' % self.plugins)
+        self.logger.debug('registered dataitems: %s', self.dataitems)
     def run(self):
         self.plugins['cValues'][1].put({'dataitem':'max_shared_upstream_bandwidth'})
         self.logger.debug('The result is: %s', self.resultq.get())
+        self.unregisterAllMM()
 
-    def registerMM(self,mm):
+    def registerMM(self, mm):
         di = mm.availableDataItems()
         cost = mm.getCost()
         self.logger.debug('Data items: %s', di)
         self.logger.debug('Cost: %s', cost)
         # merge with current dataitem list
-        
-
-    def unregisterMM(self,mm):
-        pass
+        for i in di:
+            # TODO: how to use the old it
+            self.dataitems[i] = { mm, cost }
+            
+    def unregisterMM(self, mm):
+        self.logger.debug('Unregistering %s', mm)
+        di = mm.availableDataItems()
+        for i in di:
+            # TODO: only delete the correspondent entry
+            del self.dataitems[i]
 
     def unregisterAllMM(self):
-        pass
+        for mm in self.plugins:
+            
+            self.unregisterMM(self.plugins[mm][0])
