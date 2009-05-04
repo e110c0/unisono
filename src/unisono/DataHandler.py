@@ -55,9 +55,9 @@ class DataHandler:
             try:
                 p = p.strip()
                 mod = __import__('unisono.mmplugins', globals(), locals(), p)
+                self.logger.debug('Mod: %s', mod)
             except:
-                # FIXME: logging
-                pass
+                self.logger.error('Could not load plugin %s', p)
             for n, v in vars(getattr(mod, p)).items():
                 if type(v) == type and issubclass(v, mmtemplate):
                     iq = Queue()

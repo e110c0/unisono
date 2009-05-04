@@ -33,7 +33,6 @@ unisono.py
 def main():
     from unisono import XMLRPCListener
 ##    from unisono.XMLRPCReplyHandler import XMLRPCReplyHandler
-    from unisono.utils import configuration
     from unisono.utils import unilog
     from unisono.mmplugins import cvalues
     from unisono.DataHandler import DataHandler
