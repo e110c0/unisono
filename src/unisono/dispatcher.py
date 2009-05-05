@@ -1,7 +1,7 @@
 '''
-scheduler.py
+dispatcher.py
 
- Created on: Apr 6, 2009
+ Created on: May 5, 2009
  Authors: dh
  
  $LastChangedBy$
@@ -27,6 +27,33 @@ scheduler.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+from queue import Queue
+from unisono.XMLRPCListener import XMLRPCServer
+from unisono.XMLRPCReplyHandler import XMLRPCReplyHandler
+import logging
+class Dispatcher:
+    '''
+    classdocs
+    '''
+    logger = logging.getLogger(__name__)
+    logger.setLevel(DEBUG)
 
-class Scheduler:
-    pass
+    def __init__(selfparams):
+        '''
+        Constructor
+        '''
+        self.eventq = Queue()
+        self.startXMLRPCServer()
+        self.startXMLRPCReplyHandler()
+        self.initPlugins()
+    
+    def startXMLRPCServer(self):
+        # TODO: check whether XMLRPCserver is alread running
+        self.xsrv = XMLRPCServer(self.eventq)
+
+    def startXMLRPCReplyHandler(self):
+        self.replyq = Queue()
+        xrh = XMLRPCReplyHandler(self.xsrv.conmap, self.replyq)
+        
+    def initPlugins(self):
+        pass

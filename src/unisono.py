@@ -34,7 +34,6 @@ def main():
     from unisono import XMLRPCListener
 ##    from unisono.XMLRPCReplyHandler import XMLRPCReplyHandler
     from unisono.utils import unilog
-    from unisono.mmplugins import cvalues
     from unisono.DataHandler import DataHandler
     import logging
     unilog.init_logging()
@@ -42,10 +41,9 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info("UNISONO ---- start daemon")
     rpcserver = XMLRPCListener.XMLRPCServer()
-    mm = DataHandler()
-    mm.run()
-##    rpcclient = XMLRPCReplyHandler()
-    # run until key pressed
+    dh = DataHandler()
+    dh.run()
+
     from sys import stdin
     ch = stdin.read(1)
     logger.info('shutting down.')

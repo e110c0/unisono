@@ -30,7 +30,7 @@ XMLRPCReplyHandler.py
 import threading
 
 class XMLRPCReplyHandler:
-    def __init__(self):
+    def __init__(self, conmap, replyq):
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
         reply_thread = threading.Thread(target=self.run)
@@ -48,4 +48,5 @@ class XMLRPCReplyHandler:
         # get functions
         # check whether required function is available
         # deliver event
-
+    def sendResult(self,result):
+        pass

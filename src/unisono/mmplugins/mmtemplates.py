@@ -63,8 +63,8 @@ class mmtemplate:
                 # set result to nul and set errorcode
                 self.result['errorcode'] = 42
                 self.result['errortext'] = 'Order invalid'
-            # send event with result
             self.outq.put(self.request)
+            # send event with result
 
     def measure(self):
         raise NotImplementedError("Your M&M lacks a measure() method!")

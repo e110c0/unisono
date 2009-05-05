@@ -33,6 +33,9 @@ import threading
 import logging
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 
+class ConnectorMap:
+    pass
+
 # Threaded XMPRPC server
 class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     '''
@@ -43,10 +46,12 @@ class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
 class XMLRPCServer:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    def __init__(self):
+    def __init__(self, q):
         '''
         create and start a XMLRPC server thread
         '''
+        self.conmap = ConnectorMap(q)
+        self.eventq = q
         # Create server
         __server = ThreadedXMLRPCserver(("localhost", 45312), requestHandler=RequestHandler)
         #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
@@ -78,7 +83,7 @@ class ConnectorFunctions:
     most of the functions reply with a status number. Results are received via
     the listener in the connectors.
     '''
-    def register_connector(self, callerid, port):
+    def register_connector(self, port):
         '''
         register a connector to the overlay for callbacks
         we require this because XMLRPC has no persistent connection and we want
@@ -86,6 +91,15 @@ class ConnectorFunctions:
         '''
         self.logger.debug('RPC function ' + __name__ + '.')
         self.logger.debug('Connector requested registration: %s - Port %s', callerid, port)
+        # TODO: show
+        callerid = self.cmap.createUUID(port, '127.0.0.1')
+        return callerid
+    def unregister_connector(self, callerid, port):
+        '''
+        unregister a connector from unisono
+        '''
+        self.logger.debug('RPC function ' + __name__ + '.')
+        self.logger.debug('Connector requested deregistration: %s - Port %s', callerid, port)
         # TODO: show
         status = 0
         return status
@@ -127,3 +141,5 @@ class ConnectorFunctions:
         self.logger.debug('RPC function ' + __name__ + '.')
         status = 0
         return status
+    def cache_result(self, result):
+        return
