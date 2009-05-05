@@ -31,7 +31,7 @@ mmtemplates.py
 import logging
 from queue import Queue
 
-class mmtemplate:
+class MMTemplate:
     '''
     generic template for all M&Ms
     '''

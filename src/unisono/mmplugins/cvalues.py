@@ -31,7 +31,7 @@ import logging
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 
-class cValues(mmtemplates.mmtemplate):
+class cValues(mmtemplates.MMTemplate):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     '''

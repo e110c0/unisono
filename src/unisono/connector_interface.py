@@ -1,5 +1,5 @@
 '''
-XMLRPCListener.py
+connector_interface.py
 
  Created on: Mar 23, 2009
  Authors: dh
@@ -58,7 +58,7 @@ class XMLRPCServer:
         __server.register_introspection_functions()
 
         # Register an instance; all the methods of the instance are
-        __server.register_instance(ConnectorFunctions())
+        __server.register_instance(ConnectorFunctions(self.eventq))
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -83,6 +83,9 @@ class ConnectorFunctions:
     most of the functions reply with a status number. Results are received via
     the listener in the connectors.
     '''
+    def __init__(self, q):
+        self.eventq = q
+
     def register_connector(self, port):
         '''
         register a connector to the overlay for callbacks
@@ -114,12 +117,13 @@ class ConnectorFunctions:
     def commit_order(self, paramap):
         '''
         commit an order to the daemon
-        the paramap includes the complete orde in key:value pairs (i.e. a python
+        the paramap includes the complete order in key:value pairs (i.e. a python
         dictionary)
         
         returns int the status of the request
         '''
         self.logger.debug('RPC function ' + __name__ + '.')
+        
         status = 0
         return status
     def cancel_order(self, callerid, orderid):
@@ -143,3 +147,27 @@ class ConnectorFunctions:
         return status
     def cache_result(self, result):
         return
+################################################################################
+# callback interface starts here
+################################################################################
+class XMLRPCReplyHandler:
+    def __init__(self, conmap, replyq):
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        self.replyq = replyq
+        reply_thread = threading.Thread(target=self.run)
+        # Exit the server thread when the main thread terminates
+        reply_thread.setDaemon(True)
+        reply_thread.start()
+        print("XMLRPC reply handler loop running in thread:", reply_thread.name)
+
+    def run(self):
+        '''
+        get events from unisono and forward them to the corresponding connector
+        '''
+        while True:
+            self.replyq.get()
+            # TODO do stuff
+            
+    def sendResult(self,result):
+        pass

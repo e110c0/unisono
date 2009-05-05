@@ -28,8 +28,10 @@ dispatcher.py
  
 '''
 from queue import Queue
-from unisono.XMLRPCListener import XMLRPCServer
-from unisono.XMLRPCReplyHandler import XMLRPCReplyHandler
+from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
+from unisono.utils import configuration
+from unisono.mmplugins.mmtemplates import MMTemplate
+
 import logging
 class Dispatcher:
     '''
@@ -42,18 +44,76 @@ class Dispatcher:
         '''
         Constructor
         '''
+        self.config = configuration.get_configparser()
+        
         self.eventq = Queue()
-        self.startXMLRPCServer()
-        self.startXMLRPCReplyHandler()
-        self.initPlugins()
+        self.start_xmlrpcserver()
+        self.start_xmlrpcreplyhandler()
+        self.init_plugins()
     
-    def startXMLRPCServer(self):
+    def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is alread running
         self.xsrv = XMLRPCServer(self.eventq)
 
-    def startXMLRPCReplyHandler(self):
+    def start_xmlrpcreplyhandler(self):
         self.replyq = Queue()
         xrh = XMLRPCReplyHandler(self.xsrv.conmap, self.replyq)
         
-    def initPlugins(self):
-        pass
+    def init_plugins(self):
+        # list of registered plugins with their queue and object
+        self.plugins = {}
+        # list of datitems with the registered plugin and its cost
+        self.dataitems = {}
+        # initialize M&Ms
+
+        try:
+            active_plugins = self.config.get('M&Ms', 'active_plugins')
+            self.logger.info('Loading plugins: %s', active_plugins)
+        except:
+            self.logger.info('No plugins configured, loading defaults.')
+            # TODO get all available by default
+            active_plugins = 'cvalues'
+            pass
+        for p in active_plugins.split(','):
+            try:
+                p = p.strip()
+                mod = __import__('unisono.mmplugins', globals(), locals(), [p])
+                mod = getattr(mod, p)
+                self.logger.debug('Mod: %s', mod)
+            except:
+                self.logger.error('Could not load plugin %s', p)
+            for n, v in vars(mod).items():
+                if type(v) == type and issubclass(v, MMTemplate):
+                    iq = Queue()
+                    mm = v(iq, self.eventq)
+
+                    self.registerMM(n, mm)
+                    mm_thread = threading.Thread(target=mm.run)
+                    # Exit the server thread when the main thread terminates
+                    mm_thread.setDaemon(True)
+                    mm_thread.start()
+                    self.logger.info("M&M %s loop running in thread: %s", mm.name, mm_thread.name)
+        self.logger.debug('plugin list: %r' % self.plugins)
+        self.logger.debug('registered dataitems: %s', self.dataitems)
+
+    def registerMM(self, name, mm):
+        self.plugins[name] = mm
+        di = mm.availableDataItems()
+        cost = mm.getCost()
+        self.logger.debug('Data items: %s', di)
+        self.logger.debug('Cost: %s', cost)
+        # merge with current dataitem list
+        for i in di:
+            self.dataitems[i].append((cost,name))
+            self.dataitems[i].sort()
+
+    def unregisterMM(self, name):
+        self.logger.debug('Unregistering %s', name)
+        di = self.plugins[name].availableDataItems()
+        for i in di:
+            # TODO: only delete the correspondent entry
+            self.dataitems = [i for i in self.dataitems if i[1] != name]
+        del self.plugins[name]
+
+
+
