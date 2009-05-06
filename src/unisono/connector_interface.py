@@ -28,13 +28,52 @@ connector_interface.py
 
 '''
 
-import socketserver
-import threading
-import logging
+import socketserver, threading, logging, uuid
+
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from unisono.event import Event
 
 class ConnectorMap:
-    pass
+    '''
+    A ConnectorMap holds all known (i.e. registered) unisono connectors. It is 
+    only used by the XML RPC interface, both the server and the client part.
+    '''
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    def __init__(self, q):
+        self.eventq = q
+        self.conmap = {}
+        self.lock = threading.Lock()
+
+    def register_connector(self, conid, conip, conport):
+        '''
+        Register a connector with unisono. if a connector is already registered 
+        with this ip/port tuple, return its id, too
+        param conip ip address of the connector (mostly 127.0.0.1 or ::1)
+        param conip port of the connector
+        return conid uuid for the registered connector
+        '''
+        with self.lock:
+            # check for ip:port in conmap
+            if i in self.conmap.values((conip, conport)):
+                conid = [ a for a in self.conmap.keys() 
+                         if self.conmap[a] == (conip, conport)] 
+                return conid
+            else:
+                conid = uuid.uuid4()
+                conmap[conid] = (conip, conport)
+                return conid
+
+    def deregister_connector(self, conid):
+        '''
+        Deregister a connector from unisono. This can happen on request or due
+        to timeouts while replying to the connector.
+        '''
+        with self.lock:
+            # Trigger cancel event for this connector id
+            self.eventq.put(Event('CANCEL', (conid, None)))
+            # delete connector entry from the map
+            del self.conmap[conid]
 
 # Threaded XMPRPC server
 class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
@@ -46,19 +85,22 @@ class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
 class XMLRPCServer:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    def __init__(self, q):
+    def __init__(self, q, dispatcher):
         '''
         create and start a XMLRPC server thread
         '''
         self.conmap = ConnectorMap(q)
         self.eventq = q
+        self.dispatcher = dispatcher
         # Create server
-        __server = ThreadedXMLRPCserver(("localhost", 45312), requestHandler=RequestHandler)
-        #server = SimpleXMLRPCServer(("localhost", 45312),requestHandler=RequestHandler)
+        __server = ThreadedXMLRPCserver(("localhost", 45312),
+                                        requestHandler=RequestHandler)
         __server.register_introspection_functions()
 
         # Register an instance; all the methods of the instance are
-        __server.register_instance(ConnectorFunctions(self.eventq))
+        __server.register_instance(ConnectorFunctions(self.eventq,
+                                                      self.dispatcher,
+                                                      self.conmap))
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -67,7 +109,8 @@ class XMLRPCServer:
         # Exit the server thread when the main thread terminates
         server_thread.setDaemon(True)
         server_thread.start()
-        self.logger.info("XMLRPC listener loop running in thread: %s", server_thread.name)
+        self.logger.info("XMLRPC listener loop running in thread: %s",
+                         server_thread.name)
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
     '''
@@ -83,58 +126,75 @@ class ConnectorFunctions:
     most of the functions reply with a status number. Results are received via
     the listener in the connectors.
     '''
-    def __init__(self, q):
+    def __init__(self, q, dispatcher, conmap):
         self.eventq = q
-
+        self.conmap = conmap
+        self.dispatcher = dispatcher
+        
     def register_connector(self, port):
         '''
         register a connector to the overlay for callbacks
         we require this because XMLRPC has no persistent connection and we want
         to work asynchronous
+        param port callback port for the connector requesting registration
+        return connector id 
         '''
-        self.logger.debug('RPC function ' + __name__ + '.')
-        self.logger.debug('Connector requested registration: %s - Port %s', callerid, port)
-        # TODO: show
-        callerid = self.cmap.createUUID(port, '127.0.0.1')
+        self.logger.debug('RPC function register_connector called.')
+        self.logger.debug('Connector requested registration: %s - Port %s',
+                          callerid, port)
+        callerid = self.conmap.register_connector(port, '127.0.0.1')
         return callerid
-    def unregister_connector(self, callerid, port):
+    def unregister_connector(self, callerid):
         '''
         unregister a connector from unisono
         '''
-        self.logger.debug('RPC function ' + __name__ + '.')
-        self.logger.debug('Connector requested deregistration: %s - Port %s', callerid, port)
-        # TODO: show
-        status = 0
+        self.logger.debug('RPC function \'unregister_connector\'.')
+        self.logger.debug('Connector requested deregistration: %s - Port %s',
+                          callerid, port)
+        status = self.conmap.deregister_connector(callerid)
         return status
+
     def list_available_dataitems(self):
         '''
         Lists the data items provided by the local unisono daemon
 
         returns string all available data items
         '''
-        self.logger.debug('RPC function ' + __name__ + '.')
-        return "we should return something useful here"
+        self.logger.debug('RPC function \'list_available_dataitems\'.')
+        
+        return self.dispatcher.dataitems.keys()
+
     def commit_order(self, paramap):
         '''
         commit an order to the daemon
-        the paramap includes the complete order in key:value pairs (i.e. a python
-        dictionary)
+        the paramap includes the complete order in key:value pairs 
+        (i.e. a python dictionary)
         
         returns int the status of the request
         '''
-        self.logger.debug('RPC function ' + __name__ + '.')
-        
+        self.logger.debug('RPC function \'commit_order\'.')
+        self.logger.debug('Order: %s', paramap)
         status = 0
+        # check registration
+        if paramap[connector] in self.conmap.keys():
+            # create event and put it in the eventq
+            self.eventq.put(Event('ORDER', paramap))
+        else:
+            status = - 1
         return status
+
     def cancel_order(self, callerid, orderid):
         '''
         cancel an already running order
 
         returns int the status of the request
         '''
-        self.logger.debug('RPC function ' + __name__ + '.')
+        self.logger.debug('RPC function \'cancel_order\'.')
+        #  TODO: create event and put it in the eventq
+        self.eventq.put(Event('CANCEL', (callerid,orderid)))
         status = 0
         return status
+
     def forward_received_packet(self, packet):
         '''
         forward packets received for the unisono daemon
@@ -142,11 +202,17 @@ class ConnectorFunctions:
 
         returns int the status of the request
         '''
-        self.logger.debug('RPC function ' + __name__ + '.')
+        self.logger.debug('RPC function \'forward_received_packet\'.')
+        # create event and put it in the eventq
+        self.eventq.put(Event('RECEIVE', packet))
         status = 0
         return status
+    
     def cache_result(self, result):
+        #  TODO: create event and put it in the eventq
+        self.eventq.put(Event('CACHE', result))
         return
+
 ################################################################################
 # callback interface starts here
 ################################################################################
@@ -169,5 +235,5 @@ class XMLRPCReplyHandler:
             self.replyq.get()
             # TODO do stuff
             
-    def sendResult(self,result):
+    def sendResult(self, result):
         pass

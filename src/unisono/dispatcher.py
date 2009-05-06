@@ -33,14 +33,15 @@ from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import MMTemplate
 
 import logging
+import threading
 class Dispatcher:
     '''
     classdocs
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(DEBUG)
+    logger.setLevel(logging.DEBUG)
 
-    def __init__(selfparams):
+    def __init__(self):
         '''
         Constructor
         '''
@@ -53,7 +54,7 @@ class Dispatcher:
     
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is alread running
-        self.xsrv = XMLRPCServer(self.eventq)
+        self.xsrv = XMLRPCServer(self.eventq, self)
 
     def start_xmlrpcreplyhandler(self):
         self.replyq = Queue()
@@ -97,6 +98,10 @@ class Dispatcher:
         self.logger.debug('registered dataitems: %s', self.dataitems)
 
     def registerMM(self, name, mm):
+        '''
+        To be able to use a M&M plugin, its provided dataitems must be globally
+        registered.
+        '''
         self.plugins[name] = mm
         di = mm.availableDataItems()
         cost = mm.getCost()
@@ -104,10 +109,17 @@ class Dispatcher:
         self.logger.debug('Cost: %s', cost)
         # merge with current dataitem list
         for i in di:
-            self.dataitems[i].append((cost,name))
-            self.dataitems[i].sort()
+            if i in self.dataitems.keys():
+                self.dataitems[i].append((cost, name))
+                self.dataitems[i].sort()
+            else:
+                self.dataitems[i] = [(cost,name)]
 
-    def unregisterMM(self, name):
+    def deregisterMM(self, name):
+        '''
+        deregisterMM removes a M&M from the global register and deactivates it.
+        This can be used for runtime module deactivation.
+        '''
         self.logger.debug('Unregistering %s', name)
         di = self.plugins[name].availableDataItems()
         for i in di:
@@ -115,5 +127,8 @@ class Dispatcher:
             self.dataitems = [i for i in self.dataitems if i[1] != name]
         del self.plugins[name]
 
-
-
+    def run(self):
+        '''
+        Main loop of the dispatcher
+        '''
+        pass
