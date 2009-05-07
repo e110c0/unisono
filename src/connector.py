@@ -32,7 +32,7 @@ file_name
 
 if __name__ == '__main__':
     import xmlrpc.client
-    s = xmlrpc.client.ServerProxy('http://localhost:45312')
+    s = xmlrpc.client.ServerProxy('http://localhost:45312/unisono')
     # Print list of available methods
     print("we do some stuff")
     print(s.system.listMethods())

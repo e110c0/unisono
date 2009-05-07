@@ -45,7 +45,7 @@ class ConnectorMap:
         self.conmap = {}
         self.lock = threading.Lock()
 
-    def register_connector(self, conid, conip, conport):
+    def register_connector(self, conip, conport):
         '''
         Register a connector with unisono. if a connector is already registered 
         with this ip/port tuple, return its id, too
@@ -55,14 +55,14 @@ class ConnectorMap:
         '''
         with self.lock:
             # check for ip:port in conmap
-            if i in self.conmap.values((conip, conport)):
+            if (conip,conport) in self.conmap.values():
                 conid = [ a for a in self.conmap.keys() 
                          if self.conmap[a] == (conip, conport)] 
-                return conid
+                return conid.hex()
             else:
                 conid = uuid.uuid4()
-                conmap[conid] = (conip, conport)
-                return conid
+                self.conmap[conid] = (conip, conport)
+                return conid.hex()
 
     def deregister_connector(self, conid):
         '''
@@ -116,7 +116,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
     '''
     Restrict requests to a particular path.
     '''
-    rpc_paths = ('/RPC2',)
+    rpc_paths = ('/unisono',)
 
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
@@ -140,8 +140,7 @@ class ConnectorFunctions:
         return connector id 
         '''
         self.logger.debug('RPC function register_connector called.')
-        self.logger.debug('Connector requested registration: %s - Port %s',
-                          callerid, port)
+        self.logger.debug('Connector requested registration for port %s', port)
         callerid = self.conmap.register_connector(port, '127.0.0.1')
         return callerid
     def unregister_connector(self, callerid):

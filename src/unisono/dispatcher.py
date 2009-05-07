@@ -29,6 +29,7 @@ dispatcher.py
 '''
 from queue import Queue
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
+from unisono.event import Event
 from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import MMTemplate
 
@@ -131,4 +132,6 @@ class Dispatcher:
         '''
         Main loop of the dispatcher
         '''
-        pass
+        while True:
+            event = self.eventq.get()
+            self.logger.debug('got an event: %s', event.type)
