@@ -58,11 +58,11 @@ class ConnectorMap:
             if (conip,conport) in self.conmap.values():
                 conid = [ a for a in self.conmap.keys() 
                          if self.conmap[a] == (conip, conport)] 
-                return conid.hex()
+                return str(conid)
             else:
                 conid = uuid.uuid4()
                 self.conmap[conid] = (conip, conport)
-                return conid.hex()
+                return str(conid)
 
     def deregister_connector(self, conid):
         '''
@@ -160,8 +160,7 @@ class ConnectorFunctions:
         returns string all available data items
         '''
         self.logger.debug('RPC function \'list_available_dataitems\'.')
-        
-        return self.dispatcher.dataitems.keys()
+        return list(self.dispatcher.dataitems.keys())
 
     def commit_order(self, paramap):
         '''
