@@ -30,7 +30,7 @@ unisono.py
 '''
 from unisono.dispatcher import Dispatcher
 from unisono.utils import unilog
-import logging
+import logging, threading
 from sys import stdin
 
 def main():
@@ -38,8 +38,12 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info("UNISONO ---- start daemon")
     dp = Dispatcher()
-    dp.run()
-
+    # just to be able to terminate it
+    dp_thread = threading.Thread(target=dp.run)
+    # Exit the server thread when the main thread terminates
+    dp_thread.setDaemon(True)
+    dp_thread.start()
+    
     ch = stdin.read(1)
     logger.info('shutting down.')
 
