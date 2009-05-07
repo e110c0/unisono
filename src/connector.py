@@ -37,5 +37,5 @@ if __name__ == '__main__':
     print("we do some stuff")
     print(s.system.listMethods())
     print(s.system.methodHelp('list_available_dataitems'))
-    print(s.register_connector(312312,43222))
+    print(s.register_connector(43222))
     print(s.list_available_dataitems())
