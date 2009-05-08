@@ -62,7 +62,8 @@ class ConnectorMap:
                 return str(conid)
             else:
                 conid = uuid.uuid4()
-                self.conmap[conid] = (conip, conport)
+                self.logger.debug('Created this UUID: %s', conid)
+                self.conmap[str(conid)] = (conip, conport)
                 return str(conid)
 
     def deregister_connector(self, conid):
@@ -175,12 +176,14 @@ class ConnectorFunctions:
         self.logger.debug('Order: %s', paramap)
         status = 0
         # check registration
+        self.logger.debug('conmap %s', self.conmap.conmap)
         if conid in self.conmap.conmap.keys():
             self.logger.debug('connector is known, putting order in the queue')
             # create event and put it in the eventq
             paramap['conid'] = conid
             self.eventq.put(Event('ORDER', paramap))
         else:
+            self.logger.error('Connector %s is unknown, discarding order!', conid)
             status = -1
         return status
 
