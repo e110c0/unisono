@@ -37,7 +37,9 @@ class Event:
     CANCEL   cancel an order
     ORDER    place an order
     RECEIVE  receive a remote packet
-    RESULT   return a result
+    DELIVER  deliver a result back to the connector
+    RESULT   return a result (from M&Ms)
+    SEND     send a packet to a remote node
     '''
     def __init__(self, type, payload):
         '''

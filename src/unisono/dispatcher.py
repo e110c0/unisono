@@ -135,3 +135,39 @@ class Dispatcher:
         while True:
             event = self.eventq.get()
             self.logger.debug('got an event: %s', event.type)
+            if event.type == 'CACHE':
+                pass
+            elif event.type == 'CANCEL':
+                pass
+            elif event.type == 'ORDER':
+                self.logger.debug('order: %s', event.payload)
+                self.process_order(event.payload)
+            elif event.type == 'RESULT':
+                self.logger.debug('result. %s', event.payload)
+                self.process_result(event.payload)
+            else:
+                self.logger.debug('Got an unknown event, discarding.')
+
+    def process_order(self, order):
+        # TODO: remember order
+        # create request for MM
+        req = order
+        del req['conid']
+        del req['orderid']
+        #self.logger.debug['stripped request: %s', req]
+        # find the correspondent MM inputqueue
+        # TODO: handle cost, active orders etc
+        cspq = self.plugins[self.dataitems[order['dataitem']][0][1]].inq
+        # queue request
+        cspq.put(req)
+
+    def process_result(self, result):
+        # find in all active orders
+        # put requested dataitem to the result
+        # queue it for delivery
+        pass
+
+
+
+
+
