@@ -37,5 +37,7 @@ if __name__ == '__main__':
     print("we do some stuff")
     print(s.system.listMethods())
     print(s.system.methodHelp('list_available_dataitems'))
-    print(s.register_connector(43222))
+    myID = s.register_connector(43222)
+    print('my ID is: ' + myID)
     print(s.list_available_dataitems())
+    print('commit order: ' ,s.commit_order(myID, {'orderid':'123', 'locator1':'127.0.0.1', 'dataitem':'max_shared_upstream_bandwidth'}))

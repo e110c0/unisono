@@ -31,6 +31,7 @@ connector_interface.py
 import socketserver, threading, logging, uuid
 
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from xmlrpc.client import ServerProxy
 from unisono.event import Event
 
 class ConnectorMap:
@@ -162,7 +163,7 @@ class ConnectorFunctions:
         self.logger.debug('RPC function \'list_available_dataitems\'.')
         return list(self.dispatcher.dataitems.keys())
 
-    def commit_order(self, paramap):
+    def commit_order(self, conid, paramap):
         '''
         commit an order to the daemon
         the paramap includes the complete order in key:value pairs 
@@ -174,11 +175,13 @@ class ConnectorFunctions:
         self.logger.debug('Order: %s', paramap)
         status = 0
         # check registration
-        if paramap[connector] in self.conmap.keys():
+        if conid in self.conmap.conmap.keys():
+            self.logger.debug('connector is known, putting order in the queue')
             # create event and put it in the eventq
+            paramap['conid'] = conid
             self.eventq.put(Event('ORDER', paramap))
         else:
-            status = - 1
+            status = -1
         return status
 
     def cancel_order(self, callerid, orderid):
@@ -215,9 +218,11 @@ class ConnectorFunctions:
 # callback interface starts here
 ################################################################################
 class XMLRPCReplyHandler:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
     def __init__(self, conmap, replyq):
-        # Start a thread with the server -- that thread will then start one
-        # more thread for each request
+        self.conmap = conmap
         self.replyq = replyq
         reply_thread = threading.Thread(target=self.run)
         # Exit the server thread when the main thread terminates
@@ -230,8 +235,25 @@ class XMLRPCReplyHandler:
         get events from unisono and forward them to the corresponding connector
         '''
         while True:
-            self.replyq.get()
+            event = self.replyq.get()
             # TODO do stuff
-            
+            if event.type == 'RESULT':
+                # payload is the result
+                result = event.payload
+                self.logger.debug('Our result is: %s', result)
+                # find requester
+                uri = 'http://' + self.conmap.conmap[result[conid]][0] + ':' + self.conmap.conmap[result[conid]][1]
+                self.logger.debug('we try to connect to ' + uri + ' now.')
+                connector = ServerProxy(uri)
+                try:
+                    connector.on_result(result)
+                except:
+                    self.logger.error('Connector unreachable!')
+                    self.eventq.put(Event('CANCEL',(result[conid],None)))
+                    
+            else:
+                self.logger.debug('Got an unknown event type: %s. What now?', 
+                                  event.type)
+
     def sendResult(self, result):
         pass

@@ -31,6 +31,13 @@ event.py
 class Event:
     '''
     Generic event class for unisono
+    
+    current event types are:
+    CACHE    cache a remote result
+    CANCEL   cancel an order
+    ORDER    place an order
+    RECEIVE  receive a remote packet
+    RESULT   return a result
     '''
     def __init__(self, type, payload):
         '''
