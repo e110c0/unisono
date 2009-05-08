@@ -33,7 +33,7 @@ from unisono.event import Event
 from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import MMTemplate
 
-import logging
+import logging, copy
 import threading
 class Dispatcher:
     '''
@@ -47,7 +47,7 @@ class Dispatcher:
         Constructor
         '''
         self.config = configuration.get_configparser()
-        
+        self.active_orders = {}
         self.eventq = Queue()
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
@@ -104,6 +104,7 @@ class Dispatcher:
         registered.
         '''
         self.plugins[name] = mm
+        self.active_orders[name] = []
         di = mm.availableDataItems()
         cost = mm.getCost()
         self.logger.debug('Data items: %s', di)
@@ -149,17 +150,28 @@ class Dispatcher:
                 self.logger.debug('Got an unknown event, discarding.')
 
     def process_order(self, order):
-        # TODO: remember order
+        # find the correspondent MM
+        # TODO: handle cost, active orders etc
+        mm = self.dataitems[order['dataitem']][0][1]
+        # and its queue
+        mmq = self.plugins[mm].inq
+        # remember order
+        exists = 0
+        for o in self.active_orders[mm][:]:
+            if (o['conid'] == order['conid']) and (o['orderid'] == order['orderid']):
+                exists = 1
+                self.logger.error('Order already active, possible id clash? Discarding')
+        if exists != 0:
+            self.active_orders[mm].append(order)
+
+
         # create request for MM
-        req = order
+        req = copy.copy(order)
         del req['conid']
         del req['orderid']
         #self.logger.debug['stripped request: %s', req]
-        # find the correspondent MM inputqueue
-        # TODO: handle cost, active orders etc
-        cspq = self.plugins[self.dataitems[order['dataitem']][0][1]].inq
         # queue request
-        cspq.put(req)
+        mmq.put(req)
 
     def process_result(self, result):
         # find in all active orders
