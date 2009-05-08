@@ -64,7 +64,7 @@ class MMTemplate:
                 # set result to nul and set errorcode
                 self.result['errorcode'] = 42
                 self.result['errortext'] = 'Order invalid'
-            self.outq.put(Event('RESULT',self.request))
+            self.outq.put(Event('RESULT', [self.__class__.__name__, self.request]))
             # send event with result
 
     def measure(self):

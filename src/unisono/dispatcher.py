@@ -59,7 +59,7 @@ class Dispatcher:
 
     def start_xmlrpcreplyhandler(self):
         self.replyq = Queue()
-        xrh = XMLRPCReplyHandler(self.xsrv.conmap, self.replyq)
+        xrh = XMLRPCReplyHandler(self.xsrv.conmap, self.replyq, self.eventq)
         
     def init_plugins(self):
         # list of registered plugins with their queue and object
@@ -125,7 +125,7 @@ class Dispatcher:
         self.logger.debug('Unregistering %s', name)
         di = self.plugins[name].availableDataItems()
         for i in di:
-            # TODO: only delete the correspondent entry
+            # only delete the correspondent entry
             self.dataitems = [i for i in self.dataitems if i[1] != name]
         del self.plugins[name]
 
@@ -161,7 +161,7 @@ class Dispatcher:
             if (o['conid'] == order['conid']) and (o['orderid'] == order['orderid']):
                 exists = 1
                 self.logger.error('Order already active, possible id clash? Discarding')
-        if exists != 0:
+        if exists == 0:
             self.active_orders[mm].append(order)
 
 
@@ -174,11 +174,16 @@ class Dispatcher:
         mmq.put(req)
 
     def process_result(self, result):
+        mm = result[0]
+        r = result[1]
         # find in all active orders
-        # put requested dataitem to the result
-        # queue it for delivery
-        pass
-
+        # TODO: this is really broken and works only with cvalues 
+        for o in self.active_orders[mm][:]:
+            if (o['locator1'] == r['locator1']): # and (o['locator2'] == r['locator2']):
+                o[o['dataitem']] = r[o['dataitem']]
+                self.replyq.put(Event('DELIVER', o))
+                # does this delete the right stuff??
+                self.active_orders[mm] = [i for i in self.active_orders[mm] if i['orderid'] != o['orderid']]
 
 
 

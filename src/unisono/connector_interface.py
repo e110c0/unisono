@@ -226,9 +226,10 @@ class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    def __init__(self, conmap, replyq):
+    def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap
         self.replyq = replyq
+        self.eventq = eventq
         reply_thread = threading.Thread(target=self.run)
         # Exit the server thread when the main thread terminates
         reply_thread.setDaemon(True)
@@ -242,19 +243,21 @@ class XMLRPCReplyHandler:
         while True:
             event = self.replyq.get()
             # TODO do stuff
-            if event.type == 'RESULT':
+            if event.type == 'DELIVER':
                 # payload is the result
                 result = event.payload
                 self.logger.debug('Our result is: %s', result)
                 # find requester
-                uri = 'http://' + self.conmap.conmap[result[conid]][0] + ':' + self.conmap.conmap[result[conid]][1]
+                self.logger.debug('host: %s port: %s',self.conmap.conmap[result['conid']][0], self.conmap.conmap[result['conid']][1] )
+                uri = 'http://' + self.conmap.conmap[result['conid']][1] + ':' + str(self.conmap.conmap[result['conid']][0])
                 self.logger.debug('we try to connect to ' + uri + ' now.')
                 connector = ServerProxy(uri)
                 try:
                     connector.on_result(result)
                 except:
                     self.logger.error('Connector unreachable!')
-                    self.eventq.put(Event('CANCEL',(result[conid],None)))
+                    self.eventq.put(Event('CANCEL',(result['conid'],None)))
+                    self.conmap.deregister_connector(result['conid'])
                     
             else:
                 self.logger.debug('Got an unknown event type: %s. What now?', 
