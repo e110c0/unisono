@@ -77,49 +77,6 @@ class ConnectorMap:
             # delete connector entry from the map
             del self.conmap[conid]
 
-# Threaded XMPRPC server
-class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
-    '''
-    non-blocking xmlrpc-server to handle concurrent requests
-    '''
-    pass
-
-class XMLRPCServer:
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    def __init__(self, q, dispatcher):
-        '''
-        create and start a XMLRPC server thread
-        '''
-        self.conmap = ConnectorMap(q)
-        self.eventq = q
-        self.dispatcher = dispatcher
-        # Create server
-        __server = ThreadedXMLRPCserver(("localhost", 45312),
-                                        requestHandler=RequestHandler)
-        __server.register_introspection_functions()
-
-        # Register an instance; all the methods of the instance are
-        __server.register_instance(ConnectorFunctions(self.eventq,
-                                                      self.dispatcher,
-                                                      self.conmap))
-
-        # Start a thread with the server -- that thread will then start one
-        # more thread for each request
-        # TODO: check whether this is no problem
-        server_thread = threading.Thread(target=__server.serve_forever)
-        # Exit the server thread when the main thread terminates
-        server_thread.setDaemon(True)
-        server_thread.start()
-        self.logger.info("XMLRPC listener loop running in thread: %s",
-                         server_thread.name)
-
-class RequestHandler(SimpleXMLRPCRequestHandler):
-    '''
-    Restrict requests to a particular path.
-    '''
-    rpc_paths = ('/unisono',)
-
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -216,6 +173,51 @@ class ConnectorFunctions:
         #  TODO: create event and put it in the eventq
         self.eventq.put(Event('CACHE', result))
         return
+
+# Threaded XMPRPC server
+class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+    '''
+    non-blocking xmlrpc-server to handle concurrent requests
+    '''
+    pass
+
+class RequestHandler(SimpleXMLRPCRequestHandler):
+    '''
+    Restrict requests to a particular path.
+    '''
+    rpc_paths = ('/unisono',)
+
+class XMLRPCServer:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    def __init__(self, q, dispatcher):
+        '''
+        create and start a XMLRPC server thread
+        '''
+        self.conmap = ConnectorMap(q)
+        self.eventq = q
+        self.dispatcher = dispatcher
+        # Create server
+        __server = ThreadedXMLRPCserver(("localhost", 45312),
+                                        requestHandler=RequestHandler)
+        __server.register_introspection_functions()
+
+        # Register an instance; all the methods of the instance are
+        __server.register_instance(ConnectorFunctions(self.eventq,
+                                                      self.dispatcher,
+                                                      self.conmap))
+
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        # TODO: check whether this is no problem
+        server_thread = threading.Thread(target=__server.serve_forever)
+        # Exit the server thread when the main thread terminates
+        server_thread.setDaemon(True)
+        server_thread.start()
+        self.logger.info("XMLRPC listener loop running in thread: %s",
+                         server_thread.name)
+
+
 
 ################################################################################
 # callback interface starts here
