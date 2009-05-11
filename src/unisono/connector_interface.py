@@ -29,10 +29,17 @@ connector_interface.py
 '''
 
 import socketserver, threading, logging, uuid
-
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
 from unisono.event import Event
+
+class InterfaceError(Exception):
+    pass
+class OutOfRangeError(InterfaceError):
+    pass
+class InvalidTypeError(InterfaceError):
+    pass
+
 
 class ConnectorMap:
     '''
@@ -98,6 +105,10 @@ class ConnectorFunctions:
         param port callback port for the connector requesting registration
         return connector id 
         '''
+        if not (0 < port < 65536):
+            raise OutOfRangeError("Port number out of range (must be 1..65535)")
+        if not (isinstance(port, int)):
+            raise InvalidTypeError("Port number invalid type (must be int)")
         self.logger.debug('RPC function register_connector called.')
         self.logger.debug('Connector requested registration for port %s', port)
         callerid = self.conmap.register_connector(port, '127.0.0.1')
