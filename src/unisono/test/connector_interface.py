@@ -29,7 +29,106 @@ file_name
 '''
 
 import unittest
+from queue import Queue
 from unisono import connector_interface
+
+## connector map
+class TestConnectorMap(unittest.TestCase):
+    ''' Test the connector map '''
+    def setUp(self):
+        self.q = Queue()
+
+    def testInitInvalidQueue(self):
+        ''' The connector map needs to have a queue to issue events. 
+            Check what happens for an invalid queue'''
+#        self.assertRaises(connector_interface.InvalidTypeError,
+#                          connector_interface.ConnectorMap(),None,None)
+        pass
+
+    def testInitValidQueue(self):
+        ''' The connector map needs to have a queue to issue events. 
+            Check what happens for an valid queue'''
+        #self.assertRaises(connector_interface.InvalidTypeError,connector_interface.ConnectorMap(),None,None)
+        pass
+
+    def testRegisterConnectorInvalidPort(self):
+        '''
+        The connector map stores connectors by its ip and port.
+        Check for invalid port input
+        '''
+        conmap = connector_interface.ConnectorMap(self.q)
+        self.assertRaises(connector_interface.OutOfRangeError, 
+                          conmap.register_connector, "127.0.0.1", 65536)
+        self.assertRaises(connector_interface.OutOfRangeError, 
+                          conmap.register_connector, "127.0.0.1", 0)
+        self.assertRaises(connector_interface.OutOfRangeError, 
+                          conmap.register_connector, "127.0.0.1", -1)
+        self.assertRaises(connector_interface.InvalidTypeError, 
+                          conmap.register_connector, "127.0.0.1", 42.42)
+        pass
+
+    def testRegisterConnectorInvalidIP(self):
+        '''
+        The connector map stores connectors by its ip and port.
+        Check for invalid IP input
+        '''
+        conmap = connector_interface.ConnectorMap(self.q)
+        self.assertRaises(connector_interface.InvalidTypeError, 
+                          conmap.register_connector, "somestuff", 42000)
+        pass
+
+    def testRegisterConnectorValidPort(self):
+        '''
+        The connector map stores connectors by its ip and port.
+        Check for Valid port input
+        '''
+        pass
+
+    def testRegisterConnectorValidIP(self):
+        '''
+        The connector map stores connectors by its ip and port.
+        Check for valid IP input (v4 and v6)
+        '''
+        pass
+    
+    def testUnregisterConnectorInvalidID(self):
+        '''
+        The connector map creates UUIDs for the connectors.
+        Check for invalid ID input
+        '''
+        pass
+
+    def testUnregisterConnectorValidID(self):
+        '''
+        The connector map creates UUIDs for the connectors.
+        Check for valid ID input
+        '''
+        pass
+
+    def testRegisterConnectorReturn(self):
+        '''
+        The connector map creates UUIDs for the connectors.
+        Check for valid return type
+        '''
+        pass
+    
+    def testRegisterConnectorMultipleRegistrations(self):
+        '''
+        The connector map must be able to handle several registrations of 
+        different connectors.
+        Check whether it holds the correct data after registration
+        '''
+        pass
+
+    def testRegisterConnectorMultipleSimilarRegistrations(self):
+        '''
+        The connector map must be able to handle several registrations of 
+        the same connector.
+        Check whether it holds the correct data after registration and whether
+        it returns the correct ID
+        '''
+        pass
+
 
 ## connector functions
 class TestConnectorFunctions(unittest.TestCase):
@@ -59,6 +158,19 @@ class TestConnectorFunctions(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
+    # connectorMap
+    suite.addTest(TestConnectorMap("testInitInvalidQueue"))
+    suite.addTest(TestConnectorMap("testInitValidQueue"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorInvalidPort"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorInvalidIP"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorValidPort"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorValidIP"))
+    suite.addTest(TestConnectorMap("testUnregisterConnectorInvalidID"))
+    suite.addTest(TestConnectorMap("testUnregisterConnectorValidID"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorReturn"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorMultipleRegistrations"))
+    suite.addTest(TestConnectorMap("testRegisterConnectorMultipleSimilarRegistrations"))
+    # connector_functions
     suite.addTest(TestConnectorFunctions("testRegisterConnectorPortTooLarge"))
     suite.addTest(TestConnectorFunctions("testRegisterConnectorPortNotPositive"))
     suite.addTest(TestConnectorFunctions("testRegisterConnectorPortInvalidType"))

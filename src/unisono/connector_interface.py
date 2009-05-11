@@ -31,7 +31,15 @@ connector_interface.py
 import socketserver, threading, logging, uuid
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
+from queue import Queue
 from unisono.event import Event
+
+class InterfaceError(Exception):
+    pass
+class OutOfRangeError(InterfaceError):
+    pass
+class InvalidTypeError(InterfaceError):
+    pass
 
 class ConnectorMap:
     '''
@@ -41,7 +49,10 @@ class ConnectorMap:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     def __init__(self, q):
-        self.eventq = q
+        if isinstance(q,Queue):
+            self.eventq = q
+        else:
+            raise InvalidTypeError('System queue invalid type error (must be of type Queue)')
         self.conmap = {}
         self.lock = threading.Lock()
 
@@ -53,6 +64,11 @@ class ConnectorMap:
         param conip port of the connector
         return conid uuid for the registered connector
         '''
+        if not 0 < conport < 65536:
+            raise OutOfRangeError("Port number out of range (must be 1..65535)")
+        if not (isinstance(conport, int)):
+            raise InvalidTypeError("Port number invalid type (must be int)")
+
         with self.lock:
             # check for ip:port in conmap
             if (conip,conport) in self.conmap.values():
