@@ -33,14 +33,6 @@ from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
 from unisono.event import Event
 
-class InterfaceError(Exception):
-    pass
-class OutOfRangeError(InterfaceError):
-    pass
-class InvalidTypeError(InterfaceError):
-    pass
-
-
 class ConnectorMap:
     '''
     A ConnectorMap holds all known (i.e. registered) unisono connectors. It is 
@@ -106,20 +98,26 @@ class ConnectorFunctions:
         return connector id 
         '''
         if not (0 < port < 65536):
-            raise OutOfRangeError("Port number out of range (must be 1..65535)")
+            return 2 #("Port number out of range (must be 1..65535)")
         if not (isinstance(port, int)):
-            raise InvalidTypeError("Port number invalid type (must be int)")
+            return 1 #("Port number invalid type (must be int)")
         self.logger.debug('RPC function register_connector called.')
         self.logger.debug('Connector requested registration for port %s', port)
         callerid = self.conmap.register_connector(port, '127.0.0.1')
         return callerid
+
     def unregister_connector(self, callerid):
         '''
         unregister a connector from unisono
         '''
+        try: 
+            uuid.UUID(callerid)
+        except ValueError:
+            return 1 # invalid type error
         self.logger.debug('RPC function \'unregister_connector\'.')
         self.logger.debug('Connector requested deregistration: %s - Port %s',
                           callerid, port)
+
         status = self.conmap.deregister_connector(callerid)
         return status
 
