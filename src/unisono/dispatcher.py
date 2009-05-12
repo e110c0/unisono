@@ -47,7 +47,7 @@ class Dispatcher:
         Constructor
         '''
         self.config = configuration.get_configparser()
-        self.active_orders = {}
+        self.pending_orders = {}
         self.eventq = Queue()
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
@@ -104,7 +104,6 @@ class Dispatcher:
         registered.
         '''
         self.plugins[name] = mm
-        self.active_orders[name] = []
         di = mm.availableDataItems()
         cost = mm.getCost()
         self.logger.debug('Data items: %s', di)
@@ -115,7 +114,7 @@ class Dispatcher:
                 self.dataitems[i].append((cost, name))
                 self.dataitems[i].sort()
             else:
-                self.dataitems[i] = [(cost,name)]
+                self.dataitems[i] = [(cost, name)]
 
     def deregisterMM(self, name):
         '''
@@ -150,41 +149,68 @@ class Dispatcher:
                 self.logger.debug('Got an unknown event, discarding.')
 
     def process_order(self, order):
-        # find the correspondent MM
-        # TODO: handle cost, active orders etc
-        mm = self.dataitems[order['dataitem']][0][1]
-        # and its queue
-        mmq = self.plugins[mm].inq
-        # remember order
-        exists = 0
-        for o in self.active_orders[mm][:]:
-            if (o['conid'] == order['conid']) and (o['orderid'] == order['orderid']):
-                exists = 1
-                self.logger.error('Order already active, possible id clash? Discarding')
-        if exists == 0:
-            self.active_orders[mm].append(order)
+        # TODO sanity checks
+        if self.satisfy_from_cache(order):
+            return
+        elif self.aggregate_order(order):
+            return
+        else: 
+            self.queue_order(order)
 
+    def satisfy_from_cache(self, order):
+        return False
 
+    def aggregate_order(self, order):
+        di = order["dataitem"]
+        compat_mms = set(i[1] for i in self.dataitems[di])
+        for curmm, mmlist, paramap, waitinglist in self.pending_orders.values():
+            if curmm in compat_mms:
+                id1 = order.get("identifier1", None)
+                id2 = order.get("identifier2", None)
+                if id1 is not None and id1 != paramap.get("identifier1", None) or \
+                    id2 is not None and id2 != paramap.get("identifier2", None):
+                    return False
+                self.logger.info('aggregated the order with already queued order')
+                waitinglist.append(order)
+                return True
+        return False
+
+    def put_in_mmq(self, mmq, id, order):
         # create request for MM
         req = copy.copy(order)
         del req['conid']
         del req['orderid']
+        req['id'] = id
         #self.logger.debug['stripped request: %s', req]
         # queue request
         mmq.put(req)
 
+    def queue_order(self, order):
+        id = order['conid'], order['orderid']
+        mmlist = copy.copy(self.dataitems[order["dataitem"]])
+        curmm = mmlist.pop(0)[1]
+        self.put_in_mmq(self.plugins[curmm].inq, id, order)
+        self.pending_orders[id] = (curmm, mmlist, order, [])
+        return
+
+    def fill_order(self, order, result):
+        di = order['dataitem']
+        order[di] = result[di]
+        return order
+
     def process_result(self, result):
         mm = result[0]
         r = result[1]
-        # find in all active orders
-        # TODO: this is really broken and works only with cvalues 
-        for o in self.active_orders[mm][:]:
-            if (o['locator1'] == r['locator1']): # and (o['locator2'] == r['locator2']):
-                o[o['dataitem']] = r[o['dataitem']]
-                self.replyq.put(Event('DELIVER', o))
-                # does this delete the right stuff??
-                self.active_orders[mm] = [i for i in self.active_orders[mm] if i['orderid'] != o['orderid']]
-
-
-
-
+        id = r['id']
+        curmm, mmlist, paramap, waitinglist = self.pending_orders[id]
+        
+        if r['errorcode'] != 0:
+            self.logger.debug('The result included an error')
+            curmm = mmlist.pop(0)[1]
+            self.put_in_mmq(self.plugins[curmm].inq, id, paramap)
+        else:
+            self.logger.debug('Everything fine, delivering results now')
+            for o in waitinglist:
+                self.reply.put(Event('DELIVER', self.fill_order(o, r)))
+            self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
+            del self.pending_orders[id]

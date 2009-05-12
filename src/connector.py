@@ -30,25 +30,37 @@ file_name
 '''
 
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+import xmlrpc.client
+import threading
 
 counter = 0
-myID = 0
+myID = ""
 
 def on_result(result):
     global counter
     global myID
     counter +=1
-#    print("Oh yeah, got my result: %s",result)
-    if counter < 1000:
-#        print('commit order: ' ,
-        s.commit_order(myID, {'orderid':counter, 'locator1':'127.0.0.1', 'dataitem':'max_shared_upstream_bandwidth'})
-#)
+    print("Oh yeah, got my result: %s",result)
+    if counter < 10:
+        print('commit order: ' ,
+              s.commit_order(myID, {'orderid':counter, 'locator1':'127.0.0.1', 'dataitem':'max_shared_upstream_bandwidth'}))
+        pass
     else:
         print('Done with all 1000!')
     return True
 
 if __name__ == '__main__':
-    import xmlrpc.client
+
+    # start server to get the result...
+    server = SimpleXMLRPCServer(("localhost", 43222),logRequests=False)
+    print("Listening on port 43222...")
+    server.register_multicall_functions()
+    server.register_function(on_result,'on_result')
+    thread = threading.Thread(target=server.serve_forever)
+    # Exit the server thread when the main thread terminates
+    #thread.setDaemon(True)
+    thread.start()
+    
     s = xmlrpc.client.ServerProxy('http://localhost:45312/unisono')
     # Print list of available methods
     print("we do some stuff")
@@ -57,11 +69,8 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
+
+    
+
     print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator1':'127.0.0.1', 'dataitem':'max_shared_upstream_bandwidth'}))
 
-    # start server to get the result...
-    server = SimpleXMLRPCServer(("localhost", 43222),logRequests=False)
-    print("Listening on port 43222...")
-    server.register_multicall_functions()
-    server.register_function(on_result,'on_result')
-    server.serve_forever()

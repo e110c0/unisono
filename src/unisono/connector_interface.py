@@ -113,26 +113,26 @@ class ConnectorFunctions:
         param port callback port for the connector requesting registration
         return connector id 
         '''
-        if not (0 < port < 65536):
-            return 2 #("Port number out of range (must be 1..65535)")
-        if not (isinstance(port, int)):
-            return 1 #("Port number invalid type (must be int)")
+#        if not (0 < port < 65536):
+#            return 2 #("Port number out of range (must be 1..65535)")
+#        if not (isinstance(port, int)):
+#            return 1 #("Port number invalid type (must be int)")
         self.logger.debug('RPC function register_connector called.')
         self.logger.debug('Connector requested registration for port %s', port)
-        callerid = self.conmap.register_connector(port, '127.0.0.1')
+        callerid = self.conmap.register_connector('127.0.0.1', port)
         return callerid
 
     def unregister_connector(self, callerid):
         '''
         unregister a connector from unisono
         '''
-        try: 
-            uuid.UUID(callerid)
-        except ValueError:
-            return 1 # invalid type error
+#        try: 
+#            uuid.UUID(callerid)
+#        except ValueError:
+#            return 1 # invalid type error
         self.logger.debug('RPC function \'unregister_connector\'.')
-        self.logger.debug('Connector requested deregistration: %s - Port %s',
-                          callerid, port)
+        self.logger.debug('Connector requested deregistration: %s - Port',
+                          callerid)
 
         status = self.conmap.deregister_connector(callerid)
         return status
@@ -274,7 +274,7 @@ class XMLRPCReplyHandler:
                 self.logger.debug('Our result is: %s', result)
                 # find requester
                 self.logger.debug('host: %s port: %s',self.conmap.conmap[result['conid']][0], self.conmap.conmap[result['conid']][1] )
-                uri = 'http://' + self.conmap.conmap[result['conid']][1] + ':' + str(self.conmap.conmap[result['conid']][0])
+                uri = 'http://' + self.conmap.conmap[result['conid']][0] + ':' + str(self.conmap.conmap[result['conid']][1])
                 self.logger.debug('we try to connect to ' + uri + ' now.')
                 connector = ServerProxy(uri)
                 try:
