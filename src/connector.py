@@ -43,10 +43,10 @@ def on_result(result):
     print("Oh yeah, got my result: %s",result)
     if counter < 10:
         print('commit order: ' ,
-              s.commit_order(myID, {'orderid':counter, 'locator1':'127.0.0.1', 'dataitem':'max_shared_upstream_bandwidth'}))
+              s.commit_order(myID, {'orderid':counter, 'locator1':'127.0.0.1', 'dataitem':'SHARED_BANDWIDTH_RX'}))
         pass
     else:
-        print('Done with all 1000!')
+        print('Done with all 10!')
     return True
 
 if __name__ == '__main__':
@@ -72,5 +72,5 @@ if __name__ == '__main__':
 
     
 
-    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator1':'127.0.0.1', 'dataitem':'max_shared_upstream_bandwidth'}))
+    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator1':'127.0.0.1', 'dataitem':'SHARED_BANDWIDTH_RX'}))
 

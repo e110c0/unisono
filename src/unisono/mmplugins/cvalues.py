@@ -42,7 +42,7 @@ class cValues(mmtemplates.MMTemplate):
     '''
     def __init__(self, *args):
         super().__init__(*args)
-        self.dataitems = ['max_shared_upstream_bandwidth', 'max_shared_downstream_bandwidth']
+        self.dataitems = ['SHARED_BANDWIDTH_RX', 'SHARED_BANDWIDTH_TX']
         self.cost = 100
 
     def checkrequest(self, request):

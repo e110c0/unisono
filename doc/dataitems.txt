@@ -1,0 +1,96 @@
+# errorcodes.txt
+#
+# Created on: May 12, 2009
+# Authors: dh
+# 
+# $LastChangedBy: haage $
+# $LastChangedDate: 2009-05-12 18:28:51 +0200 (Tue, 12 May 2009) $
+# $Revision: 1092 $
+# 
+# (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
+# 
+# This file is part of UNISONO Unified Information Service for Overlay 
+# Network Optimization.
+# 
+# UNISONO is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+# 
+# UNISONO is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
+
+# each M&M in UNISONO provides a number of data items it can measure, monitor or
+# gather in some way. New data items must be specified here.
+#
+# name is the global name for a specified data item
+# type defines its type, can be: 
+#      (n)ode      for node specific data items (doesn't need an identifier)
+#      (i)nterface for network interface specific data items (needs an
+#                  identifier to identify the correspondent interface)
+#      (l)ink      for link properties, whereby a link is the end-to-end
+#                  connection between to nodes (therefore, it requires 2
+#                  identifiers)
+#
+# name				type	explanation
+# Data items for link properties (2 identifier)
+# bandwidth
+AVAILABLE_BANDWIDTH l		available Bandwidth from NodeID2 -> NodeID1 in bit/s
+ADR 				l		guessed value: upper bound for availBW, lower bound for capacity in bit/s
+CAPACITY			l		capacity of the Link between NodeID2 -> NodeID1 in bit/s
+
+# round trip time
+RTT							average round trip time NodeID1 -> NodeID2 -> NodeID1 in usec
+RTT_MIN						min -
+RTT_MAX						max -
+RTT_DEVIATION				standard deviation -
+RTT_JITTER					rtt jitter
+
+# one way delay
+OWD							average one way delay NodeID1 -> NodeID2 in usec
+OWD_MIN						min -
+OWD_MAX						max -
+OWD_DEVIATION				standard deviation -
+OWD_JITTER					owd jitter
+
+MTU							minimal MTU between NodeID1 und NodeID2 in byte
+HOPCOUNT					number of hops between NodeID1 und NodeID2
+
+# QoS
+QOS_E2E						end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
+
+# Multicast
+IP_MULTICAST_SUPPORT		IP multicast support: 0 = false, 1 = true
+
+# Data items for interface properties (1 identifier)
+# generic
+CONNECTION_TYPE				type of connection
+INTERFACE_CAPACITY_RX		max receive capacity of the interface
+INTERFACE_CAPACITY_TX		max send capacity of the interface
+INTERFACE_MAC				MAC address of the interface
+USED_BANDWIDTH_RX			current in use RX bandwidth 
+USED_BANDWIDTH_TX			current in use TX bandwidth 
+
+# wireless
+WLAN_ESSID					essid of the current wlan connection, -1 if not available
+WLAN_AP_MAC					MAC address of the access point (in int64_t), -1 if not available
+WLAN_LINK					WLAN link quality
+WLAN_SIGNAL					WLAN signal level
+WLAN_NOISE					WLAN noise level
+WLAN_SIGNOISE_RATIO			WLAN signal to noise ratio
+
+# umts
+
+# bluetooth
+
+# Data items for node properties (no identifier)
+SHARED_BANDWIDTH_RX			shared RX bandwidth of local interface in bit/s
+SHARED_BANDWIDTH_TX			shared TX bandwidth of local interface in bit/s
+
+CPU_LOAD					current cpu usage
+HOST_UPTIME					uptime of the host
