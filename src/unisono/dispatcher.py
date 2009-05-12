@@ -73,7 +73,6 @@ class Dispatcher:
             self.logger.info('Loading plugins: %s', active_plugins)
         except:
             self.logger.info('No plugins configured, loading defaults.')
-            # TODO get all available by default
             active_plugins = 'cvalues'
             pass
         for p in active_plugins.split(','):
