@@ -37,60 +37,68 @@
 #                  connection between to nodes (therefore, it requires 2
 #                  identifiers)
 #
-# name				type	explanation
+# name					type	explanation
 # Data items for link properties (2 identifier)
 # bandwidth
-AVAILABLE_BANDWIDTH l		available Bandwidth from NodeID2 -> NodeID1 in bit/s
-ADR 				l		guessed value: upper bound for availBW, lower bound for capacity in bit/s
-CAPACITY			l		capacity of the Link between NodeID2 -> NodeID1 in bit/s
+AVAILABLE_BANDWIDTH		l		available Bandwidth from NodeID2 -> NodeID1 in bit/s
+ADR 					l		guessed value: upper bound for availBW, lower bound for capacity in bit/s
+CAPACITY				l		capacity of the Link between NodeID2 -> NodeID1 in bit/s
 
 # round trip time
-RTT							average round trip time NodeID1 -> NodeID2 -> NodeID1 in usec
-RTT_MIN						min -
-RTT_MAX						max -
-RTT_DEVIATION				standard deviation -
-RTT_JITTER					rtt jitter
+RTT						l		average round trip time NodeID1 -> NodeID2 -> NodeID1 in usec
+RTT_MIN					l		min -
+RTT_MAX					l		max -
+RTT_DEVIATION			l		standard deviation -
+RTT_JITTER				l		rtt jitter
 
 # one way delay
-OWD							average one way delay NodeID1 -> NodeID2 in usec
-OWD_MIN						min -
-OWD_MAX						max -
-OWD_DEVIATION				standard deviation -
-OWD_JITTER					owd jitter
+OWD						l		average one way delay NodeID1 -> NodeID2 in usec
+OWD_MIN					l		min -
+OWD_MAX					l		max -
+OWD_DEVIATION			l		standard deviation -
+OWD_JITTER				l		owd jitter
 
-MTU							minimal MTU between NodeID1 und NodeID2 in byte
-HOPCOUNT					number of hops between NodeID1 und NodeID2
+PATHMTU					l		minimal MTU between NodeID1 und NodeID2 in byte
+HOPCOUNT				l		number of hops between NodeID1 und NodeID2
 
 # QoS
-QOS_E2E						end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
+QOS_E2E					l		end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
 
 # Multicast
-IP_MULTICAST_SUPPORT		IP multicast support: 0 = false, 1 = true
+IP_MULTICAST_SUPPORT	l		IP multicast support: 0 = false, 1 = true
 
 # Data items for interface properties (1 identifier)
 # generic
-CONNECTION_TYPE				type of connection
-INTERFACE_CAPACITY_RX		max receive capacity of the interface
-INTERFACE_CAPACITY_TX		max send capacity of the interface
-INTERFACE_MAC				MAC address of the interface
-USED_BANDWIDTH_RX			current in use RX bandwidth 
-USED_BANDWIDTH_TX			current in use TX bandwidth 
+INTERFACE_TYPE			i	type of network interface
+INTERFACE_CAPACITY_RX	i	max receive capacity of the interface
+INTERFACE_CAPACITY_TX	i	max send capacity of the interface
+INTERFACE_MAC			i	MAC address of the interface
+INTERFACE_MTU			i	MTU of the interface
+
+USED_BANDWIDTH_RX		i	current in use RX bandwidth 
+USED_BANDWIDTH_TX		i	current in use TX bandwidth 
 
 # wireless
-WLAN_ESSID					essid of the current wlan connection, -1 if not available
-WLAN_AP_MAC					MAC address of the access point (in int64_t), -1 if not available
-WLAN_LINK					WLAN link quality
-WLAN_SIGNAL					WLAN signal level
-WLAN_NOISE					WLAN noise level
-WLAN_SIGNOISE_RATIO			WLAN signal to noise ratio
+WLAN_ESSID				i	essid of the current wlan connection
+WLAN_AP_MAC				i	MAC address of the access point (in int64_t)
+WLAN_LINK				i	WLAN link quality
+WLAN_SIGNAL				i	WLAN signal level
+WLAN_NOISE				i	WLAN noise level
+WLAN_SIGNOISE_RATIO		i	WLAN signal to noise ratio
+WLAN_CHANNEL			i	WLAN channel
+WLAN_FREQUENCY			i	WLAN frequency
 
 # umts
 
 # bluetooth
 
 # Data items for node properties (no identifier)
-SHARED_BANDWIDTH_RX			shared RX bandwidth of local interface in bit/s
-SHARED_BANDWIDTH_TX			shared TX bandwidth of local interface in bit/s
+SHARED_BANDWIDTH_RX		n	shared RX bandwidth of local interface in bit/s
+SHARED_BANDWIDTH_TX		n	shared TX bandwidth of local interface in bit/s
 
-CPU_LOAD					current cpu usage
-HOST_UPTIME					uptime of the host
+CPU_LOAD				n	current cpu usage
+HOST_UPTIME				n	uptime of the host
+RAM						n	sytem memory
+FREE_RAM				n	currently available memory
+PERSISTENT_MEMORY		n	persistent memory (i.e. HDD, SSD etc)
+FREE_PERSISTENT_MEMORY	n	currently available persistent memory
