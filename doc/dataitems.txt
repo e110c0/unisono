@@ -96,9 +96,15 @@ WLAN_FREQUENCY			i	WLAN frequency
 SHARED_BANDWIDTH_RX		n	shared RX bandwidth of local interface in bit/s
 SHARED_BANDWIDTH_TX		n	shared TX bandwidth of local interface in bit/s
 
+CPU_TYPE				n	CPU model
+CPU_SPEED				n	Speed in MHz
+CPU_CACHE_SIZE			n	Size of the cache in KB
+CPU_CORE_COUNT			n	number of CPU cores
 CPU_LOAD				n	current cpu usage
 HOST_UPTIME				n	uptime of the host
-RAM						n	sytem memory
-FREE_RAM				n	currently available memory
+RAM						n	sytem memory in KB
+FREE_RAM				n	currently available memory in KB
+SWAP					n	system swap in KB
+FREE_SWAP				n	currently available swap in KB
 PERSISTENT_MEMORY		n	persistent memory (i.e. HDD, SSD etc)
 FREE_PERSISTENT_MEMORY	n	currently available persistent memory
