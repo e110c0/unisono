@@ -48,6 +48,7 @@ class MMTemplate:
         self.inq = inq
         self.outq = outq
         self.logger.info("started " + self.__class__.__name__ + "!")
+
     def run(self):
         while (True):
             # wait for event
@@ -64,6 +65,7 @@ class MMTemplate:
                 # set result to nul and set errorcode
                 self.result['errorcode'] = 42
                 self.result['errortext'] = 'Order invalid'
+            self.logger.debug('The result is: %s', self.request)
             self.outq.put(Event('RESULT', [self.__class__.__name__, self.request]))
             # send event with result
 
