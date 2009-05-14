@@ -93,7 +93,7 @@ class Dispatcher:
                     # Exit the server thread when the main thread terminates
                     mm_thread.setDaemon(True)
                     mm_thread.start()
-                    self.logger.info("M&M %s loop running in thread: %s", mm.name, mm_thread.name)
+                    self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
         self.logger.debug('plugin list: %r' % self.plugins)
         self.logger.debug('registered dataitems: %s', self.dataitems)
 

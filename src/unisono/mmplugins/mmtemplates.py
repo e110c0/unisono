@@ -39,7 +39,7 @@ class MMTemplate:
     '''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-#    name = ""
+
     def __init__(self, inq, outq):
         '''
         init the M&M and start the thread
