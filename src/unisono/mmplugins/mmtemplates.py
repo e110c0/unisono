@@ -31,6 +31,7 @@ mmtemplates.py
 import logging
 from queue import Queue
 from unisono.event import Event
+from ctypes import *
 
 class MMTemplate:
     '''
@@ -38,7 +39,7 @@ class MMTemplate:
     '''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-    name = ""
+#    name = ""
     def __init__(self, inq, outq):
         '''
         init the M&M and start the thread
@@ -80,3 +81,36 @@ class MMTemplate:
 
     def getCost(self):
         return self.cost
+
+class MMcTemplate(MMTemplate):
+    '''
+    Template for M&Ms written in C. Such a plugin must implement its own measure
+    function, which will be called with a module dependent request struct and
+    returns a result struct.
+    The c binding is fully encapsulated in this class.
+    '''
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.libfile = ''
+
+    def measure(self):
+        # load the so file
+        cdll.LoadLibrary(self.libfile)
+        libmodule = CDLL(self.libfile)
+        # create struct for request
+        creqstruct = prepare_request(self.request)
+        # call c measurement function
+        libmodule.measure.restype = type(creqstruct)
+        cresstruct = libmodule.measure()
+        # put result into self.request
+        for i in cresstruct._fields_:
+            # FIX: cresstruct[i][1] returns the object not its value
+            self.request[i[0]] = cresstruct[i][1]
+        pass
+
+    def prepare_request(self, request):
+        '''
+        Prepare the request struct. This must be implemented in a small pyhton
+        wrapper class.
+        '''
+        raise NotImplementedError('Your c M&M lacks a prepare_request() method!')
