@@ -1,5 +1,5 @@
 '''
-pathmtu.py
+delays.py
 
  Created on: May 14, 2009
  Authors: dh
@@ -27,29 +27,39 @@ pathmtu.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+
 import logging
 from unisono.mmplugins import mmtemplates
 from ctypes import *
 
-class PathMTURequest(Structure):
+class DelaysRequest(Structure):
     '''
-    Request structure for the PathMTU module
+    Request structure for the Delays module
     '''
     _fields_ = [('identifier1', c_char_p),
                 ('identifier2', c_char_p)]
 
-class PathMTUResult(Structure):
+class DelaysResult(Structure):
     '''
-    Result structure for the PathMTU module
+    Result structure for the Delays module
     '''
-    _fields_ = [('PATHMTU', c_int),
-                ('HOPCOUNT', c_int)
+    _fields_ = [('HOPCOUNT', c_int),
+                ('RTT', c_int),
+                ('RTT_MIN', c_int),
+                ('RTT_MAX', c_int),
+                ('RTT_DEVIATION', c_int),
+                ('RTT_JITTER', c_int),
+                ('OWD', c_int),
+                ('OWD_MIN', c_int),
+                ('OWD_MAX', c_int),
+                ('OWD_DEVIATION', c_int),
+                ('OWD_JITTER', c_int),
                 ('error', c_int),
                 ('errortext', c_char_p)]
 
-class PathMTU(mmtemplates.MMcTemplate):
+class Delays(mmtemplates.MMcTemplate):
     '''
-    Wrapper class for the PathMTU module
+    Wrapper class for the Delays module
     '''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -59,12 +69,24 @@ class PathMTU(mmtemplates.MMcTemplate):
         Constructor
         '''
         super().__init__(*args)
-        self.libfile = 'libPathMTU.so'
+        self.libfile = 'libDelays.so'
         self.cost = 10000
-        self.dataitems = ['PATHMTU','HOPCOUNT']
+        self.dataitems = ['HOPCOUNT',
+                          'RTT',
+                          'RTT_MIN',
+                          'RTT_MAX',
+                          'RTT_DEVIATION',
+                          'RTT_JITTER',
+                          'OWD',
+                          'OWD_MIN',
+                          'OWD_MAX',
+                          'OWD_DEVIATION',
+                          'OWD_JITTER',
+                          'error',
+                          'errortext']
 
     def prepare_request(self, req):
-        creqstruct = PathMTURequest()
+        creqstruct = DelaysRequest()
         # FIX prepare the struct -> string to c_char_p??!
         if 'identifier1' in req.keys():
             creqstruct.identifier1 = req['identifier1']
