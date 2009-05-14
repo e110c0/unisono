@@ -51,9 +51,9 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'CPU_LOAD',
                           'HOST_UPTIME',
                           'RAM',
-                          'FREE_RAM',
+                          'RAM_FREE',
                           'SWAP',
-                          'FREE_SWAP',
+                          'SWAP_FREE',
                           'PERSISTENT_MEMORY',
                           'FREE_PERSISTENT_MEMORY']
         self.cost = 500
