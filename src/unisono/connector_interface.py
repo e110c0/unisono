@@ -200,7 +200,9 @@ class ConnectorFunctions:
         return
 
 # Threaded XMPRPC server
-class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+#class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+class ThreadedXMLRPCserver(SimpleXMLRPCServer):
+
     '''
     non-blocking xmlrpc-server to handle concurrent requests
     '''
