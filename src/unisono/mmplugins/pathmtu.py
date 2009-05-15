@@ -65,7 +65,6 @@ class PathMTU(mmtemplates.MMcTemplate):
 
     def prepare_request(self, req):
         creqstruct = PathMTURequest()
-        # FIX prepare the struct -> string to c_char_p??!
         if 'identifier1' in req.keys():
             creqstruct.identifier1 = req['identifier1']
         else:

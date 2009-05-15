@@ -104,8 +104,7 @@ class MMcTemplate(MMTemplate):
         cresstruct = libmodule.measure()
         # put result into self.request
         for i in cresstruct._fields_:
-            # FIX: cresstruct[i][1] returns the object not its value
-            self.request[i[0]] = cresstruct[i][1]
+            self.request[i[0]] = getattr(cresstruct,i[0])
         pass
 
     def prepare_request(self, request):
