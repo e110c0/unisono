@@ -72,5 +72,5 @@ if __name__ == '__main__':
 
     
 
-    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator1':'127.0.0.1', 'dataitem':'CPU_TYPE'}))
+    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator1':'127.0.0.1', 'dataitem':'RTT'}))
 

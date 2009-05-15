@@ -63,6 +63,9 @@ class PathMTU(mmtemplates.MMcTemplate):
         self.cost = 10000
         self.dataitems = ['PATHMTU','HOPCOUNT']
 
+    def checkrequest(self, request):
+        return True
+
     def prepare_request(self, req):
         creqstruct = PathMTURequest()
         if 'identifier1' in req.keys():

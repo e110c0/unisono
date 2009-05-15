@@ -85,6 +85,9 @@ class Delays(mmtemplates.MMcTemplate):
                           'error',
                           'errortext']
 
+    def checkrequest(self, request):
+        return True
+
     def prepare_request(self, req):
         creqstruct = DelaysRequest()
         # FIX prepare the struct -> string to c_char_p??!
