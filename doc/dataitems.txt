@@ -60,7 +60,7 @@ OWD_JITTER				l		owd jitter
 
 PATHMTU					l		minimal MTU between NodeID1 und NodeID2 in byte
 HOPCOUNT				l		number of hops between NodeID1 und NodeID2
-
+LOSS					l	end-to-end loss estimation
 # QoS
 QOS_E2E					l		end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
 
