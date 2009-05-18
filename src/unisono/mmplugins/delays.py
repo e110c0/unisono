@@ -30,6 +30,7 @@ delays.py
 import logging
 from unisono.mmplugins import mmtemplates
 from ctypes import *
+from os import getuid
 
 class DelaysRequest(Structure):
     '''
@@ -88,6 +89,17 @@ class Delays(mmtemplates.MMcTemplate):
 
     def checkrequest(self, request):
         return True
+
+    def measure(self):
+        '''
+        Delays requires raw sockets, i.e. it has to run as uid 0. Therefore, check
+        uid here and call super.measure().
+        '''
+        if getuid() == 0:
+            super().measure()
+        else:
+            self.request['error'] = 312
+            self.request['errortext'] = 'Not running with uid 0, can\'t measure w/o raw socket'
 
     def prepare_request(self, req):
         creqstruct = DelaysRequest()
