@@ -95,20 +95,23 @@ class MMcTemplate(MMTemplate):
         super().__init__(*args)
         self.libfile = ''
 
-    def measure(self):
-        # load the so file
+    def load_library(self):
+        ''' load the so file
+        '''
         cdll.LoadLibrary(self.libfile)
-        libmodule = CDLL(self.libfile)
+        self.libmodule = CDLL(self.libfile)
+
+    def measure(self):
         # create struct for request
         creqstruct = self.prepare_request(self.request)
         # call c measurement function
-        libmodule.measure.restype = self.cresstruct.__class__
-        self.logger.debug('calling c function now')
-        self.cresstruct = libmodule.measure(creqstruct)
-        self.logger.debug('c function returned')
+        self.libmodule.measure.restype = self.cresstruct.__class__
+        self.logger.debug('set result type to: %s , calling c function now', self.libmodule.measure.restype)
+        self.cresstruct = self.libmodule.measure(creqstruct)
+        self.logger.debug('c function returned with result: %s', self.cresstruct)
         # put result into self.request
-        for i in cresstruct._fields_:
-            self.request[i[0]] = getattr(cresstruct,i[0])
+        for i in self.cresstruct._fields_:
+            self.request[i[0]] = getattr(self.cresstruct,i[0])
         pass
 
     def prepare_request(self, request):

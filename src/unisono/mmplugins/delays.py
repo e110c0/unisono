@@ -53,6 +53,7 @@ class DelaysResult(Structure):
                 ('OWD_MAX', c_int),
                 ('OWD_DEVIATION', c_int),
                 ('OWD_JITTER', c_int),
+                ('LOSSRATE', c_int),
                 ('error', c_int),
                 ('errortext', c_char_p)]
 
@@ -81,7 +82,9 @@ class Delays(mmtemplates.MMcTemplate):
                           'OWD_MIN',
                           'OWD_MAX',
                           'OWD_DEVIATION',
-                          'OWD_JITTER']
+                          'OWD_JITTER',
+                          'LOSSRATE']
+        self.load_library()
 
     def checkrequest(self, request):
         return True

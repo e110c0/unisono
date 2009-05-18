@@ -205,7 +205,7 @@ class Dispatcher:
         id = r['id']
         curmm, mmlist, paramap, waitinglist = self.pending_orders[id]
         
-        if r['errorcode'] != 0:
+        if r['error'] != 0:
             self.logger.debug('The result included an error')
             curmm = mmlist.pop(0)[1]
             self.put_in_mmq(self.plugins[curmm].inq, id, paramap)

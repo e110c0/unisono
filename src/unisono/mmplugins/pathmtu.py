@@ -63,12 +63,14 @@ class PathMTU(mmtemplates.MMcTemplate):
         self.cresstruct = PathMTUResult()
         self.cost = 10000
         self.dataitems = ['PATHMTU','HOPCOUNT']
+        self.load_library()
 
     def checkrequest(self, request):
         return True
 
     def prepare_request(self, req):
         creqstruct = PathMTURequest()
+        self.logger.debug('our request: %s', req)
         if 'identifier1' in req.keys():
             creqstruct.identifier1 = c_char_p(req['identifier1'])
         else:
@@ -77,4 +79,5 @@ class PathMTU(mmtemplates.MMcTemplate):
             creqstruct.identifier2 = c_char_p(req['identifier2'])
         else:
             creqstruct.identifier2 = ''
+        self.logger.debug('our cstruct request: %s', creqstruct)
         return creqstruct

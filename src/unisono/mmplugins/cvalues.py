@@ -56,9 +56,9 @@ class cValues(mmtemplates.MMTemplate):
             di = self.request['dataitem']
             self.request[di] = config.get('cValues', di)
             self.logger.debug('the values are: %s', self.request)
-            self.request['errorcode'] = 0
+            self.request['error'] = 0
             self.request['errortext'] = 'Measurement successful'
         except:
-            self.request['errorcode'] = 312
+            self.request['error'] = 312
             self.request['errortext'] = 'No value configured'
 
