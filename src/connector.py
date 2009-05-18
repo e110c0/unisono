@@ -70,11 +70,13 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
-
-    
-
-    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'identifier2':'127.0.0.1', 'dataitem':'RTT'}))
-    
+    orderid = 0
+    for i in s.list_available_dataitems():
+        print('commit order: ' ,s.commit_order(myID, {'orderid': orderid, 
+                                                      'identifier2':'127.0.0.1',
+                                                      'identifier2':'127.0.0.1',
+                                                      'dataitem':i}))
+        orderid = orderid+1
     ch = stdin.read(1)
     print('shutting down.')
     print(s.unregister_connector(myID))

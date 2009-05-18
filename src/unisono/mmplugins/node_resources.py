@@ -92,5 +92,5 @@ class ResourceReader(mmtemplates.MMTemplate):
         for kernel in os:
             if re.match("(.*)(.*)", kernel):
                 print(kernel)
-        self.request['errorcode'] = 0
+        self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'

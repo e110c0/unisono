@@ -195,8 +195,12 @@ class Dispatcher:
         return
 
     def fill_order(self, order, result):
-        di = order['dataitem']
-        order[di] = result[di]
+        try:
+            di = order['dataitem']
+            order[di] = result[di]
+        except KeyError:
+            order['error'] = 666
+            order['errortext'] = 'dataitem not in result'
         return order
 
     def process_result(self, result):
