@@ -222,6 +222,6 @@ class Dispatcher:
         else:
             self.logger.debug('Everything fine, delivering results now')
             for o in waitinglist:
-                self.reply.put(Event('DELIVER', self.fill_order(o, r)))
+                self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
             self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
             del self.pending_orders[id]

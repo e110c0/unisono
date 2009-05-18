@@ -148,7 +148,7 @@ class ConnectorFunctions:
         returns string all available data items
         '''
         self.logger.debug('RPC function \'list_available_dataitems\'.')
-        return list(self.dispatcher.dataitems.keys())
+        return sorted(list(self.dispatcher.dataitems.keys()))
 
     def commit_order(self, conid, paramap):
         '''
