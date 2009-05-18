@@ -207,8 +207,14 @@ class Dispatcher:
         
         if r['error'] != 0:
             self.logger.debug('The result included an error')
-            curmm = mmlist.pop(0)[1]
-            self.put_in_mmq(self.plugins[curmm].inq, id, paramap)
+            try:
+                curmm = mmlist.pop(0)[1]
+                self.put_in_mmq(self.plugins[curmm].inq, id, paramap)
+            except IndexError:
+                self.logger.debug('No more modules to try, passing error to connector.')
+                paramap['error'] = r['error']
+                paramap['errortext'] = r['errortext']
+                self.replyq.put(Event('DELIVER', paramap))
         else:
             self.logger.debug('Everything fine, delivering results now')
             for o in waitinglist:
