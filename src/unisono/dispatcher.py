@@ -79,10 +79,12 @@ class Dispatcher:
             try:
                 p = p.strip()
                 mod = __import__('unisono.mmplugins', globals(), locals(), [p])
-                mod = getattr(mod, p)
                 self.logger.debug('Mod: %s', mod)
+                mod = getattr(mod, p)
+
             except:
                 self.logger.error('Could not load plugin %s', p)
+                continue
             for n, v in vars(mod).items():
                 if type(v) == type and issubclass(v, MMTemplate):
                     iq = Queue()

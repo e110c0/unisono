@@ -43,7 +43,7 @@ def on_result(result):
     print("Oh yeah, got my result: %s",result)
     if counter < 10:
         print('commit order: ' ,
-              s.commit_order(myID, {'orderid':counter, 'locator1':'127.0.0.1', 'dataitem':'SHARED_BANDWIDTH_RX'}))
+              s.commit_order(myID, {'orderid':counter, 'locator2':'127.0.0.1', 'dataitem':'SHARED_BANDWIDTH_RX'}))
         pass
     else:
         print('Done with all 10!')
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     server.register_function(on_result,'on_result')
     thread = threading.Thread(target=server.serve_forever)
     # Exit the server thread when the main thread terminates
-    #thread.setDaemon(True)
+    thread.setDaemon(True)
     thread.start()
     
     s = xmlrpc.client.ServerProxy('http://localhost:45312/unisono')
@@ -72,5 +72,5 @@ if __name__ == '__main__':
 
     
 
-    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator1':'127.0.0.1', 'dataitem':'RTT'}))
+    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator2':'127.0.0.1', 'dataitem':'PATHMTU'}))
 

@@ -27,7 +27,6 @@ delays.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
-
 import logging
 from unisono.mmplugins import mmtemplates
 from ctypes import *
@@ -69,8 +68,9 @@ class Delays(mmtemplates.MMcTemplate):
         Constructor
         '''
         super().__init__(*args)
-        self.libfile = 'libDelays.so'
+        self.libfile = '/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/libDelays.so'
         self.cost = 10000
+        self.cresstruct = DelaysResult()
         self.dataitems = ['HOPCOUNT',
                           'RTT',
                           'RTT_MIN',
@@ -81,22 +81,19 @@ class Delays(mmtemplates.MMcTemplate):
                           'OWD_MIN',
                           'OWD_MAX',
                           'OWD_DEVIATION',
-                          'OWD_JITTER',
-                          'error',
-                          'errortext']
+                          'OWD_JITTER']
 
     def checkrequest(self, request):
         return True
 
     def prepare_request(self, req):
         creqstruct = DelaysRequest()
-        # FIX prepare the struct -> string to c_char_p??!
         if 'identifier1' in req.keys():
-            creqstruct.identifier1 = req['identifier1']
+            creqstruct.identifier1 = c_char_p(req['identifier1'])
         else:
             creqstruct.identifier1 = ''
         if 'identifier2' in req.keys():
-            creqstruct.identifier2 = req['identifier2']
+            creqstruct.identifier2 = c_char_p(req['identifier2'])
         else:
             creqstruct.identifier2 = ''
         return creqstruct

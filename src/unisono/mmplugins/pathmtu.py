@@ -43,7 +43,7 @@ class PathMTUResult(Structure):
     Result structure for the PathMTU module
     '''
     _fields_ = [('PATHMTU', c_int),
-                ('HOPCOUNT', c_int)
+                ('HOPCOUNT', c_int),
                 ('error', c_int),
                 ('errortext', c_char_p)]
 
@@ -59,7 +59,8 @@ class PathMTU(mmtemplates.MMcTemplate):
         Constructor
         '''
         super().__init__(*args)
-        self.libfile = 'libPathMTU.so'
+        self.libfile = '/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/libPathMTU.so'
+        self.cresstruct = PathMTUResult()
         self.cost = 10000
         self.dataitems = ['PATHMTU','HOPCOUNT']
 
@@ -69,11 +70,11 @@ class PathMTU(mmtemplates.MMcTemplate):
     def prepare_request(self, req):
         creqstruct = PathMTURequest()
         if 'identifier1' in req.keys():
-            creqstruct.identifier1 = req['identifier1']
+            creqstruct.identifier1 = c_char_p(req['identifier1'])
         else:
             creqstruct.identifier1 = ''
         if 'identifier2' in req.keys():
-            creqstruct.identifier2 = req['identifier2']
+            creqstruct.identifier2 = c_char_p(req['identifier2'])
         else:
             creqstruct.identifier2 = ''
         return creqstruct

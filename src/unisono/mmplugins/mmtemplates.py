@@ -89,6 +89,8 @@ class MMcTemplate(MMTemplate):
     returns a result struct.
     The c binding is fully encapsulated in this class.
     '''
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
     def __init__(self, *args):
         super().__init__(*args)
         self.libfile = ''
@@ -98,10 +100,12 @@ class MMcTemplate(MMTemplate):
         cdll.LoadLibrary(self.libfile)
         libmodule = CDLL(self.libfile)
         # create struct for request
-        creqstruct = prepare_request(self.request)
+        creqstruct = self.prepare_request(self.request)
         # call c measurement function
-        libmodule.measure.restype = type(creqstruct)
-        cresstruct = libmodule.measure()
+        libmodule.measure.restype = self.cresstruct.__class__
+        self.logger.debug('calling c function now')
+        self.cresstruct = libmodule.measure(creqstruct)
+        self.logger.debug('c function returned')
         # put result into self.request
         for i in cresstruct._fields_:
             self.request[i[0]] = getattr(cresstruct,i[0])
