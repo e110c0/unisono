@@ -32,6 +32,7 @@ file_name
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 import xmlrpc.client
 import threading
+from sys import stdin
 
 counter = 0
 myID = ""
@@ -41,12 +42,12 @@ def on_result(result):
     global myID
     counter +=1
     print("Oh yeah, got my result: %s",result)
-    if counter < 10:
-        print('commit order: ' ,
-              s.commit_order(myID, {'orderid':counter, 'locator2':'127.0.0.1', 'dataitem':'SHARED_BANDWIDTH_RX'}))
-        pass
-    else:
-        print('Done with all 10!')
+#    if counter < 10:
+#        print('commit order: ' ,
+#              s.commit_order(myID, {'orderid':counter, 'identifier2':'127.0.0.1', 'dataitem':'PATHMTU'}))
+#        pass
+#    else:
+#        print('Done with all 10!')
     return True
 
 if __name__ == '__main__':
@@ -72,5 +73,8 @@ if __name__ == '__main__':
 
     
 
-    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'locator2':'127.0.0.1', 'dataitem':'PATHMTU'}))
-
+    print('commit order: ' ,s.commit_order(myID, {'orderid':'0', 'identifier2':'127.0.0.1', 'dataitem':'RTT'}))
+    
+    ch = stdin.read(1)
+    print('shutting down.')
+    print(s.unregister_connector(myID))

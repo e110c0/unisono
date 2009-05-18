@@ -49,7 +49,7 @@ class ConnectorMap:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     def __init__(self, q):
-        if isinstance(q,Queue):
+        if isinstance(q, Queue):
             self.eventq = q
         else:
             raise InvalidTypeError('System queue invalid type error (must be of type Queue)')
@@ -71,7 +71,7 @@ class ConnectorMap:
 
         with self.lock:
             # check for ip:port in conmap
-            if (conip,conport) in self.conmap.values():
+            if (conip, conport) in self.conmap.values():
                 conid = [ a for a in self.conmap.keys() 
                          if self.conmap[a] == (conip, conport)] 
                 return str(conid)
@@ -86,11 +86,15 @@ class ConnectorMap:
         Deregister a connector from unisono. This can happen on request or due
         to timeouts while replying to the connector.
         '''
+        self.logger.debug('Trying to deregister connector %s', conid)
+        self.logger.debug('currently registered: %s', self.conmap)
         with self.lock:
             # Trigger cancel event for this connector id
             self.eventq.put(Event('CANCEL', (conid, None)))
             # delete connector entry from the map
             del self.conmap[conid]
+            self.logger.debug('now: %s', self.conmap)
+        return 0;
 
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
@@ -131,10 +135,10 @@ class ConnectorFunctions:
 #        except ValueError:
 #            return 1 # invalid type error
         self.logger.debug('RPC function \'unregister_connector\'.')
-        self.logger.debug('Connector requested deregistration: %s - Port',
-                          callerid)
+        self.logger.debug('Connector requested deregistration: %s', callerid)
 
         status = self.conmap.deregister_connector(callerid)
+        self.logger.debug('dereg status: %s', status)
         return status
 
     def list_available_dataitems(self):
@@ -166,7 +170,7 @@ class ConnectorFunctions:
             self.eventq.put(Event('ORDER', paramap))
         else:
             self.logger.error('Connector %s is unknown, discarding order!', conid)
-            status = -1
+            status = - 1
         return status
 
     def cancel_order(self, callerid, orderid):
@@ -177,7 +181,7 @@ class ConnectorFunctions:
         '''
         self.logger.debug('RPC function \'cancel_order\'.')
         #  TODO: create event and put it in the eventq
-        self.eventq.put(Event('CANCEL', (callerid,orderid)))
+        self.eventq.put(Event('CANCEL', (callerid, orderid)))
         status = 0
         return status
 
@@ -275,7 +279,7 @@ class XMLRPCReplyHandler:
                 result = event.payload
                 self.logger.debug('Our result is: %s', result)
                 # find requester
-                self.logger.debug('host: %s port: %s',self.conmap.conmap[result['conid']][0], self.conmap.conmap[result['conid']][1] )
+                self.logger.debug('host: %s port: %s', self.conmap.conmap[result['conid']][0], self.conmap.conmap[result['conid']][1])
                 uri = 'http://' + self.conmap.conmap[result['conid']][0] + ':' + str(self.conmap.conmap[result['conid']][1])
                 self.logger.debug('we try to connect to ' + uri + ' now.')
                 connector = ServerProxy(uri)
@@ -283,11 +287,11 @@ class XMLRPCReplyHandler:
                     connector.on_result(result)
                 except:
                     self.logger.error('Connector unreachable!')
-                    self.eventq.put(Event('CANCEL',(result['conid'],None)))
+                    self.eventq.put(Event('CANCEL', (result['conid'], None)))
                     self.conmap.deregister_connector(result['conid'])
                     
             else:
-                self.logger.debug('Got an unknown event type: %s. What now?', 
+                self.logger.debug('Got an unknown event type: %s. What now?',
                                   event.type)
 
     def sendResult(self, result):
