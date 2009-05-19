@@ -30,7 +30,7 @@ delays.py
 import logging
 from unisono.mmplugins import mmtemplates
 from ctypes import *
-from os import getuid
+from os import getuid, path
 
 class DelaysRequest(Structure):
     '''
@@ -58,6 +58,7 @@ class DelaysResult(Structure):
                 ('error', c_int),
                 ('errortext', c_char_p)]
 
+
 class Delays(mmtemplates.MMcTemplate):
     '''
     Wrapper class for the Delays module
@@ -70,7 +71,7 @@ class Delays(mmtemplates.MMcTemplate):
         Constructor
         '''
         super().__init__(*args)
-        self.libfile = '/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/libDelays.so'
+        self.libfile = path.join(path.dirname(__file__),'libDelays.so')
         self.cost = 10000
         self.cresstruct = DelaysResult()
         self.dataitems = ['HOPCOUNT',

@@ -30,6 +30,7 @@ pathmtu.py
 import logging
 from unisono.mmplugins import mmtemplates
 from ctypes import *
+from os import path
 
 class PathMTURequest(Structure):
     '''
@@ -59,7 +60,7 @@ class PathMTU(mmtemplates.MMcTemplate):
         Constructor
         '''
         super().__init__(*args)
-        self.libfile = '/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/libPathMTU.so'
+        self.libfile = path.join(path.dirname(__file__), 'libPathMTU.so')
         self.cresstruct = PathMTUResult()
         self.cost = 10000
         self.dataitems = ['PATHMTU','HOPCOUNT']
