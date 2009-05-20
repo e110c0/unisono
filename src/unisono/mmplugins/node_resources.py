@@ -58,11 +58,19 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'SWAP_FREE',
                           'PERSISTENT_MEMORY',
                           'FREE_PERSISTENT_MEMORY'
+                          'CPU_LOAD_SYS'
+                          'CPU_LOAD_USER'
+                          'CPU_LOAD_WIO'
+                          'CPU_LOAD_IDLE'
                           'HOST_UPTIME'
                           'HOST_UPTIME_IDLE'
                           'SYTEM_LOAD_AVG_NOW'
                           'SYSTEM_LOAD_AVG_5MIN'
                           'SYSTEM_LOAD_AVG_15MIN'
+                          'PERSISTENT_MEMORY'
+                          'PERSISTENT_MEMORY_MOUNT'
+                          'PERSISTENT_MEMORY_USED'
+                          'PERSISTENT_MEMORY_FREE'
 ]
         self.cost = 500
 
@@ -106,17 +114,22 @@ class ResourceReader(mmtemplates.MMTemplate):
                 self.request['RAM_USED'] = self.request['RAM'] - self.request['RAM_FREE']
                 self.request['SWAP_USED'] = self.request['SWAP'] - self.request['SWAP_FREE']
         
-        
+        self.request['CPU_LOAD_USER'] = os.popen('vmstat').read().split('\n')[2].strip().split()[12]
+        self.request['CPU_LOAD_SYS'] = os.popen('vmstat').read().split('\n')[2].strip().split()[13]
+        self.request['CPU_LOAD_IDLE'] = os.popen('vmstat').read().split('\n')[2].strip().split()[14]
+        self.request['CPU_LOAD_WIO'] = os.popen('vmstat').read().split('\n')[2].strip().split()[15]
         
         self.request['SYTEM_LOAD_AVG_NOW'] =  os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[0]
         self.request['SYSTEM_LOAD_AVG_5MIN'] = os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[1]
         self.request['SYSTEM_LOAD_AVG_15MIN'] =  os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[2]
         
-        uptime = open("/proc/uptime")
-        self.request['HOST_UPTIME'] = uptime.read().split()[0]
-        idletime = open("/proc/uptime")
-        self.request['HOST_UPTIME_IDLE'] = uptime.read().split()[1]
-
+        self.request['HOST_UPTIME'] = open("/proc/uptime").read().split()[0]
+        self.request['HOST_UPTIME_IDLE'] = open("/proc/uptime").read().split()[1]
+        
+        self.request['PERSISTENT_MEMORY_MOUNT'] = os.popen('df').read().split("\n")[1].split()[0]
+        self.request['PERSISTENT_MEMORY'] = os.popen('df').read().split("\n")[1].split()[1]
+        self.request['PERSISTENT_MEMORY_USED'] = os.popen('df').read().split("\n")[1].split()[2]
+        self.request['PERSISTENT_MEMORY_FREE'] = os.popen('df').read().split("\n")[1].split()[3]
         
         os = open("/proc/version")
         for kernel in os:
