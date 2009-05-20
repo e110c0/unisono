@@ -59,7 +59,11 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'PERSISTENT_MEMORY',
                           'FREE_PERSISTENT_MEMORY'
                           'HOST_UPTIME'
-                          'HOST_UPTIME_IDLE']
+                          'HOST_UPTIME_IDLE'
+                          'SYTEM_LOAD_AVG_NOW'
+                          'SYSTEM_LOAD_AVG_5MIN'
+                          'SYSTEM_LOAD_AVG_15MIN'
+]
         self.cost = 500
 
     def checkrequest(self, request):
@@ -91,7 +95,7 @@ class ResourceReader(mmtemplates.MMTemplate):
 #                print(meminfo)
             if re.match("(.*)MemFree(.*)", meminfo):
                 self.request['RAM_FREE'] = meminfo.split(":")[1].strip().split(" ")[0]
- #                print(meminfo)
+#                print(meminfo)
             if re.match("(.*)SwapTotal(.*)", meminfo):
                 self.request['SWAP'] = meminfo.split(":")[1].strip().split(" ")[0]
 #                print(meminfo)
@@ -101,6 +105,12 @@ class ResourceReader(mmtemplates.MMTemplate):
 #                print('\n')
                 self.request['RAM_USED'] = self.request['RAM'] - self.request['RAM_FREE']
                 self.request['SWAP_USED'] = self.request['SWAP'] - self.request['SWAP_FREE']
+        
+        
+        
+        self.request['SYTEM_LOAD_AVG_NOW'] =  os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[0]
+        self.request['SYSTEM_LOAD_AVG_5MIN'] = os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[1]
+        self.request['SYSTEM_LOAD_AVG_15MIN'] =  os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[2]
         
         uptime = open("/proc/uptime")
         self.request['HOST_UPTIME'] = uptime.read().split()[0]
