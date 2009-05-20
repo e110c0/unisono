@@ -51,11 +51,15 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'CPU_LOAD',
                           'HOST_UPTIME',
                           'RAM',
+                          'RAM_USED',
                           'RAM_FREE',
                           'SWAP',
+                          'SWAP_USED',
                           'SWAP_FREE',
                           'PERSISTENT_MEMORY',
-                          'FREE_PERSISTENT_MEMORY']
+                          'FREE_PERSISTENT_MEMORY'
+                          'HOST_UPTIME'
+                          'HOST_UPTIME_IDLE']
         self.cost = 500
 
     def checkrequest(self, request):
@@ -67,27 +71,43 @@ class ResourceReader(mmtemplates.MMTemplate):
         for cpuinfo in cpu:
             cpuinfo = cpuinfo.rstrip('\n')
             if re.match("(.*)model name(.*)", cpuinfo):
-                self.request['CPU_TYPE'] = cpuinfo
-#                    print(cpuinfo)
+                self.request['CPU_TYPE'] = cpuinfo.split(":")[1].strip()
+#                print(cpuinfo)
             if re.match("(.*)cpu MHz(.*)", cpuinfo):
-                print(cpuinfo)
+                self.request['CPU_SPEED'] = cpuinfo.split(":")[1].strip()
+#                print(cpuinfo)
             if re.match("(.*)cache size(.*)", cpuinfo):
-                print(cpuinfo)
+                self.request['CPU_CACHE_SIZE'] = cpuinfo.split(":")[1].strip().split(" ")[0]
+ #               print(cpuinfo)
             if re.match("(.*)cpu cores(.*)", cpuinfo):
-                print(cpuinfo)
-                print('\n')
+                self.request['CPU_CORE_COUNT'] = cpuinfo.split(":")[1].strip().split(" ")[0]
+#                print(cpuinfo)
+#                print('\n')
         ram = open("/proc/meminfo", "r")
         for meminfo in ram:
             meminfo = meminfo.rstrip('\n')
             if re.match("(.*)MemTotal(.*)", meminfo):
-                print(meminfo)
+                self.request['RAM'] = meminfo
+#                print(meminfo)
             if re.match("(.*)MemFree(.*)", meminfo):
-                print(meminfo)
+                self.request['RAM_FREE'] = meminfo.split(":")[1].strip().split(" ")[0]
+ #                print(meminfo)
             if re.match("(.*)SwapTotal(.*)", meminfo):
-                print(meminfo)
+                self.request['SWAP'] = meminfo.split(":")[1].strip().split(" ")[0]
+#                print(meminfo)
             if re.match("(.*)SwapFree(.*)", meminfo):
-                print(meminfo)
-                print('\n')
+                self.request['SWAP_FREE'] = meminfo.split(":")[1].strip().split(" ")[0]
+#                print(meminfo)
+#                print('\n')
+                self.request['RAM_USED'] = self.request['RAM'] - self.request['RAM_FREE']
+                self.request['SWAP_USED'] = self.request['SWAP'] - self.request['SWAP_FREE']
+        
+        uptime = open("/proc/uptime")
+        self.request['HOST_UPTIME'] = uptime.read().split()[0]
+        idletime = open("/proc/uptime")
+        self.request['HOST_UPTIME_IDLE'] = uptime.read().split()[1]
+
+        
         os = open("/proc/version")
         for kernel in os:
             if re.match("(.*)(.*)", kernel):
