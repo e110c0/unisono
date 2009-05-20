@@ -55,7 +55,7 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'RAM_FREE',
                           'SWAP',
                           'SWAP_USED',
-                          'SWAP_FREE',
+                          'SWAP_FREE','PERSISTENT_MEMORY_MOUNT'
                           'PERSISTENT_MEMORY',
                           'FREE_PERSISTENT_MEMORY'
                           'CPU_LOAD_SYS'
