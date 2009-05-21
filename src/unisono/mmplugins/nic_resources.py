@@ -82,7 +82,7 @@ class NicReader(mmtemplates.MMTemplate):
                 self.request['error'] = interface
                 break
         
-        intinfo = os.popen('infonfig' + interface).read()
+        intinfo = os.popen('infonfig ' + interface).read()
         
         self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
         self.request['INTERFACE_CAPACITY_RX'] = "cant find"
@@ -90,10 +90,27 @@ class NicReader(mmtemplates.MMTemplate):
         self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
         self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
         
+        self.request['USED_BANDWIDTH_RX'] = "cant find"
+        self.request['USED_BANDWIDTH_TX'] = "cant find"
         
-            
+        
+      # wireless
+        wlaninfo = os.popen('iwconfig ' + interface).read()
+        if ipaddress in wlaninfo:
+            self.request['WLAN_ESSID']          = wlaninfo.split('\n')[0].strip().split()[3].split(':')[1]
+            self.request['WLAN_MODE']           = wlaninfo.split('\n')[1].split()[0].split(':')[1]
+            self.request['WLAN_AP_MAC']         = wlaninfo.split('\n')[1].split()[5]
+            self.request['WLAN_LINK']           = wlaninfo.split('\n')[5].split()[1]
+            self.request['WLAN_SIGNAL']         = wlaninfo.split('\n')[5].split()[3].split(':')[1]
+            self.request['WLAN_NOISE']          = wlaninfo.split('\n')[5].split()[6].split('=')[1]
+            self.request['WLAN_SIGNOISE_RATIO'] = "cant find"
+            self.request['WLAN_CHANNEL']        = "cant find"
+            self.request['WLAN_FREQUENCY']      = wlaninfo.split('\n')[1].split()[1].split(':')[1]
+        else:
+            self.request['wireless error'] = "this is not a wireless interface"
         
         
-        
+        self.request['error'] = 0
+        self.request['errortext'] = 'Measurement successful'
 
         
