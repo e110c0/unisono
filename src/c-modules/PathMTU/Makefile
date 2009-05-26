@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -O2
+CFLAGS = -g -O2 -std=gnu99 -Wall -pedantic
 LD = /usr/bin/ld
 LDFLAGS = 
 
