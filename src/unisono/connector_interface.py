@@ -203,12 +203,28 @@ class ConnectorFunctions:
         self.eventq.put(Event('CACHE', result))
         return
 
+    def check_cache(self, paramap):
+        '''
+        with check_cache() it is possible to get a result from UNISONO cache if
+        any exists. This should primarily be used to check for results cached
+        from remote hosts.
+        The used syntax is similar to commit_order() but it directly returns the
+        result if available. 
+        '''
+        # TODO: really check the cache as soon as it is implemented.
+        paramap['error']= 404
+        paramap['errortext'] = 'Data item not found in cache'
+        return paramap
+        
 # Threaded XMPRPC server
 #class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
 class ThreadedXMLRPCserver(SimpleXMLRPCServer):
 
     '''
     non-blocking xmlrpc-server to handle concurrent requests
+    WARNING: We changed this to a blocking XMLRPCServer which handles only 1
+    request at a time. This is slightly (~10%) faster than threaded. If this
+    blocks too long, we can change this back to a threaded approach.
     '''
     pass
 
