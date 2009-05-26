@@ -28,7 +28,7 @@ connector_interface.py
 
 '''
 
-import socketserver, threading, logging, uuid
+import socketserver, threading, logging, uuid, socket
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
 from queue import Queue
@@ -68,7 +68,10 @@ class ConnectorMap:
             raise OutOfRangeError("Port number out of range (must be 1..65535)")
         if not (isinstance(conport, int)):
             raise InvalidTypeError("Port number invalid type (must be int)")
-
+        try:
+            socket.getaddrinfo(conip,None)
+        except socket.gaierror:
+            raise InvalidTypeError('provided IP not valid')
         with self.lock:
             # check for ip:port in conmap
             if (conip, conport) in self.conmap.values():
@@ -117,10 +120,10 @@ class ConnectorFunctions:
         param port callback port for the connector requesting registration
         return connector id 
         '''
-#        if not (0 < port < 65536):
-#            return 2 #("Port number out of range (must be 1..65535)")
-#        if not (isinstance(port, int)):
-#            return 1 #("Port number invalid type (must be int)")
+        if not (0 < port < 65536):
+            return 2 #("Port number out of range (must be 1..65535)")
+        if not (isinstance(port, int)):
+            return 1 #("Port number invalid type (must be int)")
         self.logger.debug('RPC function register_connector called.')
         self.logger.debug('Connector requested registration for port %s', port)
         callerid = self.conmap.register_connector('127.0.0.1', port)
@@ -130,10 +133,10 @@ class ConnectorFunctions:
         '''
         unregister a connector from unisono
         '''
-#        try: 
-#            uuid.UUID(callerid)
-#        except ValueError:
-#            return 1 # invalid type error
+        try: 
+            uuid.UUID(callerid)
+        except ValueError:
+            return 1 # invalid type error
         self.logger.debug('RPC function \'unregister_connector\'.')
         self.logger.debug('Connector requested deregistration: %s', callerid)
 

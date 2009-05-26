@@ -75,6 +75,8 @@ class TestConnectorMap(unittest.TestCase):
         conmap = connector_interface.ConnectorMap(self.q)
         self.assertRaises(connector_interface.InvalidTypeError, 
                           conmap.register_connector, "somestuff", 42000)
+        self.assertRaises(connector_interface.InvalidTypeError, 
+                          conmap.register_connector, "123.345.789.012", 42000)
         pass
 
     def testRegisterConnectorValidPort(self):
