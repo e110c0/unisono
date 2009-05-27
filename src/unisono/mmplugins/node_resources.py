@@ -55,22 +55,23 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'RAM_FREE',
                           'SWAP',
                           'SWAP_USED',
-                          'SWAP_FREE','PERSISTENT_MEMORY_MOUNT'
+                          'SWAP_FREE',
+                          'PERSISTENT_MEMORY_MOUNT',
                           'PERSISTENT_MEMORY',
-                          'FREE_PERSISTENT_MEMORY'
-                          'CPU_LOAD_SYS'
-                          'CPU_LOAD_USER'
-                          'CPU_LOAD_WIO'
-                          'CPU_LOAD_IDLE'
-                          'HOST_UPTIME'
-                          'HOST_UPTIME_IDLE'
-                          'SYTEM_LOAD_AVG_NOW'
-                          'SYSTEM_LOAD_AVG_5MIN'
-                          'SYSTEM_LOAD_AVG_15MIN'
-                          'PERSISTENT_MEMORY'
-                          'PERSISTENT_MEMORY_MOUNT'
-                          'PERSISTENT_MEMORY_USED'
-                          'PERSISTENT_MEMORY_FREE'
+                          'FREE_PERSISTENT_MEMORY',
+                          'CPU_LOAD_SYS',
+                          'CPU_LOAD_USER',
+                          'CPU_LOAD_WIO',
+                          'CPU_LOAD_IDLE',
+                          'HOST_UPTIME',
+                          'HOST_UPTIME_IDLE',
+                          'SYTEM_LOAD_AVG_NOW',
+                          'SYSTEM_LOAD_AVG_5MIN',
+                          'SYSTEM_LOAD_AVG_15MIN',
+                          'PERSISTENT_MEMORY',
+                          'PERSISTENT_MEMORY_MOUNT',
+                          'PERSISTENT_MEMORY_USED',
+                          'PERSISTENT_MEMORY_FREE',
 ]
         self.cost = 500
 
