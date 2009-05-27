@@ -198,6 +198,8 @@ class Dispatcher:
         try:
             di = order['dataitem']
             order[di] = result[di]
+			# for at least the ariba connector
+			order['result'] = result[di]
         except KeyError:
             order['error'] = 666
             order['errortext'] = 'dataitem not in result'
