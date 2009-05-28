@@ -39,13 +39,11 @@ int parse_addr_str(const char *node, struct sockaddr *addr, socklen_t *addrlen) 
 	hints.ai_protocol = 0;
 	hints.ai_flags = AI_NUMERICHOST;
 	res = getaddrinfo(node, 0, &hints, &result);
-    printf("result: %i \n",res);
 	if (res == 0) {
 		memcpy(addr, result->ai_addr, result->ai_addrlen);
 		*addrlen = result->ai_addrlen;
+		freeaddrinfo(result);
 	}
-//	freeaddrinfo(result);
-
 	return res;
 }
 

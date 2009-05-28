@@ -42,8 +42,8 @@ int parse_addr_str(const char *node, struct sockaddr *addr, socklen_t *addrlen) 
 	if (res == 0) {
 		memcpy(addr, result->ai_addr, result->ai_addrlen);
 		*addrlen = result->ai_addrlen;
+		freeaddrinfo(result);
 	}
-	//freeaddrinfo(result);
 	return res;
 }
 
