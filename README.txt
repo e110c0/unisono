@@ -6,3 +6,7 @@ to install unisono, run:
 	python3 setup.py install
 
 
+to create html documentation, run:
+
+	cd doc
+	pydoc -w ../src
