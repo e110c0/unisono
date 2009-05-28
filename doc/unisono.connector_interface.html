@@ -1,12 +1,12 @@
 
 <!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html><head><title>Python: module connector_interface</title>
+<html><head><title>Python: module unisono.connector_interface</title>
 </head><body bgcolor="#f0f0f8">
 
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>connector_interface</strong></big></big></font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="unisono.html"><font color="#ffffff">unisono</font></a>.connector_interface</strong></big></big></font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/connector_interface.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/connector_interface.py</a></font></td></tr></table>
     <p><tt>connector_interface.py<br>
@@ -15,8 +15,8 @@
 &nbsp;Authors:&nbsp;dh<br>
 &nbsp;<br>
 &nbsp;$LastChangedBy:&nbsp;haage&nbsp;$<br>
-&nbsp;$LastChangedDate:&nbsp;2009-05-26&nbsp;14:37:58&nbsp;+0200&nbsp;(Tue,&nbsp;26&nbsp;May&nbsp;2009)&nbsp;$<br>
-&nbsp;$Revision:&nbsp;1220&nbsp;$<br>
+&nbsp;$LastChangedDate:&nbsp;2009-05-28&nbsp;12:35:32&nbsp;+0200&nbsp;(Thu,&nbsp;28&nbsp;May&nbsp;2009)&nbsp;$<br>
+&nbsp;$Revision:&nbsp;1231&nbsp;$<br>
 &nbsp;<br>
 &nbsp;(C)&nbsp;2008-2009&nbsp;by&nbsp;Computer&nbsp;Networks&nbsp;and&nbsp;Internet,&nbsp;University&nbsp;of&nbsp;Tuebingen<br>
 &nbsp;<br>
@@ -58,11 +58,11 @@
 <dt><font face="helvetica, arial"><a href="builtins.html#Exception">builtins.Exception</a>(<a href="builtins.html#BaseException">builtins.BaseException</a>)
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="connector_interface.html#InterfaceError">InterfaceError</a>
+<dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a>
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="connector_interface.html#InvalidTypeError">InvalidTypeError</a>
-</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#OutOfRangeError">OutOfRangeError</a>
+<dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#InvalidTypeError">InvalidTypeError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#OutOfRangeError">OutOfRangeError</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -70,22 +70,22 @@
 <dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="connector_interface.html#ConnectorFunctions">ConnectorFunctions</a>
-</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#ConnectorMap">ConnectorMap</a>
-</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#XMLRPCReplyHandler">XMLRPCReplyHandler</a>
-</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#XMLRPCServer">XMLRPCServer</a>
+<dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#ConnectorFunctions">ConnectorFunctions</a>
+</font></dt><dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#ConnectorMap">ConnectorMap</a>
+</font></dt><dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#XMLRPCReplyHandler">XMLRPCReplyHandler</a>
+</font></dt><dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#XMLRPCServer">XMLRPCServer</a>
 </font></dt></dl>
 </dd>
 <dt><font face="helvetica, arial"><a href="xmlrpc.server.html#SimpleXMLRPCRequestHandler">xmlrpc.server.SimpleXMLRPCRequestHandler</a>(<a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>)
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="connector_interface.html#RequestHandler">RequestHandler</a>
+<dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#RequestHandler">RequestHandler</a>
 </font></dt></dl>
 </dd>
 <dt><font face="helvetica, arial"><a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a>(<a href="socketserver.html#TCPServer">socketserver.TCPServer</a>, <a href="xmlrpc.server.html#SimpleXMLRPCDispatcher">xmlrpc.server.SimpleXMLRPCDispatcher</a>)
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="connector_interface.html#ThreadedXMLRPCserver">ThreadedXMLRPCserver</a>
+<dt><font face="helvetica, arial"><a href="unisono.connector_interface.html#ThreadedXMLRPCserver">ThreadedXMLRPCserver</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -172,7 +172,7 @@ Data descriptors defined here:<br>
 </dl>
 <hr>
 Data and other attributes defined here:<br>
-<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0x88fa76c&gt;</dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -206,7 +206,7 @@ Data descriptors defined here:<br>
 </dl>
 <hr>
 Data and other attributes defined here:<br>
-<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0x88fa76c&gt;</dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -216,7 +216,7 @@ Data and other attributes defined here:<br>
     
 <tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="connector_interface.html#InterfaceError">InterfaceError</a></dd>
+<dd><a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a></dd>
 <dd><a href="builtins.html#Exception">builtins.Exception</a></dd>
 <dd><a href="builtins.html#BaseException">builtins.BaseException</a></dd>
 <dd><a href="builtins.html#object">builtins.object</a></dd>
@@ -271,18 +271,18 @@ Data descriptors inherited from <a href="builtins.html#BaseException">builtins.B
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="InvalidTypeError">class <strong>InvalidTypeError</strong></a>(<a href="connector_interface.html#InterfaceError">InterfaceError</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="InvalidTypeError">class <strong>InvalidTypeError</strong></a>(<a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a>)</font></td></tr>
     
 <tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="connector_interface.html#InvalidTypeError">InvalidTypeError</a></dd>
-<dd><a href="connector_interface.html#InterfaceError">InterfaceError</a></dd>
+<dd><a href="unisono.connector_interface.html#InvalidTypeError">InvalidTypeError</a></dd>
+<dd><a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a></dd>
 <dd><a href="builtins.html#Exception">builtins.Exception</a></dd>
 <dd><a href="builtins.html#BaseException">builtins.BaseException</a></dd>
 <dd><a href="builtins.html#object">builtins.object</a></dd>
 </dl>
 <hr>
-Data descriptors inherited from <a href="connector_interface.html#InterfaceError">InterfaceError</a>:<br>
+Data descriptors inherited from <a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a>:<br>
 <dl><dt><strong>__weakref__</strong></dt>
 <dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
 </dl>
@@ -331,18 +331,18 @@ Data descriptors inherited from <a href="builtins.html#BaseException">builtins.B
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="OutOfRangeError">class <strong>OutOfRangeError</strong></a>(<a href="connector_interface.html#InterfaceError">InterfaceError</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="OutOfRangeError">class <strong>OutOfRangeError</strong></a>(<a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a>)</font></td></tr>
     
 <tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="connector_interface.html#OutOfRangeError">OutOfRangeError</a></dd>
-<dd><a href="connector_interface.html#InterfaceError">InterfaceError</a></dd>
+<dd><a href="unisono.connector_interface.html#OutOfRangeError">OutOfRangeError</a></dd>
+<dd><a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a></dd>
 <dd><a href="builtins.html#Exception">builtins.Exception</a></dd>
 <dd><a href="builtins.html#BaseException">builtins.BaseException</a></dd>
 <dd><a href="builtins.html#object">builtins.object</a></dd>
 </dl>
 <hr>
-Data descriptors inherited from <a href="connector_interface.html#InterfaceError">InterfaceError</a>:<br>
+Data descriptors inherited from <a href="unisono.connector_interface.html#InterfaceError">InterfaceError</a>:<br>
 <dl><dt><strong>__weakref__</strong></dt>
 <dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
 </dl>
@@ -397,7 +397,7 @@ Data descriptors inherited from <a href="builtins.html#BaseException">builtins.B
 <td colspan=2><tt>Restrict&nbsp;requests&nbsp;to&nbsp;a&nbsp;particular&nbsp;path.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="connector_interface.html#RequestHandler">RequestHandler</a></dd>
+<dd><a href="unisono.connector_interface.html#RequestHandler">RequestHandler</a></dd>
 <dd><a href="xmlrpc.server.html#SimpleXMLRPCRequestHandler">xmlrpc.server.SimpleXMLRPCRequestHandler</a></dd>
 <dd><a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a></dd>
 <dd><a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a></dd>
@@ -554,7 +554,7 @@ request&nbsp;at&nbsp;a&nbsp;time.&nbsp;This&nbsp;is&nbsp;slightly&nbsp;(~10%)&nb
 blocks&nbsp;too&nbsp;long,&nbsp;we&nbsp;can&nbsp;change&nbsp;this&nbsp;back&nbsp;to&nbsp;a&nbsp;threaded&nbsp;approach.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="connector_interface.html#ThreadedXMLRPCserver">ThreadedXMLRPCserver</a></dd>
+<dd><a href="unisono.connector_interface.html#ThreadedXMLRPCserver">ThreadedXMLRPCserver</a></dd>
 <dd><a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a></dd>
 <dd><a href="socketserver.html#TCPServer">socketserver.TCPServer</a></dd>
 <dd><a href="socketserver.html#BaseServer">socketserver.BaseServer</a></dd>
@@ -747,7 +747,7 @@ Data descriptors defined here:<br>
 </dl>
 <hr>
 Data and other attributes defined here:<br>
-<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0x88fa76c&gt;</dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -769,7 +769,7 @@ Data descriptors defined here:<br>
 </dl>
 <hr>
 Data and other attributes defined here:<br>
-<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0x88fa76c&gt;</dl>
 
 </td></tr></table></td></tr></table>
 </body></html>

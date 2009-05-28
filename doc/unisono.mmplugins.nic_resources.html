@@ -1,22 +1,22 @@
 
 <!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html><head><title>Python: module node_resources</title>
+<html><head><title>Python: module unisono.mmplugins.nic_resources</title>
 </head><body bgcolor="#f0f0f8">
 
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>node_resources</strong></big></big></font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="unisono.html"><font color="#ffffff">unisono</font></a>.<a href="unisono.mmplugins.html"><font color="#ffffff">mmplugins</font></a>.nic_resources</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/node_resources.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/node_resources.py</a></font></td></tr></table>
-    <p><tt>node_ressources.py<br>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/nic_resources.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/nic_resources.py</a></font></td></tr></table>
+    <p><tt>file_name<br>
 &nbsp;<br>
 &nbsp;Created&nbsp;on:&nbsp;May&nbsp;14,&nbsp;2009<br>
-&nbsp;Authors:&nbsp;zxmqn07,&nbsp;dh<br>
+&nbsp;Authors:&nbsp;dh<br>
 &nbsp;<br>
-&nbsp;$LastChangedBy:&nbsp;zxmhz78&nbsp;$<br>
-&nbsp;$LastChangedDate:&nbsp;2009-05-27&nbsp;19:32:19&nbsp;+0200&nbsp;(Wed,&nbsp;27&nbsp;May&nbsp;2009)&nbsp;$<br>
-&nbsp;$Revision:&nbsp;1229&nbsp;$<br>
+&nbsp;$LastChangedBy:&nbsp;zxmqn07&nbsp;$<br>
+&nbsp;$LastChangedDate:&nbsp;2009-05-21&nbsp;20:19:30&nbsp;+0200&nbsp;(Thu,&nbsp;21&nbsp;May&nbsp;2009)&nbsp;$<br>
+&nbsp;$Revision:&nbsp;1203&nbsp;$<br>
 &nbsp;<br>
 &nbsp;(C)&nbsp;2008-2009&nbsp;by&nbsp;Computer&nbsp;Networks&nbsp;and&nbsp;Internet,&nbsp;University&nbsp;of&nbsp;Tuebingen<br>
 &nbsp;<br>
@@ -60,7 +60,7 @@
 <dt><font face="helvetica, arial"><a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>(<a href="builtins.html#object">builtins.object</a>)
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="node_resources.html#ResourceReader">ResourceReader</a>
+<dt><font face="helvetica, arial"><a href="unisono.mmplugins.nic_resources.html#NicReader">NicReader</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -68,35 +68,35 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="ResourceReader">class <strong>ResourceReader</strong></a>(<a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="NicReader">class <strong>NicReader</strong></a>(<a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
 <td colspan=2><tt>generic&nbsp;template&nbsp;for&nbsp;all&nbsp;M&amp;Ms<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="node_resources.html#ResourceReader">ResourceReader</a></dd>
+<dd><a href="unisono.mmplugins.nic_resources.html#NicReader">NicReader</a></dd>
 <dd><a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a></dd>
 <dd><a href="builtins.html#object">builtins.object</a></dd>
 </dl>
 <hr>
 Methods defined here:<br>
-<dl><dt><a name="ResourceReader-__init__"><strong>__init__</strong></a>(self, *args)</dt><dd><tt>init&nbsp;the&nbsp;M&amp;M&nbsp;and&nbsp;start&nbsp;the&nbsp;thread</tt></dd></dl>
+<dl><dt><a name="NicReader-__init__"><strong>__init__</strong></a>(self, *args)</dt><dd><tt>init&nbsp;the&nbsp;M&amp;M&nbsp;and&nbsp;start&nbsp;the&nbsp;thread</tt></dd></dl>
 
-<dl><dt><a name="ResourceReader-checkrequest"><strong>checkrequest</strong></a>(self, request)</dt></dl>
+<dl><dt><a name="NicReader-checkrequest"><strong>checkrequest</strong></a>(self, request)</dt></dl>
 
-<dl><dt><a name="ResourceReader-measure"><strong>measure</strong></a>(self)</dt></dl>
+<dl><dt><a name="NicReader-measure"><strong>measure</strong></a>(self, ipaddress)</dt></dl>
 
 <hr>
 Data and other attributes defined here:<br>
-<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7c79dac&gt;</dl>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0x894d8cc&gt;</dl>
 
 <hr>
 Methods inherited from <a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>:<br>
-<dl><dt><a name="ResourceReader-availableDataItems"><strong>availableDataItems</strong></a>(self)</dt></dl>
+<dl><dt><a name="NicReader-availableDataItems"><strong>availableDataItems</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="ResourceReader-getCost"><strong>getCost</strong></a>(self)</dt></dl>
+<dl><dt><a name="NicReader-getCost"><strong>getCost</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="ResourceReader-run"><strong>run</strong></a>(self)</dt></dl>
+<dl><dt><a name="NicReader-run"><strong>run</strong></a>(self)</dt></dl>
 
 <hr>
 Data descriptors inherited from <a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>:<br>

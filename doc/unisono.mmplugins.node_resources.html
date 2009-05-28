@@ -1,22 +1,22 @@
 
 <!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html><head><title>Python: module cvalues</title>
+<html><head><title>Python: module unisono.mmplugins.node_resources</title>
 </head><body bgcolor="#f0f0f8">
 
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>cvalues</strong></big></big></font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="unisono.html"><font color="#ffffff">unisono</font></a>.<a href="unisono.mmplugins.html"><font color="#ffffff">mmplugins</font></a>.node_resources</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/cvalues.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/cvalues.py</a></font></td></tr></table>
-    <p><tt>cvalues.py<br>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/node_resources.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mmplugins/node_resources.py</a></font></td></tr></table>
+    <p><tt>node_ressources.py<br>
 &nbsp;<br>
-&nbsp;Created&nbsp;on:&nbsp;Apr&nbsp;23,&nbsp;2009<br>
-&nbsp;Authors:&nbsp;dh<br>
+&nbsp;Created&nbsp;on:&nbsp;May&nbsp;14,&nbsp;2009<br>
+&nbsp;Authors:&nbsp;zxmqn07,&nbsp;dh<br>
 &nbsp;<br>
-&nbsp;$LastChangedBy:&nbsp;haage&nbsp;$<br>
-&nbsp;$LastChangedDate:&nbsp;2009-05-18&nbsp;16:00:50&nbsp;+0200&nbsp;(Mon,&nbsp;18&nbsp;May&nbsp;2009)&nbsp;$<br>
-&nbsp;$Revision:&nbsp;1168&nbsp;$<br>
+&nbsp;$LastChangedBy:&nbsp;zxmhz78&nbsp;$<br>
+&nbsp;$LastChangedDate:&nbsp;2009-05-27&nbsp;19:32:19&nbsp;+0200&nbsp;(Wed,&nbsp;27&nbsp;May&nbsp;2009)&nbsp;$<br>
+&nbsp;$Revision:&nbsp;1229&nbsp;$<br>
 &nbsp;<br>
 &nbsp;(C)&nbsp;2008-2009&nbsp;by&nbsp;Computer&nbsp;Networks&nbsp;and&nbsp;Internet,&nbsp;University&nbsp;of&nbsp;Tuebingen<br>
 &nbsp;<br>
@@ -43,9 +43,13 @@
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="unisono.utils.configuration.html">unisono.utils.configuration</a><br>
-</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="logging.html">logging</a><br>
 </td><td width="25%" valign=top><a href="unisono.mmplugins.mmtemplates.html">unisono.mmplugins.mmtemplates</a><br>
-</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<a href="re.html">re</a><br>
+</td><td width="25%" valign=top><a href="string.html">string</a><br>
+<a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="threading.html">threading</a><br>
+</td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -56,7 +60,7 @@
 <dt><font face="helvetica, arial"><a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>(<a href="builtins.html#object">builtins.object</a>)
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="cvalues.html#cValues">cValues</a>
+<dt><font face="helvetica, arial"><a href="unisono.mmplugins.node_resources.html#ResourceReader">ResourceReader</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -64,33 +68,35 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="cValues">class <strong>cValues</strong></a>(<a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="ResourceReader">class <strong>ResourceReader</strong></a>(<a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>)</font></td></tr>
     
-<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>generic&nbsp;template&nbsp;for&nbsp;all&nbsp;M&amp;Ms<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="cvalues.html#cValues">cValues</a></dd>
+<dd><a href="unisono.mmplugins.node_resources.html#ResourceReader">ResourceReader</a></dd>
 <dd><a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a></dd>
 <dd><a href="builtins.html#object">builtins.object</a></dd>
 </dl>
 <hr>
 Methods defined here:<br>
-<dl><dt><a name="cValues-__init__"><strong>__init__</strong></a>(self, *args)</dt></dl>
+<dl><dt><a name="ResourceReader-__init__"><strong>__init__</strong></a>(self, *args)</dt><dd><tt>init&nbsp;the&nbsp;M&amp;M&nbsp;and&nbsp;start&nbsp;the&nbsp;thread</tt></dd></dl>
 
-<dl><dt><a name="cValues-checkrequest"><strong>checkrequest</strong></a>(self, request)</dt></dl>
+<dl><dt><a name="ResourceReader-checkrequest"><strong>checkrequest</strong></a>(self, request)</dt></dl>
 
-<dl><dt><a name="cValues-measure"><strong>measure</strong></a>(self)</dt></dl>
+<dl><dt><a name="ResourceReader-measure"><strong>measure</strong></a>(self)</dt></dl>
 
 <hr>
 Data and other attributes defined here:<br>
-<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7c6088c&gt;</dl>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0x894c5ac&gt;</dl>
 
 <hr>
 Methods inherited from <a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>:<br>
-<dl><dt><a name="cValues-availableDataItems"><strong>availableDataItems</strong></a>(self)</dt></dl>
+<dl><dt><a name="ResourceReader-availableDataItems"><strong>availableDataItems</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="cValues-getCost"><strong>getCost</strong></a>(self)</dt></dl>
+<dl><dt><a name="ResourceReader-getCost"><strong>getCost</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="cValues-run"><strong>run</strong></a>(self)</dt></dl>
+<dl><dt><a name="ResourceReader-run"><strong>run</strong></a>(self)</dt></dl>
 
 <hr>
 Data descriptors inherited from <a href="unisono.mmplugins.mmtemplates.html#MMTemplate">unisono.mmplugins.mmtemplates.MMTemplate</a>:<br>

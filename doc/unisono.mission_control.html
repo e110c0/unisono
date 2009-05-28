@@ -1,22 +1,22 @@
 
 <!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html><head><title>Python: module event</title>
+<html><head><title>Python: module unisono.mission_control</title>
 </head><body bgcolor="#f0f0f8">
 
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>event</strong></big></big></font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="unisono.html"><font color="#ffffff">unisono</font></a>.mission_control</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/event.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/event.py</a></font></td></tr></table>
-    <p><tt>event.py<br>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mission_control.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/mission_control.py</a></font></td></tr></table>
+    <p><tt>mission_control.py<br>
 &nbsp;<br>
-&nbsp;Created&nbsp;on:&nbsp;May&nbsp;6,&nbsp;2009<br>
+&nbsp;Created&nbsp;on:&nbsp;May&nbsp;19,&nbsp;2009<br>
 &nbsp;Authors:&nbsp;dh<br>
 &nbsp;<br>
-&nbsp;$LastChangedBy:&nbsp;haage&nbsp;$<br>
-&nbsp;$LastChangedDate:&nbsp;2009-05-12&nbsp;19:05:53&nbsp;+0200&nbsp;(Tue,&nbsp;12&nbsp;May&nbsp;2009)&nbsp;$<br>
-&nbsp;$Revision:&nbsp;1094&nbsp;$<br>
+&nbsp;$LastChangedBy$<br>
+&nbsp;$LastChangedDate$<br>
+&nbsp;$Revision$<br>
 &nbsp;<br>
 &nbsp;(C)&nbsp;2008-2009&nbsp;by&nbsp;Computer&nbsp;Networks&nbsp;and&nbsp;Internet,&nbsp;University&nbsp;of&nbsp;Tuebingen<br>
 &nbsp;<br>
@@ -46,7 +46,7 @@
 <dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="event.html#Event">Event</a>
+<dt><font face="helvetica, arial"><a href="unisono.mission_control.html#MissionControl">MissionControl</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -54,22 +54,25 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="Event">class <strong>Event</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="MissionControl">class <strong>MissionControl</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>Generic&nbsp;event&nbsp;class&nbsp;for&nbsp;unisono<br>
-&nbsp;<br>
-current&nbsp;event&nbsp;types&nbsp;are:<br>
-CACHE&nbsp;&nbsp;&nbsp;&nbsp;cache&nbsp;a&nbsp;remote&nbsp;result<br>
-CANCEL&nbsp;&nbsp;&nbsp;cancel&nbsp;an&nbsp;order<br>
-ORDER&nbsp;&nbsp;&nbsp;&nbsp;place&nbsp;an&nbsp;order<br>
-RECEIVE&nbsp;&nbsp;receive&nbsp;a&nbsp;remote&nbsp;packet<br>
-DELIVER&nbsp;&nbsp;deliver&nbsp;a&nbsp;result&nbsp;back&nbsp;to&nbsp;the&nbsp;connector<br>
-RESULT&nbsp;&nbsp;&nbsp;return&nbsp;a&nbsp;result&nbsp;(from&nbsp;M&amp;Ms)<br>
-SEND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send&nbsp;a&nbsp;packet&nbsp;to&nbsp;a&nbsp;remote&nbsp;node<br>&nbsp;</tt></td></tr>
+<td colspan=2><tt><a href="#MissionControl">MissionControl</a>&nbsp;provides&nbsp;a&nbsp;global&nbsp;coordinator&nbsp;for&nbsp;modules&nbsp;that&nbsp;need&nbsp;to<br>
+communicate&nbsp;with&nbsp;a&nbsp;correspondent&nbsp;measurement&nbsp;node&nbsp;to&nbsp;coordinate&nbsp;a&nbsp;measurement.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="Event-__init__"><strong>__init__</strong></a>(self, type, payload)</dt><dd><tt>Constructor</tt></dd></dl>
+<dl><dt><a name="MissionControl-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Constructor</tt></dd></dl>
+
+<dl><dt><a name="MissionControl-receive"><strong>receive</strong></a>(self)</dt><dd><tt>listen&nbsp;on&nbsp;all&nbsp;possible&nbsp;incoming&nbsp;ports&nbsp;and&nbsp;forward&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;<br>
+correct&nbsp;module&nbsp;thread</tt></dd></dl>
+
+<dl><dt><a name="MissionControl-send"><strong>send</strong></a>(self, receiver, message)</dt><dd><tt><a href="#MissionControl-send">send</a>()&nbsp;tries&nbsp;several&nbsp;different&nbsp;methods&nbsp;to&nbsp;deliver&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;receiver:<br>
+*&nbsp;try&nbsp;a&nbsp;connection&nbsp;via&nbsp;a&nbsp;connector.&nbsp;hopefully,&nbsp;the&nbsp;connector&nbsp;correspondent&nbsp;<br>
+to&nbsp;the&nbsp;current&nbsp;request&nbsp;allows&nbsp;this.<br>
+*&nbsp;try&nbsp;connecting&nbsp;directly.&nbsp;This&nbsp;requires&nbsp;the&nbsp;correspondent&nbsp;node&nbsp;to&nbsp;be<br>
+&nbsp;*&nbsp;reachable&nbsp;(no&nbsp;firewall,&nbsp;no&nbsp;NATs&nbsp;inbetween)<br>
+&nbsp;*&nbsp;listening&nbsp;on&nbsp;the&nbsp;UNISONO&nbsp;mission&nbsp;control&nbsp;port<br>
+*&nbsp;the&nbsp;UNISONO&nbsp;DHT&nbsp;(yet&nbsp;to&nbsp;be&nbsp;implemented)</tt></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>
