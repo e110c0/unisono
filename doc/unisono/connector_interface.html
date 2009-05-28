@@ -1,0 +1,775 @@
+
+<!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module connector_interface</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>connector_interface</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/connector_interface.py">/home/dh/svn/dev_spovnet/src/unisono/trunk/src/unisono/connector_interface.py</a></font></td></tr></table>
+    <p><tt>connector_interface.py<br>
+&nbsp;<br>
+&nbsp;Created&nbsp;on:&nbsp;Mar&nbsp;23,&nbsp;2009<br>
+&nbsp;Authors:&nbsp;dh<br>
+&nbsp;<br>
+&nbsp;$LastChangedBy:&nbsp;haage&nbsp;$<br>
+&nbsp;$LastChangedDate:&nbsp;2009-05-26&nbsp;14:37:58&nbsp;+0200&nbsp;(Tue,&nbsp;26&nbsp;May&nbsp;2009)&nbsp;$<br>
+&nbsp;$Revision:&nbsp;1220&nbsp;$<br>
+&nbsp;<br>
+&nbsp;(C)&nbsp;2008-2009&nbsp;by&nbsp;Computer&nbsp;Networks&nbsp;and&nbsp;Internet,&nbsp;University&nbsp;of&nbsp;Tuebingen<br>
+&nbsp;<br>
+&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;UNISONO&nbsp;Unified&nbsp;Information&nbsp;Service&nbsp;for&nbsp;Overlay<br>
+&nbsp;Network&nbsp;Optimization.<br>
+&nbsp;<br>
+&nbsp;UNISONO&nbsp;is&nbsp;free&nbsp;software:&nbsp;you&nbsp;can&nbsp;redistribute&nbsp;it&nbsp;and/or&nbsp;modify<br>
+&nbsp;it&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;as&nbsp;published&nbsp;by<br>
+&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;2&nbsp;of&nbsp;the&nbsp;License,&nbsp;or<br>
+&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.<br>
+&nbsp;<br>
+&nbsp;UNISONO&nbsp;is&nbsp;distributed&nbsp;in&nbsp;the&nbsp;hope&nbsp;that&nbsp;it&nbsp;will&nbsp;be&nbsp;useful,<br>
+&nbsp;but&nbsp;WITHOUT&nbsp;ANY&nbsp;WARRANTY;&nbsp;without&nbsp;even&nbsp;the&nbsp;implied&nbsp;warranty&nbsp;of<br>
+&nbsp;MERCHANTABILITY&nbsp;or&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE.&nbsp;&nbsp;See&nbsp;the<br>
+&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;for&nbsp;more&nbsp;details.<br>
+&nbsp;<br>
+&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License<br>
+&nbsp;along&nbsp;with&nbsp;UNISONO.&nbsp;&nbsp;If&nbsp;not,&nbsp;see&nbsp;&lt;<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="socket.html">socket</a><br>
+</td><td width="25%" valign=top><a href="socketserver.html">socketserver</a><br>
+<a href="threading.html">threading</a><br>
+</td><td width="25%" valign=top><a href="uuid.html">uuid</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#Exception">builtins.Exception</a>(<a href="builtins.html#BaseException">builtins.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="connector_interface.html#InterfaceError">InterfaceError</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="connector_interface.html#InvalidTypeError">InvalidTypeError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#OutOfRangeError">OutOfRangeError</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="connector_interface.html#ConnectorFunctions">ConnectorFunctions</a>
+</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#ConnectorMap">ConnectorMap</a>
+</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#XMLRPCReplyHandler">XMLRPCReplyHandler</a>
+</font></dt><dt><font face="helvetica, arial"><a href="connector_interface.html#XMLRPCServer">XMLRPCServer</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="xmlrpc.server.html#SimpleXMLRPCRequestHandler">xmlrpc.server.SimpleXMLRPCRequestHandler</a>(<a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="connector_interface.html#RequestHandler">RequestHandler</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a>(<a href="socketserver.html#TCPServer">socketserver.TCPServer</a>, <a href="xmlrpc.server.html#SimpleXMLRPCDispatcher">xmlrpc.server.SimpleXMLRPCDispatcher</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="connector_interface.html#ThreadedXMLRPCserver">ThreadedXMLRPCserver</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ConnectorFunctions">class <strong>ConnectorFunctions</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ConnectorFunctions-__init__"><strong>__init__</strong></a>(self, q, dispatcher, conmap)</dt></dl>
+
+<dl><dt><a name="ConnectorFunctions-cache_result"><strong>cache_result</strong></a>(self, result)</dt><dd><tt>Cache&nbsp;a&nbsp;result&nbsp;from&nbsp;a&nbsp;remote&nbsp;request.<br>
+In&nbsp;order&nbsp;to&nbsp;benefit&nbsp;from&nbsp;remote&nbsp;results,&nbsp;these&nbsp;results&nbsp;are&nbsp;cached&nbsp;in&nbsp;<br>
+UNISONO.<br>
+&nbsp;<br>
+parameters<br>
+result&nbsp;-&nbsp;a&nbsp;paramap&nbsp;including&nbsp;the&nbsp;order&nbsp;parameters&nbsp;as&nbsp;well&nbsp;as&nbsp;the&nbsp;result<br>
+(similar&nbsp;to&nbsp;the&nbsp;<a href="#ConnectorFunctions-commit_order">commit_order</a>()&nbsp;paramap)</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-cancel_order"><strong>cancel_order</strong></a>(self, callerid, orderid)</dt><dd><tt>Cancel&nbsp;an&nbsp;already&nbsp;running&nbsp;order.<br>
+&nbsp;<br>
+parameters:<br>
+callerid&nbsp;-&nbsp;UUID&nbsp;of&nbsp;the&nbsp;caller&nbsp;(string)&nbsp;<br>
+orderid&nbsp;-&nbsp;ID&nbsp;of&nbsp;the&nbsp;order&nbsp;(string),&nbsp;must&nbsp;be&nbsp;unique!<br>
+&nbsp;<br>
+returns&nbsp;int&nbsp;the&nbsp;status&nbsp;of&nbsp;the&nbsp;request</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-check_cache"><strong>check_cache</strong></a>(self, paramap)</dt><dd><tt>with&nbsp;<a href="#ConnectorFunctions-check_cache">check_cache</a>()&nbsp;it&nbsp;is&nbsp;possible&nbsp;to&nbsp;get&nbsp;a&nbsp;result&nbsp;from&nbsp;UNISONO&nbsp;cache&nbsp;if<br>
+any&nbsp;exists.&nbsp;This&nbsp;should&nbsp;primarily&nbsp;be&nbsp;used&nbsp;to&nbsp;check&nbsp;for&nbsp;results&nbsp;cached<br>
+from&nbsp;remote&nbsp;hosts.<br>
+The&nbsp;used&nbsp;syntax&nbsp;is&nbsp;similar&nbsp;to&nbsp;<a href="#ConnectorFunctions-commit_order">commit_order</a>()&nbsp;but&nbsp;it&nbsp;directly&nbsp;returns&nbsp;the<br>
+result&nbsp;if&nbsp;available.<br>
+&nbsp;<br>
+parameters<br>
+conid&nbsp;&nbsp;&nbsp;-&nbsp;UUID&nbsp;of&nbsp;the&nbsp;connector&nbsp;(string)<br>
+paramap&nbsp;-&nbsp;the&nbsp;paramap&nbsp;includes&nbsp;the&nbsp;complete&nbsp;order&nbsp;in&nbsp;key:value&nbsp;pairs&nbsp;<br>
+(i.e.&nbsp;a&nbsp;python&nbsp;dictionary)<br>
+&nbsp;<br>
+return&nbsp;struct&nbsp;the&nbsp;paramap&nbsp;extended&nbsp;with&nbsp;the&nbsp;result</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-commit_order"><strong>commit_order</strong></a>(self, conid, paramap)</dt><dd><tt>Commit&nbsp;an&nbsp;order.<br>
+&nbsp;<br>
+parameters<br>
+conid&nbsp;&nbsp;&nbsp;-&nbsp;UUID&nbsp;of&nbsp;the&nbsp;connector&nbsp;(string)<br>
+paramap&nbsp;-&nbsp;the&nbsp;paramap&nbsp;includes&nbsp;the&nbsp;complete&nbsp;order&nbsp;in&nbsp;key:value&nbsp;pairs&nbsp;<br>
+(i.e.&nbsp;a&nbsp;python&nbsp;dictionary)<br>
+&nbsp;<br>
+returns&nbsp;int&nbsp;the&nbsp;status&nbsp;of&nbsp;the&nbsp;request</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-forward_received_packet"><strong>forward_received_packet</strong></a>(self, packet)</dt><dd><tt>forward&nbsp;packets&nbsp;received&nbsp;for&nbsp;the&nbsp;unisono&nbsp;daemon<br>
+this&nbsp;wil&nbsp;be&nbsp;used&nbsp;by&nbsp;the&nbsp;daemon&nbsp;to&nbsp;communicate&nbsp;between&nbsp;different&nbsp;hosts<br>
+&nbsp;<br>
+returns&nbsp;int&nbsp;the&nbsp;status&nbsp;of&nbsp;the&nbsp;request</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-list_available_dataitems"><strong>list_available_dataitems</strong></a>(self)</dt><dd><tt>Lists&nbsp;the&nbsp;data&nbsp;items&nbsp;provided&nbsp;by&nbsp;the&nbsp;local&nbsp;unisono&nbsp;daemon<br>
+&nbsp;<br>
+return&nbsp;string&nbsp;-&nbsp;all&nbsp;available&nbsp;data&nbsp;items</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-register_connector"><strong>register_connector</strong></a>(self, port)</dt><dd><tt>Register&nbsp;a&nbsp;connector&nbsp;to&nbsp;the&nbsp;overlay&nbsp;for&nbsp;callbacks.&nbsp;This&nbsp;is&nbsp;required<br>
+because&nbsp;XMLRPC&nbsp;has&nbsp;no&nbsp;persistent&nbsp;connection&nbsp;and&nbsp;UNISONO&nbsp;must&nbsp;be&nbsp;able&nbsp;to<br>
+work&nbsp;asynchronous&nbsp;and&nbsp;to&nbsp;reply&nbsp;several&nbsp;times&nbsp;on&nbsp;one&nbsp;request&nbsp;(e.g.&nbsp;for<br>
+periodic&nbsp;measurements).<br>
+parameters:<br>
+port&nbsp;-&nbsp;callback&nbsp;port&nbsp;for&nbsp;the&nbsp;connector&nbsp;requesting&nbsp;registration&nbsp;(int)<br>
+&nbsp;<br>
+return&nbsp;string&nbsp;-&nbsp;connector&nbsp;id&nbsp;(UUID)</tt></dd></dl>
+
+<dl><dt><a name="ConnectorFunctions-unregister_connector"><strong>unregister_connector</strong></a>(self, callerid)</dt><dd><tt>Unregister&nbsp;a&nbsp;connector&nbsp;from&nbsp;unisono.<br>
+This&nbsp;will&nbsp;also&nbsp;cancel&nbsp;all&nbsp;orders&nbsp;for&nbsp;this&nbsp;connector&nbsp;immediately.<br>
+parameters:<br>
+callerid&nbsp;-&nbsp;the&nbsp;id&nbsp;of&nbsp;the&nbsp;connector&nbsp;(UUID&nbsp;as&nbsp;string)&nbsp;<br>
+&nbsp;<br>
+return&nbsp;status,&nbsp;0&nbsp;if&nbsp;everything&nbsp;went&nbsp;fine.&nbsp;(int)</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ConnectorMap">class <strong>ConnectorMap</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;<a href="#ConnectorMap">ConnectorMap</a>&nbsp;holds&nbsp;all&nbsp;known&nbsp;(i.e.&nbsp;registered)&nbsp;unisono&nbsp;connectors.&nbsp;It&nbsp;is&nbsp;<br>
+only&nbsp;used&nbsp;by&nbsp;the&nbsp;XML&nbsp;RPC&nbsp;interface,&nbsp;both&nbsp;the&nbsp;server&nbsp;and&nbsp;the&nbsp;client&nbsp;part.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ConnectorMap-__init__"><strong>__init__</strong></a>(self, q)</dt></dl>
+
+<dl><dt><a name="ConnectorMap-deregister_connector"><strong>deregister_connector</strong></a>(self, conid)</dt><dd><tt>Deregister&nbsp;a&nbsp;connector&nbsp;from&nbsp;unisono.&nbsp;This&nbsp;can&nbsp;happen&nbsp;on&nbsp;request&nbsp;or&nbsp;due<br>
+to&nbsp;timeouts&nbsp;while&nbsp;replying&nbsp;to&nbsp;the&nbsp;connector.</tt></dd></dl>
+
+<dl><dt><a name="ConnectorMap-register_connector"><strong>register_connector</strong></a>(self, conip, conport)</dt><dd><tt>Register&nbsp;a&nbsp;connector&nbsp;with&nbsp;unisono.&nbsp;if&nbsp;a&nbsp;connector&nbsp;is&nbsp;already&nbsp;registered&nbsp;<br>
+with&nbsp;this&nbsp;ip/port&nbsp;tuple,&nbsp;return&nbsp;its&nbsp;id,&nbsp;too<br>
+param&nbsp;conip&nbsp;ip&nbsp;address&nbsp;of&nbsp;the&nbsp;connector&nbsp;(mostly&nbsp;127.0.0.1&nbsp;or&nbsp;::1)<br>
+param&nbsp;conip&nbsp;port&nbsp;of&nbsp;the&nbsp;connector<br>
+return&nbsp;conid&nbsp;uuid&nbsp;for&nbsp;the&nbsp;registered&nbsp;connector</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="InterfaceError">class <strong>InterfaceError</strong></a>(<a href="builtins.html#Exception">builtins.Exception</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="connector_interface.html#InterfaceError">InterfaceError</a></dd>
+<dd><a href="builtins.html#Exception">builtins.Exception</a></dd>
+<dd><a href="builtins.html#BaseException">builtins.BaseException</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="builtins.html#Exception">builtins.Exception</a>:<br>
+<dl><dt><a name="InterfaceError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#InterfaceError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;x.__class__.__doc__&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="builtins.html#Exception">builtins.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object at 0x826e800&gt;<dd><tt>T.<a href="#InterfaceError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="builtins.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="builtins.html#BaseException">builtins.BaseException</a>:<br>
+<dl><dt><a name="InterfaceError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InterfaceError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InterfaceError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#InterfaceError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InterfaceError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InterfaceError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#InterfaceError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="InterfaceError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InterfaceError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="InterfaceError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InterfaceError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#InterfaceError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="InterfaceError-with_traceback"><strong>with_traceback</strong></a>(...)</dt><dd><tt><a href="builtins.html#Exception">Exception</a>.<a href="#InterfaceError-with_traceback">with_traceback</a>(tb)&nbsp;--<br>
+set&nbsp;self.<strong>__traceback__</strong>&nbsp;to&nbsp;tb&nbsp;and&nbsp;return&nbsp;self.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="builtins.html#BaseException">builtins.BaseException</a>:<br>
+<dl><dt><strong>__cause__</strong></dt>
+<dd><tt>exception&nbsp;cause</tt></dd>
+</dl>
+<dl><dt><strong>__context__</strong></dt>
+<dd><tt>exception&nbsp;context</tt></dd>
+</dl>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>__traceback__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="InvalidTypeError">class <strong>InvalidTypeError</strong></a>(<a href="connector_interface.html#InterfaceError">InterfaceError</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="connector_interface.html#InvalidTypeError">InvalidTypeError</a></dd>
+<dd><a href="connector_interface.html#InterfaceError">InterfaceError</a></dd>
+<dd><a href="builtins.html#Exception">builtins.Exception</a></dd>
+<dd><a href="builtins.html#BaseException">builtins.BaseException</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Data descriptors inherited from <a href="connector_interface.html#InterfaceError">InterfaceError</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="builtins.html#Exception">builtins.Exception</a>:<br>
+<dl><dt><a name="InvalidTypeError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidTypeError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;x.__class__.__doc__&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="builtins.html#Exception">builtins.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object at 0x826e800&gt;<dd><tt>T.<a href="#InvalidTypeError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="builtins.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="builtins.html#BaseException">builtins.BaseException</a>:<br>
+<dl><dt><a name="InvalidTypeError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidTypeError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InvalidTypeError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidTypeError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InvalidTypeError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InvalidTypeError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidTypeError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="InvalidTypeError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidTypeError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="InvalidTypeError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InvalidTypeError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidTypeError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="InvalidTypeError-with_traceback"><strong>with_traceback</strong></a>(...)</dt><dd><tt><a href="builtins.html#Exception">Exception</a>.<a href="#InvalidTypeError-with_traceback">with_traceback</a>(tb)&nbsp;--<br>
+set&nbsp;self.<strong>__traceback__</strong>&nbsp;to&nbsp;tb&nbsp;and&nbsp;return&nbsp;self.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="builtins.html#BaseException">builtins.BaseException</a>:<br>
+<dl><dt><strong>__cause__</strong></dt>
+<dd><tt>exception&nbsp;cause</tt></dd>
+</dl>
+<dl><dt><strong>__context__</strong></dt>
+<dd><tt>exception&nbsp;context</tt></dd>
+</dl>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>__traceback__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="OutOfRangeError">class <strong>OutOfRangeError</strong></a>(<a href="connector_interface.html#InterfaceError">InterfaceError</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="connector_interface.html#OutOfRangeError">OutOfRangeError</a></dd>
+<dd><a href="connector_interface.html#InterfaceError">InterfaceError</a></dd>
+<dd><a href="builtins.html#Exception">builtins.Exception</a></dd>
+<dd><a href="builtins.html#BaseException">builtins.BaseException</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Data descriptors inherited from <a href="connector_interface.html#InterfaceError">InterfaceError</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="builtins.html#Exception">builtins.Exception</a>:<br>
+<dl><dt><a name="OutOfRangeError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#OutOfRangeError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;x.__class__.__doc__&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="builtins.html#Exception">builtins.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object at 0x826e800&gt;<dd><tt>T.<a href="#OutOfRangeError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="builtins.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="builtins.html#BaseException">builtins.BaseException</a>:<br>
+<dl><dt><a name="OutOfRangeError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#OutOfRangeError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="OutOfRangeError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#OutOfRangeError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="OutOfRangeError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="OutOfRangeError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#OutOfRangeError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="OutOfRangeError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#OutOfRangeError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="OutOfRangeError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="OutOfRangeError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#OutOfRangeError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="OutOfRangeError-with_traceback"><strong>with_traceback</strong></a>(...)</dt><dd><tt><a href="builtins.html#Exception">Exception</a>.<a href="#OutOfRangeError-with_traceback">with_traceback</a>(tb)&nbsp;--<br>
+set&nbsp;self.<strong>__traceback__</strong>&nbsp;to&nbsp;tb&nbsp;and&nbsp;return&nbsp;self.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="builtins.html#BaseException">builtins.BaseException</a>:<br>
+<dl><dt><strong>__cause__</strong></dt>
+<dd><tt>exception&nbsp;cause</tt></dd>
+</dl>
+<dl><dt><strong>__context__</strong></dt>
+<dd><tt>exception&nbsp;context</tt></dd>
+</dl>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>__traceback__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RequestHandler">class <strong>RequestHandler</strong></a>(<a href="xmlrpc.server.html#SimpleXMLRPCRequestHandler">xmlrpc.server.SimpleXMLRPCRequestHandler</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Restrict&nbsp;requests&nbsp;to&nbsp;a&nbsp;particular&nbsp;path.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="connector_interface.html#RequestHandler">RequestHandler</a></dd>
+<dd><a href="xmlrpc.server.html#SimpleXMLRPCRequestHandler">xmlrpc.server.SimpleXMLRPCRequestHandler</a></dd>
+<dd><a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a></dd>
+<dd><a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a></dd>
+<dd><a href="socketserver.html#BaseRequestHandler">socketserver.BaseRequestHandler</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>rpc_paths</strong> = ('/unisono',)</dl>
+
+<hr>
+Methods inherited from <a href="xmlrpc.server.html#SimpleXMLRPCRequestHandler">xmlrpc.server.SimpleXMLRPCRequestHandler</a>:<br>
+<dl><dt><a name="RequestHandler-do_POST"><strong>do_POST</strong></a>(self)</dt><dd><tt>Handles&nbsp;the&nbsp;HTTP&nbsp;POST&nbsp;request.<br>
+&nbsp;<br>
+Attempts&nbsp;to&nbsp;interpret&nbsp;all&nbsp;HTTP&nbsp;POST&nbsp;requests&nbsp;as&nbsp;XML-RPC&nbsp;calls,<br>
+which&nbsp;are&nbsp;forwarded&nbsp;to&nbsp;the&nbsp;server's&nbsp;_dispatch&nbsp;method&nbsp;for&nbsp;handling.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-is_rpc_path_valid"><strong>is_rpc_path_valid</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RequestHandler-log_request"><strong>log_request</strong></a>(self, code<font color="#909090">='-'</font>, size<font color="#909090">='-'</font>)</dt><dd><tt>Selectively&nbsp;log&nbsp;an&nbsp;accepted&nbsp;request.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-report_404"><strong>report_404</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>:<br>
+<dl><dt><a name="RequestHandler-address_string"><strong>address_string</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;client&nbsp;address&nbsp;formatted&nbsp;for&nbsp;logging.<br>
+&nbsp;<br>
+This&nbsp;version&nbsp;looks&nbsp;up&nbsp;the&nbsp;full&nbsp;hostname&nbsp;using&nbsp;gethostbyaddr(),<br>
+and&nbsp;tries&nbsp;to&nbsp;find&nbsp;a&nbsp;name&nbsp;that&nbsp;contains&nbsp;at&nbsp;least&nbsp;one&nbsp;dot.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-date_time_string"><strong>date_time_string</strong></a>(self, timestamp<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;the&nbsp;current&nbsp;date&nbsp;and&nbsp;time&nbsp;formatted&nbsp;for&nbsp;a&nbsp;message&nbsp;header.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-end_headers"><strong>end_headers</strong></a>(self)</dt><dd><tt>Send&nbsp;the&nbsp;blank&nbsp;line&nbsp;ending&nbsp;the&nbsp;MIME&nbsp;headers.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-handle"><strong>handle</strong></a>(self)</dt><dd><tt>Handle&nbsp;multiple&nbsp;requests&nbsp;if&nbsp;necessary.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-handle_one_request"><strong>handle_one_request</strong></a>(self)</dt><dd><tt>Handle&nbsp;a&nbsp;single&nbsp;HTTP&nbsp;request.<br>
+&nbsp;<br>
+You&nbsp;normally&nbsp;don't&nbsp;need&nbsp;to&nbsp;override&nbsp;this&nbsp;method;&nbsp;see&nbsp;the&nbsp;class<br>
+__doc__&nbsp;string&nbsp;for&nbsp;information&nbsp;on&nbsp;how&nbsp;to&nbsp;handle&nbsp;specific&nbsp;HTTP<br>
+commands&nbsp;such&nbsp;as&nbsp;GET&nbsp;and&nbsp;POST.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-log_date_time_string"><strong>log_date_time_string</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;current&nbsp;time&nbsp;formatted&nbsp;for&nbsp;logging.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-log_error"><strong>log_error</strong></a>(self, format, *args)</dt><dd><tt>Log&nbsp;an&nbsp;error.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;called&nbsp;when&nbsp;a&nbsp;request&nbsp;cannot&nbsp;be&nbsp;fulfilled.&nbsp;&nbsp;By<br>
+default&nbsp;it&nbsp;passes&nbsp;the&nbsp;message&nbsp;on&nbsp;to&nbsp;<a href="#RequestHandler-log_message">log_message</a>().<br>
+&nbsp;<br>
+Arguments&nbsp;are&nbsp;the&nbsp;same&nbsp;as&nbsp;for&nbsp;<a href="#RequestHandler-log_message">log_message</a>().<br>
+&nbsp;<br>
+XXX&nbsp;This&nbsp;should&nbsp;go&nbsp;to&nbsp;the&nbsp;separate&nbsp;error&nbsp;log.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-log_message"><strong>log_message</strong></a>(self, format, *args)</dt><dd><tt>Log&nbsp;an&nbsp;arbitrary&nbsp;message.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;used&nbsp;by&nbsp;all&nbsp;other&nbsp;logging&nbsp;functions.&nbsp;&nbsp;Override<br>
+it&nbsp;if&nbsp;you&nbsp;have&nbsp;specific&nbsp;logging&nbsp;wishes.<br>
+&nbsp;<br>
+The&nbsp;first&nbsp;argument,&nbsp;FORMAT,&nbsp;is&nbsp;a&nbsp;format&nbsp;string&nbsp;for&nbsp;the<br>
+message&nbsp;to&nbsp;be&nbsp;logged.&nbsp;&nbsp;If&nbsp;the&nbsp;format&nbsp;string&nbsp;contains<br>
+any&nbsp;%&nbsp;escapes&nbsp;requiring&nbsp;parameters,&nbsp;they&nbsp;should&nbsp;be<br>
+specified&nbsp;as&nbsp;subsequent&nbsp;arguments&nbsp;(it's&nbsp;just&nbsp;like<br>
+printf!).<br>
+&nbsp;<br>
+The&nbsp;client&nbsp;host&nbsp;and&nbsp;current&nbsp;date/time&nbsp;are&nbsp;prefixed&nbsp;to<br>
+every&nbsp;message.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-parse_request"><strong>parse_request</strong></a>(self)</dt><dd><tt>Parse&nbsp;a&nbsp;request&nbsp;(internal).<br>
+&nbsp;<br>
+The&nbsp;request&nbsp;should&nbsp;be&nbsp;stored&nbsp;in&nbsp;self.<strong>raw_requestline</strong>;&nbsp;the&nbsp;results<br>
+are&nbsp;in&nbsp;self.<strong>command</strong>,&nbsp;self.<strong>path</strong>,&nbsp;self.<strong>request_version</strong>&nbsp;and<br>
+self.<strong>headers</strong>.<br>
+&nbsp;<br>
+Return&nbsp;True&nbsp;for&nbsp;success,&nbsp;False&nbsp;for&nbsp;failure;&nbsp;on&nbsp;failure,&nbsp;an<br>
+error&nbsp;is&nbsp;sent&nbsp;back.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-send_error"><strong>send_error</strong></a>(self, code, message<font color="#909090">=None</font>)</dt><dd><tt>Send&nbsp;and&nbsp;log&nbsp;an&nbsp;error&nbsp;reply.<br>
+&nbsp;<br>
+Arguments&nbsp;are&nbsp;the&nbsp;error&nbsp;code,&nbsp;and&nbsp;a&nbsp;detailed&nbsp;message.<br>
+The&nbsp;detailed&nbsp;message&nbsp;defaults&nbsp;to&nbsp;the&nbsp;short&nbsp;entry&nbsp;matching&nbsp;the<br>
+response&nbsp;code.<br>
+&nbsp;<br>
+This&nbsp;sends&nbsp;an&nbsp;error&nbsp;response&nbsp;(so&nbsp;it&nbsp;must&nbsp;be&nbsp;called&nbsp;before&nbsp;any<br>
+output&nbsp;has&nbsp;been&nbsp;generated),&nbsp;logs&nbsp;the&nbsp;error,&nbsp;and&nbsp;finally&nbsp;sends<br>
+a&nbsp;piece&nbsp;of&nbsp;HTML&nbsp;explaining&nbsp;the&nbsp;error&nbsp;to&nbsp;the&nbsp;user.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-send_header"><strong>send_header</strong></a>(self, keyword, value)</dt><dd><tt>Send&nbsp;a&nbsp;MIME&nbsp;header.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-send_response"><strong>send_response</strong></a>(self, code, message<font color="#909090">=None</font>)</dt><dd><tt>Send&nbsp;the&nbsp;response&nbsp;header&nbsp;and&nbsp;log&nbsp;the&nbsp;response&nbsp;code.<br>
+&nbsp;<br>
+Also&nbsp;send&nbsp;two&nbsp;standard&nbsp;headers&nbsp;with&nbsp;the&nbsp;server&nbsp;software<br>
+version&nbsp;and&nbsp;the&nbsp;current&nbsp;date.</tt></dd></dl>
+
+<dl><dt><a name="RequestHandler-version_string"><strong>version_string</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;server&nbsp;software&nbsp;version&nbsp;string.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>:<br>
+<dl><dt><strong>MessageClass</strong> = &lt;class 'http.client.HTTPMessage'&gt;</dl>
+
+<dl><dt><strong>default_request_version</strong> = 'HTTP/0.9'</dl>
+
+<dl><dt><strong>error_content_type</strong> = 'text/html;charset=utf-8'</dl>
+
+<dl><dt><strong>error_message_format</strong> = '&lt;head&gt;<font color="#c040c0">\n</font>&lt;title&gt;Error response&lt;/title&gt;<font color="#c040c0">\n</font>&lt;/head&gt;<font color="#c040c0">\n</font>&lt;bo...ode explanation: %(code)s = %(explain)s.<font color="#c040c0">\n</font>&lt;/body&gt;<font color="#c040c0">\n</font>'</dl>
+
+<dl><dt><strong>http</strong> = &lt;module 'http' from '/usr/lib/python3.0/http/__init__.py'&gt;</dl>
+
+<dl><dt><strong>monthname</strong> = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']</dl>
+
+<dl><dt><strong>protocol_version</strong> = 'HTTP/1.0'</dl>
+
+<dl><dt><strong>responses</strong> = {100: ('Continue', 'Request received, please continue'), 101: ('Switching Protocols', 'Switching to new protocol; obey Upgrade header'), 200: ('OK', 'Request fulfilled, document follows'), 201: ('Created', 'Document created, URL follows'), 202: ('Accepted', 'Request accepted, processing continues off-line'), 203: ('Non-Authoritative Information', 'Request fulfilled from cache'), 204: ('No Content', 'Request fulfilled, nothing follows'), 205: ('Reset Content', 'Clear input form for further input.'), 206: ('Partial Content', 'Partial content follows.'), 300: ('Multiple Choices', 'Object has several resources -- see URI list'), ...}</dl>
+
+<dl><dt><strong>server_version</strong> = 'BaseHTTP/0.6'</dl>
+
+<dl><dt><strong>sys_version</strong> = 'Python/3.0.1+'</dl>
+
+<dl><dt><strong>weekdayname</strong> = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']</dl>
+
+<hr>
+Methods inherited from <a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a>:<br>
+<dl><dt><a name="RequestHandler-finish"><strong>finish</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RequestHandler-setup"><strong>setup</strong></a>(self)</dt></dl>
+
+<hr>
+Data and other attributes inherited from <a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a>:<br>
+<dl><dt><strong>rbufsize</strong> = -1</dl>
+
+<dl><dt><strong>wbufsize</strong> = 0</dl>
+
+<hr>
+Methods inherited from <a href="socketserver.html#BaseRequestHandler">socketserver.BaseRequestHandler</a>:<br>
+<dl><dt><a name="RequestHandler-__init__"><strong>__init__</strong></a>(self, request, client_address, server)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="socketserver.html#BaseRequestHandler">socketserver.BaseRequestHandler</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ThreadedXMLRPCserver">class <strong>ThreadedXMLRPCserver</strong></a>(<a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>non-blocking&nbsp;xmlrpc-server&nbsp;to&nbsp;handle&nbsp;concurrent&nbsp;requests<br>
+WARNING:&nbsp;We&nbsp;changed&nbsp;this&nbsp;to&nbsp;a&nbsp;blocking&nbsp;<a href="#XMLRPCServer">XMLRPCServer</a>&nbsp;which&nbsp;handles&nbsp;only&nbsp;1<br>
+request&nbsp;at&nbsp;a&nbsp;time.&nbsp;This&nbsp;is&nbsp;slightly&nbsp;(~10%)&nbsp;faster&nbsp;than&nbsp;threaded.&nbsp;If&nbsp;this<br>
+blocks&nbsp;too&nbsp;long,&nbsp;we&nbsp;can&nbsp;change&nbsp;this&nbsp;back&nbsp;to&nbsp;a&nbsp;threaded&nbsp;approach.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="connector_interface.html#ThreadedXMLRPCserver">ThreadedXMLRPCserver</a></dd>
+<dd><a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a></dd>
+<dd><a href="socketserver.html#TCPServer">socketserver.TCPServer</a></dd>
+<dd><a href="socketserver.html#BaseServer">socketserver.BaseServer</a></dd>
+<dd><a href="xmlrpc.server.html#SimpleXMLRPCDispatcher">xmlrpc.server.SimpleXMLRPCDispatcher</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a>:<br>
+<dl><dt><a name="ThreadedXMLRPCserver-__init__"><strong>__init__</strong></a>(self, addr, requestHandler<font color="#909090">=&lt;class 'xmlrpc.server.SimpleXMLRPCRequestHandler'&gt;</font>, logRequests<font color="#909090">=True</font>, allow_none<font color="#909090">=False</font>, encoding<font color="#909090">=None</font>, bind_and_activate<font color="#909090">=True</font>)</dt></dl>
+
+<hr>
+Data and other attributes inherited from <a href="xmlrpc.server.html#SimpleXMLRPCServer">xmlrpc.server.SimpleXMLRPCServer</a>:<br>
+<dl><dt><strong>allow_reuse_address</strong> = True</dl>
+
+<hr>
+Methods inherited from <a href="socketserver.html#TCPServer">socketserver.TCPServer</a>:<br>
+<dl><dt><a name="ThreadedXMLRPCserver-close_request"><strong>close_request</strong></a>(self, request)</dt><dd><tt>Called&nbsp;to&nbsp;clean&nbsp;up&nbsp;an&nbsp;individual&nbsp;request.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-fileno"><strong>fileno</strong></a>(self)</dt><dd><tt>Return&nbsp;socket&nbsp;file&nbsp;number.<br>
+&nbsp;<br>
+Interface&nbsp;required&nbsp;by&nbsp;select().</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-get_request"><strong>get_request</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;request&nbsp;and&nbsp;client&nbsp;address&nbsp;from&nbsp;the&nbsp;socket.<br>
+&nbsp;<br>
+May&nbsp;be&nbsp;overridden.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-server_activate"><strong>server_activate</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;constructor&nbsp;to&nbsp;activate&nbsp;the&nbsp;server.<br>
+&nbsp;<br>
+May&nbsp;be&nbsp;overridden.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-server_bind"><strong>server_bind</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;constructor&nbsp;to&nbsp;bind&nbsp;the&nbsp;socket.<br>
+&nbsp;<br>
+May&nbsp;be&nbsp;overridden.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-server_close"><strong>server_close</strong></a>(self)</dt><dd><tt>Called&nbsp;to&nbsp;clean-up&nbsp;the&nbsp;server.<br>
+&nbsp;<br>
+May&nbsp;be&nbsp;overridden.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="socketserver.html#TCPServer">socketserver.TCPServer</a>:<br>
+<dl><dt><strong>address_family</strong> = 2</dl>
+
+<dl><dt><strong>request_queue_size</strong> = 5</dl>
+
+<dl><dt><strong>socket_type</strong> = 1</dl>
+
+<hr>
+Methods inherited from <a href="socketserver.html#BaseServer">socketserver.BaseServer</a>:<br>
+<dl><dt><a name="ThreadedXMLRPCserver-finish_request"><strong>finish_request</strong></a>(self, request, client_address)</dt><dd><tt>Finish&nbsp;one&nbsp;request&nbsp;by&nbsp;instantiating&nbsp;RequestHandlerClass.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-handle_error"><strong>handle_error</strong></a>(self, request, client_address)</dt><dd><tt>Handle&nbsp;an&nbsp;error&nbsp;gracefully.&nbsp;&nbsp;May&nbsp;be&nbsp;overridden.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;is&nbsp;to&nbsp;print&nbsp;a&nbsp;traceback&nbsp;and&nbsp;continue.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-handle_request"><strong>handle_request</strong></a>(self)</dt><dd><tt>Handle&nbsp;one&nbsp;request,&nbsp;possibly&nbsp;blocking.<br>
+&nbsp;<br>
+Respects&nbsp;self.<strong>timeout</strong>.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-handle_timeout"><strong>handle_timeout</strong></a>(self)</dt><dd><tt>Called&nbsp;if&nbsp;no&nbsp;new&nbsp;request&nbsp;arrives&nbsp;within&nbsp;self.<strong>timeout</strong>.<br>
+&nbsp;<br>
+Overridden&nbsp;by&nbsp;ForkingMixIn.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-process_request"><strong>process_request</strong></a>(self, request, client_address)</dt><dd><tt>Call&nbsp;finish_request.<br>
+&nbsp;<br>
+Overridden&nbsp;by&nbsp;ForkingMixIn&nbsp;and&nbsp;ThreadingMixIn.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-serve_forever"><strong>serve_forever</strong></a>(self, poll_interval<font color="#909090">=0.5</font>)</dt><dd><tt>Handle&nbsp;one&nbsp;request&nbsp;at&nbsp;a&nbsp;time&nbsp;until&nbsp;shutdown.<br>
+&nbsp;<br>
+Polls&nbsp;for&nbsp;shutdown&nbsp;every&nbsp;poll_interval&nbsp;seconds.&nbsp;Ignores<br>
+self.<strong>timeout</strong>.&nbsp;If&nbsp;you&nbsp;need&nbsp;to&nbsp;do&nbsp;periodic&nbsp;tasks,&nbsp;do&nbsp;them&nbsp;in<br>
+another&nbsp;thread.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-shutdown"><strong>shutdown</strong></a>(self)</dt><dd><tt>Stops&nbsp;the&nbsp;serve_forever&nbsp;loop.<br>
+&nbsp;<br>
+Blocks&nbsp;until&nbsp;the&nbsp;loop&nbsp;has&nbsp;finished.&nbsp;This&nbsp;must&nbsp;be&nbsp;called&nbsp;while<br>
+<a href="#ThreadedXMLRPCserver-serve_forever">serve_forever</a>()&nbsp;is&nbsp;running&nbsp;in&nbsp;another&nbsp;thread,&nbsp;or&nbsp;it&nbsp;will<br>
+deadlock.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-verify_request"><strong>verify_request</strong></a>(self, request, client_address)</dt><dd><tt>Verify&nbsp;the&nbsp;request.&nbsp;&nbsp;May&nbsp;be&nbsp;overridden.<br>
+&nbsp;<br>
+Return&nbsp;True&nbsp;if&nbsp;we&nbsp;should&nbsp;proceed&nbsp;with&nbsp;this&nbsp;request.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="socketserver.html#BaseServer">socketserver.BaseServer</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="socketserver.html#BaseServer">socketserver.BaseServer</a>:<br>
+<dl><dt><strong>timeout</strong> = None</dl>
+
+<hr>
+Methods inherited from <a href="xmlrpc.server.html#SimpleXMLRPCDispatcher">xmlrpc.server.SimpleXMLRPCDispatcher</a>:<br>
+<dl><dt><a name="ThreadedXMLRPCserver-register_function"><strong>register_function</strong></a>(self, function, name<font color="#909090">=None</font>)</dt><dd><tt>Registers&nbsp;a&nbsp;function&nbsp;to&nbsp;respond&nbsp;to&nbsp;XML-RPC&nbsp;requests.<br>
+&nbsp;<br>
+The&nbsp;optional&nbsp;name&nbsp;argument&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;a&nbsp;Unicode&nbsp;name<br>
+for&nbsp;the&nbsp;function.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-register_instance"><strong>register_instance</strong></a>(self, instance, allow_dotted_names<font color="#909090">=False</font>)</dt><dd><tt>Registers&nbsp;an&nbsp;instance&nbsp;to&nbsp;respond&nbsp;to&nbsp;XML-RPC&nbsp;requests.<br>
+&nbsp;<br>
+Only&nbsp;one&nbsp;instance&nbsp;can&nbsp;be&nbsp;installed&nbsp;at&nbsp;a&nbsp;time.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;registered&nbsp;instance&nbsp;has&nbsp;a&nbsp;_dispatch&nbsp;method&nbsp;then&nbsp;that<br>
+method&nbsp;will&nbsp;be&nbsp;called&nbsp;with&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;XML-RPC&nbsp;method&nbsp;and<br>
+its&nbsp;parameters&nbsp;as&nbsp;a&nbsp;tuple<br>
+e.g.&nbsp;instance._dispatch('add',(2,3))<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;registered&nbsp;instance&nbsp;does&nbsp;not&nbsp;have&nbsp;a&nbsp;_dispatch&nbsp;method<br>
+then&nbsp;the&nbsp;instance&nbsp;will&nbsp;be&nbsp;searched&nbsp;to&nbsp;find&nbsp;a&nbsp;matching&nbsp;method<br>
+and,&nbsp;if&nbsp;found,&nbsp;will&nbsp;be&nbsp;called.&nbsp;Methods&nbsp;beginning&nbsp;with&nbsp;an&nbsp;'_'<br>
+are&nbsp;considered&nbsp;private&nbsp;and&nbsp;will&nbsp;not&nbsp;be&nbsp;called&nbsp;by<br>
+<a href="xmlrpc.server.html#SimpleXMLRPCServer">SimpleXMLRPCServer</a>.<br>
+&nbsp;<br>
+If&nbsp;a&nbsp;registered&nbsp;function&nbsp;matches&nbsp;a&nbsp;XML-RPC&nbsp;request,&nbsp;then&nbsp;it<br>
+will&nbsp;be&nbsp;called&nbsp;instead&nbsp;of&nbsp;the&nbsp;registered&nbsp;instance.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;optional&nbsp;allow_dotted_names&nbsp;argument&nbsp;is&nbsp;true&nbsp;and&nbsp;the<br>
+instance&nbsp;does&nbsp;not&nbsp;have&nbsp;a&nbsp;_dispatch&nbsp;method,&nbsp;method&nbsp;names<br>
+containing&nbsp;dots&nbsp;are&nbsp;supported&nbsp;and&nbsp;resolved,&nbsp;as&nbsp;long&nbsp;as&nbsp;none&nbsp;of<br>
+the&nbsp;name&nbsp;segments&nbsp;start&nbsp;with&nbsp;an&nbsp;'_'.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;***&nbsp;SECURITY&nbsp;WARNING:&nbsp;***<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Enabling&nbsp;the&nbsp;allow_dotted_names&nbsp;options&nbsp;allows&nbsp;intruders<br>
+&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;access&nbsp;your&nbsp;module's&nbsp;global&nbsp;variables&nbsp;and&nbsp;may&nbsp;allow<br>
+&nbsp;&nbsp;&nbsp;&nbsp;intruders&nbsp;to&nbsp;execute&nbsp;arbitrary&nbsp;code&nbsp;on&nbsp;your&nbsp;machine.&nbsp;&nbsp;Only<br>
+&nbsp;&nbsp;&nbsp;&nbsp;use&nbsp;this&nbsp;option&nbsp;on&nbsp;a&nbsp;secure,&nbsp;closed&nbsp;network.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-register_introspection_functions"><strong>register_introspection_functions</strong></a>(self)</dt><dd><tt>Registers&nbsp;the&nbsp;XML-RPC&nbsp;introspection&nbsp;methods&nbsp;in&nbsp;the&nbsp;system<br>
+namespace.<br>
+&nbsp;<br>
+see&nbsp;<a href="http://xmlrpc.usefulinc.com/doc/reserved.html">http://xmlrpc.usefulinc.com/doc/reserved.html</a></tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-register_multicall_functions"><strong>register_multicall_functions</strong></a>(self)</dt><dd><tt>Registers&nbsp;the&nbsp;XML-RPC&nbsp;multicall&nbsp;method&nbsp;in&nbsp;the&nbsp;system<br>
+namespace.<br>
+&nbsp;<br>
+see&nbsp;<a href="http://www.xmlrpc.com/discuss/msgReader$1208">http://www.xmlrpc.com/discuss/msgReader$1208</a></tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-system_listMethods"><strong>system_listMethods</strong></a>(self)</dt><dd><tt>system.listMethods()&nbsp;=&gt;&nbsp;['add',&nbsp;'subtract',&nbsp;'multiple']<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;the&nbsp;methods&nbsp;supported&nbsp;by&nbsp;the&nbsp;server.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-system_methodHelp"><strong>system_methodHelp</strong></a>(self, method_name)</dt><dd><tt>system.methodHelp('add')&nbsp;=&gt;&nbsp;"Adds&nbsp;two&nbsp;integers&nbsp;together"<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;string&nbsp;containing&nbsp;documentation&nbsp;for&nbsp;the&nbsp;specified&nbsp;method.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-system_methodSignature"><strong>system_methodSignature</strong></a>(self, method_name)</dt><dd><tt>system.methodSignature('add')&nbsp;=&gt;&nbsp;[double,&nbsp;int,&nbsp;int]<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;list&nbsp;describing&nbsp;the&nbsp;signature&nbsp;of&nbsp;the&nbsp;method.&nbsp;In&nbsp;the<br>
+above&nbsp;example,&nbsp;the&nbsp;add&nbsp;method&nbsp;takes&nbsp;two&nbsp;integers&nbsp;as&nbsp;arguments<br>
+and&nbsp;returns&nbsp;a&nbsp;double&nbsp;result.<br>
+&nbsp;<br>
+This&nbsp;server&nbsp;does&nbsp;NOT&nbsp;support&nbsp;system.methodSignature.</tt></dd></dl>
+
+<dl><dt><a name="ThreadedXMLRPCserver-system_multicall"><strong>system_multicall</strong></a>(self, call_list)</dt><dd><tt>system.multicall([{'methodName':&nbsp;'add',&nbsp;'params':&nbsp;[2,&nbsp;2]},&nbsp;...])&nbsp;=&gt;&nbsp;[[4],&nbsp;...]<br>
+&nbsp;<br>
+Allows&nbsp;the&nbsp;caller&nbsp;to&nbsp;package&nbsp;multiple&nbsp;XML-RPC&nbsp;calls&nbsp;into&nbsp;a&nbsp;single<br>
+request.<br>
+&nbsp;<br>
+See&nbsp;<a href="http://www.xmlrpc.com/discuss/msgReader$1208">http://www.xmlrpc.com/discuss/msgReader$1208</a></tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="XMLRPCReplyHandler">class <strong>XMLRPCReplyHandler</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>################################################################################<br>
+#&nbsp;callback&nbsp;interface&nbsp;starts&nbsp;here<br>
+################################################################################<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="XMLRPCReplyHandler-__init__"><strong>__init__</strong></a>(self, conmap, replyq, eventq)</dt></dl>
+
+<dl><dt><a name="XMLRPCReplyHandler-run"><strong>run</strong></a>(self)</dt><dd><tt>get&nbsp;events&nbsp;from&nbsp;unisono&nbsp;and&nbsp;forward&nbsp;them&nbsp;to&nbsp;the&nbsp;corresponding&nbsp;connector</tt></dd></dl>
+
+<dl><dt><a name="XMLRPCReplyHandler-sendResult"><strong>sendResult</strong></a>(self, result)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="XMLRPCServer">class <strong>XMLRPCServer</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="XMLRPCServer-__init__"><strong>__init__</strong></a>(self, q, dispatcher)</dt><dd><tt>create&nbsp;and&nbsp;start&nbsp;a&nbsp;XMLRPC&nbsp;server&nbsp;thread</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7ade06c&gt;</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>
