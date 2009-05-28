@@ -245,7 +245,6 @@ struct t_result measure(struct t_request req) {
 	res.HOPCOUNT = mvars.hopcount;
 	// add the error code
 	res.error = mvars.error; //getErrorCode();
-	//strcpy(res.errortext,mvars.errortext);
 	res.errortext = mvars.errortext;
 	return res;
 }
