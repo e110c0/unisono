@@ -183,7 +183,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 }
 
 struct t_result measure(struct t_request req) {
-	int i, rescode;
+	int i;
 	int packetcount = DEFAULT_PACKETCOUNT;
 	struct sockaddr_storage addr_buf;
 	struct sockaddr *target;
@@ -194,8 +194,21 @@ struct t_result measure(struct t_request req) {
 
 	memset(&addr_buf, 0, sizeof(addr_buf));
 	target = (struct sockaddr *) (&addr_buf);
-	if (rescode = parse_addr_str(req.identifier2, target, &target_len)) {
-		// TODO: handle error
+	if (res.error = parse_addr_str(req.identifier2, target, &target_len)) {
+	    res.errortext = "invalid identifier";
+	    res.HOPCOUNT = -1;
+	    res.RTT = -1;
+	    res.RTT_MIN = -1;
+	    res.RTT_MAX = -1;
+	    res.RTT_DEVIATION = -1;
+    	res.RTT_JITTER = -1;
+	    res.OWD = -1;
+    	res.OWD_MIN = -1;
+    	res.OWD_MAX = -1;
+    	res.OWD_DEVIATION = -1;
+    	res.OWD_JITTER = -1;
+    	res.LOSSRATE = -1;
+		return res;
 	}
 	if (target->sa_family == AF_INET) {
 		mvars

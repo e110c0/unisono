@@ -39,11 +39,13 @@ int parse_addr_str(const char *node, struct sockaddr *addr, socklen_t *addrlen) 
 	hints.ai_protocol = 0;
 	hints.ai_flags = AI_NUMERICHOST;
 	res = getaddrinfo(node, 0, &hints, &result);
+    printf("result: %i \n",res);
 	if (res == 0) {
 		memcpy(addr, result->ai_addr, result->ai_addrlen);
 		*addrlen = result->ai_addrlen;
 	}
-	freeaddrinfo(result);
+//	freeaddrinfo(result);
+
 	return res;
 }
 
@@ -53,7 +55,7 @@ void set_port(struct sockaddr *addr, uint16_t port) {
 		addr_p->sin_port = port;
 	} else if (addr->sa_family == AF_INET6) {
 		struct sockaddr_in6 *addr_p = (struct sockaddr_in6*) (addr);
-		addr_p->sin6_port;
+		addr_p->sin6_port = port;
 	}
 }
 

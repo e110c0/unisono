@@ -154,8 +154,12 @@ struct t_result measure(struct t_request req) {
 	int rescode;
 	memset(&addr_buf, 0, sizeof(addr_buf));
 	target = (struct sockaddr *) (&addr_buf);
-	if (rescode = parse_addr_str(req.identifier2, target, &target_len)) {
-		// TODO: handle error
+	res.error = parse_addr_str(req.identifier2, target, &target_len);
+	if ( res.error != 0) {
+		res.errortext = "invalid identifier";
+		res.PATHMTU = -1;
+		res.HOPCOUNT = -1;
+		return res;
 	}
 
 	set_port(target, base_port);

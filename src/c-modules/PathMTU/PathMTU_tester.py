@@ -34,6 +34,7 @@ This script is only for testing purposes. It is used to test the PathMTU M&M
 without UNISONO running.
 '''
 from ctypes import *
+from os import path, getcwd
 
 class Request(Structure):
         _fields_ = [("identifier1", c_char_p),
@@ -45,12 +46,13 @@ class Result(Structure):
                 ("error", c_int),
                 ('errortext', c_char_p)]
 
-cdll.LoadLibrary("libPathMTU.so")
-libmodule = CDLL("libPathMTU.so")
+print(path.join(getcwd(),'libPathMTU.so'))
+cdll.LoadLibrary(path.join(getcwd(),'libPathMTU.so'))
+libmodule = CDLL(path.join(getcwd(),'libPathMTU.so'))
 req = Request()
 libmodule.measure.restype = Result
 req.identifier1 = c_char_p("127.0.0.1")
-req.identifier2 = c_char_p("127.0.0.1")
+req.identifier2 = c_char_p("127.0.0.1111")
 MTUresult = libmodule.measure(req)
 print(MTUresult._fields_)
 for i in MTUresult._fields_:

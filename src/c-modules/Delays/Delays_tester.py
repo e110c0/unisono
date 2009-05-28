@@ -68,7 +68,8 @@ req = DelaysRequest()
 libmodule.measure.restype = DelaysResult
 req.identifier1 = c_char_p("127.0.0.1")
 #req.identifier2 = c_char_p("127.0.0.1")
-req.identifier2 = c_char_p("134.2.172.172")
+req.identifier2 = c_char_p("192.168.178.1174")
+#req.identifier2 = c_char_p("134.2.172.174")
 #req.identifier2 = c_char_p("216.239.59.104")
 result = libmodule.measure(req)
 for i in result._fields_:
