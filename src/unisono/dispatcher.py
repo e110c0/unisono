@@ -27,7 +27,7 @@ dispatcher.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
-from queue import Queue
+from queue import Queue, Empty
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
@@ -134,20 +134,24 @@ class Dispatcher:
         Main loop of the dispatcher
         '''
         while True:
-            event = self.eventq.get()
-            self.logger.debug('got an event: %s', event.type)
-            if event.type == 'CACHE':
+            try:
+                event = self.eventq.get(timeout=5)
+            except Empty:
                 pass
-            elif event.type == 'CANCEL':
-                pass
-            elif event.type == 'ORDER':
-                self.logger.debug('order: %s', event.payload)
-                self.process_order(event.payload)
-            elif event.type == 'RESULT':
-                self.logger.debug('result. %s', event.payload)
-                self.process_result(event.payload)
             else:
-                self.logger.debug('Got an unknown event, discarding.')
+                self.logger.debug('got an event: %s', event.type)
+                if event.type == 'CACHE':
+                    pass
+                elif event.type == 'CANCEL':
+                    pass
+                elif event.type == 'ORDER':
+                    self.logger.debug('order: %s', event.payload)
+                    self.process_order(event.payload)
+                elif event.type == 'RESULT':
+                    self.logger.debug('result. %s', event.payload)
+                    self.process_result(event.payload)
+                else:
+                    self.logger.debug('Got an unknown event, discarding.')
 
     def process_order(self, order):
         # TODO sanity checks
