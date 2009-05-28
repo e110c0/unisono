@@ -114,11 +114,14 @@ class ConnectorFunctions:
         
     def register_connector(self, port):
         '''
-        register a connector to the overlay for callbacks
-        we require this because XMLRPC has no persistent connection and we want
-        to work asynchronous
-        param port callback port for the connector requesting registration
-        return connector id 
+        Register a connector to the overlay for callbacks. This is required
+        because XMLRPC has no persistent connection and UNISONO must be able to
+        work asynchronous and to reply several times on one request (e.g. for
+        periodic measurements).
+        parameters:
+        port - callback port for the connector requesting registration (int)
+        
+        return string - connector id (UUID) 
         '''
         if not (0 < port < 65536):
             return 2 #("Port number out of range (must be 1..65535)")
@@ -131,7 +134,12 @@ class ConnectorFunctions:
 
     def unregister_connector(self, callerid):
         '''
-        unregister a connector from unisono
+        Unregister a connector from unisono.
+        This will also cancel all orders for this connector immediately.
+        parameters:
+        callerid - the id of the connector (UUID as string) 
+        
+        return status, 0 if everything went fine. (int)
         '''
         try: 
             uuid.UUID(callerid)
@@ -148,15 +156,18 @@ class ConnectorFunctions:
         '''
         Lists the data items provided by the local unisono daemon
 
-        returns string all available data items
+        return string - all available data items
         '''
         self.logger.debug('RPC function \'list_available_dataitems\'.')
         return sorted(list(self.dispatcher.dataitems.keys()))
 
     def commit_order(self, conid, paramap):
         '''
-        commit an order to the daemon
-        the paramap includes the complete order in key:value pairs 
+        Commit an order.
+        
+        parameters
+        conid   - UUID of the connector (string)
+        paramap - the paramap includes the complete order in key:value pairs 
         (i.e. a python dictionary)
         
         returns int the status of the request
@@ -178,8 +189,12 @@ class ConnectorFunctions:
 
     def cancel_order(self, callerid, orderid):
         '''
-        cancel an already running order
+        Cancel an already running order.
 
+        parameters:
+        callerid - UUID of the caller (string) 
+        orderid - ID of the order (string), must be unique!
+        
         returns int the status of the request
         '''
         self.logger.debug('RPC function \'cancel_order\'.')
@@ -202,6 +217,15 @@ class ConnectorFunctions:
         return status
     
     def cache_result(self, result):
+        '''
+        Cache a result from a remote request.
+        In order to benefit from remote results, these results are cached in 
+        UNISONO.
+        
+        parameters
+        result - a paramap including the order parameters as well as the result
+        (similar to the commit_order() paramap)
+        '''
         #  TODO: create event and put it in the eventq
         self.eventq.put(Event('CACHE', result))
         return
@@ -212,7 +236,14 @@ class ConnectorFunctions:
         any exists. This should primarily be used to check for results cached
         from remote hosts.
         The used syntax is similar to commit_order() but it directly returns the
-        result if available. 
+        result if available.
+        
+        parameters
+        conid   - UUID of the connector (string)
+        paramap - the paramap includes the complete order in key:value pairs 
+        (i.e. a python dictionary)
+        
+        return struct the paramap extended with the result
         '''
         # TODO: really check the cache as soon as it is implemented.
         paramap['error']= 404
