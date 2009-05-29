@@ -119,5 +119,6 @@ SWAP					n	system swap in KB
 SWAP_USED				n	currently used swap in KB
 SWAP_FREE				n	currently available swap in KB
 PERSISTENT_MEMORY		n	persistent memory (i.e. HDD, SSD etc) in KB
+PERSISTENT_MEMORY_MOUNT n   path where the root is mounted
 PERSISTENT_MEMORY_USED	n	currently used persistent memory in KB
 PERSISTENT_MEMORY_FREE	n	currently available persistent memory in KB
