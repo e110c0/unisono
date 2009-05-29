@@ -30,7 +30,7 @@ node_ressources.py
 import threading, logging, re, string, sys
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
-
+from os import popen
 
 class ResourceReader(mmtemplates.MMTemplate):
     '''
@@ -72,7 +72,7 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'PERSISTENT_MEMORY_MOUNT',
                           'PERSISTENT_MEMORY_USED',
                           'PERSISTENT_MEMORY_FREE',
-]
+                          ]
         self.cost = 500
 
     def checkrequest(self, request):
@@ -100,37 +100,39 @@ class ResourceReader(mmtemplates.MMTemplate):
         for meminfo in ram:
             meminfo = meminfo.rstrip('\n')
             if re.match("(.*)MemTotal(.*)", meminfo):
-                self.request['RAM'] = meminfo
+                self.request['RAM'] = int(meminfo.split(":")[1].strip().split(" ")[0])
 #                print(meminfo)
             if re.match("(.*)MemFree(.*)", meminfo):
-                self.request['RAM_FREE'] = meminfo.split(":")[1].strip().split(" ")[0]
+                self.request['RAM_FREE'] = int(meminfo.split(":")[1].strip().split(" ")[0])
 #                print(meminfo)
             if re.match("(.*)SwapTotal(.*)", meminfo):
-                self.request['SWAP'] = meminfo.split(":")[1].strip().split(" ")[0]
+                self.request['SWAP'] = int(meminfo.split(":")[1].strip().split(" ")[0])
 #                print(meminfo)
             if re.match("(.*)SwapFree(.*)", meminfo):
-                self.request['SWAP_FREE'] = meminfo.split(":")[1].strip().split(" ")[0]
+                self.request['SWAP_FREE'] = int(meminfo.split(":")[1].strip().split(" ")[0])
 #                print(meminfo)
 #                print('\n')
                 self.request['RAM_USED'] = self.request['RAM'] - self.request['RAM_FREE']
                 self.request['SWAP_USED'] = self.request['SWAP'] - self.request['SWAP_FREE']
+        tmpdata = popen('vmstat').read().split('\n')[2].strip()
+        self.request['CPU_LOAD_USER'] = tmpdata.split()[12]
+        self.request['CPU_LOAD_SYS'] = tmpdata.split()[13]
+        self.request['CPU_LOAD_IDLE'] = tmpdata.split()[14]
+        self.request['CPU_LOAD_WIO'] = tmpdata.split()[15]
         
-        self.request['CPU_LOAD_USER'] = os.popen('vmstat').read().split('\n')[2].strip().split()[12]
-        self.request['CPU_LOAD_SYS'] = os.popen('vmstat').read().split('\n')[2].strip().split()[13]
-        self.request['CPU_LOAD_IDLE'] = os.popen('vmstat').read().split('\n')[2].strip().split()[14]
-        self.request['CPU_LOAD_WIO'] = os.popen('vmstat').read().split('\n')[2].strip().split()[15]
-        
-        self.request['SYTEM_LOAD_AVG_NOW'] =  os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[0]
-        self.request['SYSTEM_LOAD_AVG_5MIN'] = os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[1]
-        self.request['SYSTEM_LOAD_AVG_15MIN'] =  os.popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip().split(", ")[2]
+        tmpdata = popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip()
+        self.request['SYTEM_LOAD_AVG_NOW'] =  tmpdata.split(", ")[0]
+        self.request['SYSTEM_LOAD_AVG_5MIN'] = tmpdata.split(", ")[1]
+        self.request['SYSTEM_LOAD_AVG_15MIN'] =  tmpdata.split(", ")[2]
         
         self.request['HOST_UPTIME'] = open("/proc/uptime").read().split()[0]
         self.request['HOST_UPTIME_IDLE'] = open("/proc/uptime").read().split()[1]
         
-        self.request['PERSISTENT_MEMORY_MOUNT'] = os.popen('df').read().split("\n")[1].split()[0]
-        self.request['PERSISTENT_MEMORY'] = os.popen('df').read().split("\n")[1].split()[1]
-        self.request['PERSISTENT_MEMORY_USED'] = os.popen('df').read().split("\n")[1].split()[2]
-        self.request['PERSISTENT_MEMORY_FREE'] = os.popen('df').read().split("\n")[1].split()[3]
+        tmpdata = popen('df').read().split("\n")[1]
+        self.request['PERSISTENT_MEMORY_MOUNT'] = tmpdata.split()[0]
+        self.request['PERSISTENT_MEMORY'] = tmpdata.split()[1]
+        self.request['PERSISTENT_MEMORY_USED'] = tmpdata.split()[2]
+        self.request['PERSISTENT_MEMORY_FREE'] = tmpdata.split()[3]
         
         os = open("/proc/version")
         for kernel in os:
@@ -138,3 +140,4 @@ class ResourceReader(mmtemplates.MMTemplate):
                 print(kernel)
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
+        self.logger.debug('result is:', self.request)
