@@ -31,14 +31,14 @@ file_name
 import threading, logging, re, string, sys
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
-
+from os import popen
 
 class NicReader(mmtemplates.MMTemplate):
     '''
     generic template for all M&Ms
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, *args):
         '''
@@ -70,32 +70,35 @@ class NicReader(mmtemplates.MMTemplate):
     def checkrequest(self, request):
         return True
 
-    def measure(self, ipaddress):
-        interfacelist = os.popen('dir /proc/net/dev_snmp6/').read().split()
+    def measure(self):
+        ipaddress = self.request['identifier1']
+        interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
+        self.logger.debug(interfacelist)
         interface = "No interface with this IP"
-        i=0;
-        while i <= interfacelist.itemsize:
-            i = i+1
-            if ipaddress in os.popen('ifconfig '+ interfacelist[i]).read():
-                interface = interfacelist[i]
+        intinfo=''
+        for i in interfacelist:
+            intinfo = popen('ifconfig ' + interface).read()
+            if ipaddress in intinfo:
+                interface = i
+                break
             else: 
                 self.request['error'] = interface
-                break
+
         
-        intinfo = os.popen('infonfig ' + interface).read()
-        
-        self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
+        #TODO broken
+        #self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
         self.request['INTERFACE_CAPACITY_RX'] = "cant find"
         self.request['INTERFACE_CAPACITY_TX'] = "cant find"
-        self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
-        self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
+        #TODO broken
+        #self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
+        #self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
         
         self.request['USED_BANDWIDTH_RX'] = "cant find"
         self.request['USED_BANDWIDTH_TX'] = "cant find"
         
         
       # wireless
-        wlaninfo = os.popen('iwconfig ' + interface).read()
+        wlaninfo = popen('iwconfig ' + interface).read()
         if ipaddress in wlaninfo:
             self.request['WLAN_ESSID']          = wlaninfo.split('\n')[0].strip().split()[3].split(':')[1]
             self.request['WLAN_MODE']           = wlaninfo.split('\n')[1].split()[0].split(':')[1]
