@@ -99,7 +99,7 @@ class DemoWindow:
         frame.set_label_align(1.0, 0.5)
         frame.set_size_request(800, 600)
         frame.show()
-        table = gtk.Table(4, 3, False)
+        table = gtk.Table(3, 3, True)
         table.set_row_spacings(10)
         table.set_col_spacings(10)
         vbox = gtk.VBox(False,0)
@@ -133,8 +133,8 @@ class DemoWindow:
         # global stats
         gsframe = gtk.Frame("Global Statistics")
         gstable = gtk.Table(2,3)
-        gstable.set_row_spacings(10)
-        gstable.set_col_spacings(10)
+        gstable.set_row_spacings(5)
+        gstable.set_col_spacings(5)
         label = gtk.Label('# Requests')
         gstable.attach(label,0,1,0,1)
         label = gtk.Label('100')
@@ -153,8 +153,8 @@ class DemoWindow:
         # current stats
         csframe = gtk.Frame("Current Statistics")
         cstable = gtk.Table(2,3)
-        cstable.set_row_spacings(10)
-        cstable.set_col_spacings(10)
+        cstable.set_row_spacings(5)
+        cstable.set_col_spacings(5)
         label = gtk.Label('# active Requests')
         cstable.attach(label,0,1,0,1)
         label = gtk.Label('12')
@@ -174,8 +174,8 @@ class DemoWindow:
         # db stats
         dbframe = gtk.Frame("Database Statistics")
         dbtable = gtk.Table(2,4)
-        dbtable.set_row_spacings(10)
-        dbtable.set_col_spacings(10)
+        dbtable.set_row_spacings(5)
+        dbtable.set_col_spacings(5)
         label = gtk.Label('Size')
         dbtable.attach(label,0,1,0,1)
         label = gtk.Label('1.874.548')
@@ -201,8 +201,8 @@ class DemoWindow:
         # unisono stats
         uframe = gtk.Frame("UNISONO Statistics")
         utable = gtk.Table(2,4)
-        utable.set_row_spacings(10)
-        utable.set_col_spacings(10)
+        utable.set_row_spacings(5)
+        utable.set_col_spacings(5)
         label = gtk.Label('Start time')
         utable.attach(label,0,1,0,1)
         label = gtk.Label('2009-06-04 14:32:11')
@@ -221,18 +221,20 @@ class DemoWindow:
         uframe.add(utable)
 
 
-        vbox.pack_start(ipframe,expand=False, fill=False, padding=10)
-        vbox.pack_start(conframe,expand=False, fill=False, padding=10)
-        vbox.pack_start(gsframe,expand=False, fill=False, padding=10)
-        vbox.pack_start(csframe,expand=False, fill=False, padding=10)
-        vbox.pack_start(dbframe,expand=False, fill=False, padding=10)
-        vbox.pack_start(uframe,expand=False, fill=False, padding=10)
+        vbox.pack_start(ipframe,expand=False, fill=False, padding=5)
+        vbox.pack_start(conframe,expand=False, fill=False, padding=5)
+        vbox.pack_start(gsframe,expand=False, fill=False, padding=5)
+        vbox.pack_start(csframe,expand=False, fill=False, padding=5)
+        vbox.pack_start(dbframe,expand=False, fill=False, padding=5)
+        vbox.pack_start(uframe,expand=False, fill=False, padding=5)
         
         # known nodes graph
         gframe = gtk.Frame('Network View')
-        gframe.set_size_request(0, 400)
+        #gframe.set_size_request(0, 400)
+        garea = gtk.DrawingArea()
+        gframe.add(garea)
         gframe.show()
-        table.attach(gframe,1,4,0,2)
+        table.attach(gframe,1,3,0,2)
         # log file
         logframe = gtk.Frame("Logfile")
         sw = gtk.ScrolledWindow()
@@ -255,7 +257,7 @@ class DemoWindow:
         logframe.show()
         sw.show()
         textview.show()
-        table.attach(logframe,1,4,2,3)
+        table.attach(logframe,1,3,2,3)
 
 
         table.show()
