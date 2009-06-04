@@ -249,7 +249,11 @@ class ConnectorFunctions:
         paramap['error']= 404
         paramap['errortext'] = 'Data item not found in cache'
         return paramap
-        
+
+#class CorrelationInterface:
+#    def correlate_this(self, ditype, parameter1, parameter2):
+#        pass
+
 # Threaded XMPRPC server
 #class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
 class ThreadedXMLRPCserver(SimpleXMLRPCServer):
@@ -287,6 +291,7 @@ class XMLRPCServer:
         __server.register_instance(ConnectorFunctions(self.eventq,
                                                       self.dispatcher,
                                                       self.conmap))
+        #__server.register_instance(CorrelationInterface())
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
