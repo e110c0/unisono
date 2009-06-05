@@ -229,12 +229,26 @@ class DemoWindow:
         vbox.pack_start(uframe,expand=False, fill=False, padding=5)
         
         # known nodes graph
-        gframe = gtk.Frame('Network View')
-        #gframe.set_size_request(0, 400)
+        switchbook = gtk.Notebook()
+        switchbook.set_tab_pos(gtk.POS_TOP)
+        switchbook.show()
+
+        gframe = gtk.Frame()
+        label = gtk.Label("Network View")
+        gframe.set_size_request(0, 400)
         garea = gtk.DrawingArea()
         gframe.add(garea)
         gframe.show()
-        table.attach(gframe,1,3,0,2)
+        switchbook.append_page(gframe, label)
+        # and the other tabs
+        
+
+        switchbook.append_page(gtk.Frame(), gtk.Label('Database View'))
+        switchbook.append_page(gtk.Frame(), gtk.Label('Measurement View'))
+
+        table.attach(switchbook,1,3,0,2)
+        
+        switchbook.set_current_page(0)
         # log file
         logframe = gtk.Frame("Logfile")
         sw = gtk.ScrolledWindow()
