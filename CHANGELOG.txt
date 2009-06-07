@@ -1,0 +1,4 @@
+= v0.0.1 2009-06-07 =
+
+This is a sneak preview of the UNISONO service. Internal interfaces are still a matter of changes. External (i.e. the XML-RPC interface) might be extended in future releases.
+
