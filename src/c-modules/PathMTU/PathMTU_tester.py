@@ -35,6 +35,7 @@ without UNISONO running.
 '''
 from ctypes import *
 from os import path, getcwd
+import sys
 
 class Request(Structure):
         _fields_ = [("identifier1", c_char_p),
@@ -51,8 +52,8 @@ cdll.LoadLibrary(path.join(getcwd(),'libPathMTU.so'))
 libmodule = CDLL(path.join(getcwd(),'libPathMTU.so'))
 req = Request()
 libmodule.measure.restype = Result
-req.identifier1 = c_char_p("127.0.0.1")
-req.identifier2 = c_char_p("127.0.0.1111")
+req.identifier1 = c_char_p(sys.argv[1])
+req.identifier2 = c_char_p(sys.argv[2])
 MTUresult = libmodule.measure(req)
 print(MTUresult._fields_)
 for i in MTUresult._fields_:

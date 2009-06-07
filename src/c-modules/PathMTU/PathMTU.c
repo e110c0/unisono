@@ -54,10 +54,7 @@ uint32_t get_error(unsigned int *new_mtu) {
 		if (errno == EAGAIN) {
 			return 0;
 		}
-//		std::string msg = "CPathMTU recvmsg: ";
-//		msg += strerror(errno);
 		close(sockfd);
-//		throw CLIOCoreException(msg, -1, __FILE__, __LINE__);
 		return -1;
 	}
 
@@ -92,10 +89,14 @@ uint32_t probe_mtu(unsigned int mtu, unsigned int *new_mtu) {
 	char buf[max_mtu];
 	memset(buf, 0, sizeof(buf));
 	while (retry < 10) {
-		//		logging_debug("probe_mtu retry " + ltos(retry));
+#ifdef DEBUG
+		printf("probe_mtu retry %d\n", retry);
+#endif
 		ret = sendto(sockfd, buf, mtu - headerlen, 0, target, target_len);
 		error = get_error(new_mtu);
-		//		logging_debug("probe_mtu error " + ltos(error));
+#ifdef DEBUG
+		printf("probe_mtu error %d\n", error);
+#endif
 		if (error != 0) {
 			if (error != EMSGSIZE && error != ECONNREFUSED) {
 				++retry;
@@ -106,9 +107,9 @@ uint32_t probe_mtu(unsigned int mtu, unsigned int *new_mtu) {
 		}
 		data_wait();
 		if (recv(sockfd, buf, sizeof(buf), MSG_DONTWAIT) > 0) {
-			//			logging_debug(
-			//					"probe_mtu got response -> active port -> change port");
-			// this should not happen -> change port
+#ifdef DEBUG
+			printf("probe_mtu got response -> active port -> change port");
+#endif
 			set_port(target, base_port + retry);
 		}
 		++retry;
@@ -124,22 +125,28 @@ int pmtu(void) {
 	unsigned int mtu = max_mtu;
 	unsigned int new_mtu;
 	while (mtu > min_mtu && retry < 10) {
-		printf("pmtu try with mtu %i", mtu);
+#ifdef DEBUG
+		printf("pmtu try with mtu %i\n", mtu);
+#endif
 		send_error = probe_mtu(mtu, &new_mtu);
 
 		// mtu is too large
 		if (send_error == EMSGSIZE) {
-			//			logging_debug("pmtu mtu value " + ltos(mtu)
-			//					+ " is too large -> set to new value " + ltos(new_mtu));
+#ifdef DEBUG
+			printf("pmtu mtu value %d is too large -> set to new value %d\n", mtu, new_mtu);
+#endif
 			mtu = new_mtu;
 			// host was reached
 		} else if (send_error == ECONNREFUSED) {
-			//			logging_debug("pmtu host was reached -> got mtu");
+#ifdef DEBUG
+			printf("pmtu host was reached -> got mtu\n");
+#endif
 			return mtu;
 			// host seems not to be reachable
 		} else {
-			//			logging_debug(
-			//					"pmtu host seems not to be reachable -> can't measure mtu");
+#ifdef DEBUG
+			printf("pmtu host seems not to be reachable -> can't measure mtu\n");
+#endif
 			return 0;
 			close(sockfd);
 		}
@@ -168,7 +175,7 @@ struct t_result measure(struct t_request req) {
 	if (sockfd == -1) {
 		//		res.errortext = "CPathMTU socket: ";
 		res.error = errno;
-		return res; //throw CLIOCoreException(msg, -1, __FILE__, __LINE__);
+		return res;
 	}
 	if (target->sa_family == AF_INET) {
 		unsigned int opt = IP_PMTUDISC_PROBE;
@@ -177,14 +184,14 @@ struct t_result measure(struct t_request req) {
 			//			res.errortext = "CPathMTU setsockopt(IP_MTU_DISCOVER): ";
 			res.error = errno;
 			close(sockfd);
-			return res;; //throw CLIOCoreException(msg, -1, __FILE__, __LINE__);
+			return res;;
 		}
 		opt = true;
 		if (setsockopt(sockfd, IPPROTO_IP, IP_RECVERR, &opt, sizeof(opt)) == -1) {
 			//			res.error = "CPathMTU setsockopt(IP_RECVERR): ";
 			res.error = errno;
 			close(sockfd);
-			return res;; //throw CLIOCoreException(msg, -1, __FILE__, __LINE__);
+			return res;
 		}
 	} else if (target->sa_family == AF_INET6) {
 		unsigned int opt = IPV6_PMTUDISC_PROBE;
@@ -193,7 +200,7 @@ struct t_result measure(struct t_request req) {
 			//			res.error = "CPathMTU setsockopt(IP_MTU_DISCOVER): ";
 			res.error = errno;
 			close(sockfd);
-			return res;; //throw CLIOCoreException(msg, -1, __FILE__, __LINE__);
+			return res;
 		}
 		opt = true;
 		if (setsockopt(sockfd, IPPROTO_IPV6, IPV6_RECVERR, &opt, sizeof(opt))
@@ -201,7 +208,7 @@ struct t_result measure(struct t_request req) {
 			//			res.error = "CPathMTU setsockopt(IP_RECVERR): ";
 			res.error = errno;
 			close(sockfd);
-			return res;; //throw CLIOCoreException(msg, -1, __FILE__, __LINE__);
+			return res;
 		}
 	}
 
@@ -210,8 +217,15 @@ struct t_result measure(struct t_request req) {
 
 	printf("Measure MTU:  %s  -->  %s\n", req.identifier1, req.identifier2);
 	// TODO: get the hopcount
-	res.HOPCOUNT = 0;
-	res.error = 0;
-	res.errortext = "Everything went fine.";
+	if (res.PATHMTU != 0) {
+		// FIXME: extract hopcount from icmp error
+		res.HOPCOUNT = 0;
+		res.error = 0;
+		res.errortext = "Everything went fine.";
+	} else {
+		res.HOPCOUNT = 0;
+		res.error = -1;
+		res.errortext = "host not reachable with icmp";
+	}
 	return res;
 }
