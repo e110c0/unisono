@@ -153,6 +153,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 			// skip the IP header of the received packet and look at the ICMP header
 			icp_reply = (struct icmphdr*) (buffer + sizeof(struct iphdr));
 			// does the packet belong to us? and is it an echo reply?
+			// FIXME: this looks wrong: assignment instead of comparison is always true
 			if ((icp_reply->un.echo.id = ident) || (icp_reply->type
 					= ICMP_ECHOREPLY)) {
 				// everything seems to be ok, calculate RTT

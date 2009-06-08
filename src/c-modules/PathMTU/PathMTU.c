@@ -223,7 +223,8 @@ struct t_result measure(struct t_request req) {
 		res.error = 0;
 		res.errortext = "Everything went fine.";
 	} else {
-		res.HOPCOUNT = 0;
+		res.HOPCOUNT = -1;
+		res.PATHMTU = -1;
 		res.error = -1;
 		res.errortext = "host not reachable with icmp";
 	}
