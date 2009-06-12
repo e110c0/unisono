@@ -335,12 +335,13 @@ class XMLRPCReplyHandler:
                 self.logger.debug('Our result is: %s', result)
                 # find requester
                 self.logger.debug('host: %s port: %s', self.conmap.conmap[result['conid']][0], self.conmap.conmap[result['conid']][1])
-                uri = 'http://' + self.conmap.conmap[result['conid']][0] + ':' + str(self.conmap.conmap[result['conid']][1])
+                uri = 'http://' + self.conmap.conmap[result['conid']][0] + ':' + str(self.conmap.conmap[result['conid']][1]) + "/RPC2"
                 self.logger.debug('we try to connect to ' + uri + ' now.')
                 connector = ServerProxy(uri)
                 try:
                     connector.on_result(result)
                 except:
+                    # TODO: error message should be more specific
                     self.logger.error('Connector unreachable!')
                     self.eventq.put(Event('CANCEL', (result['conid'], None)))
                     self.conmap.deregister_connector(result['conid'])
