@@ -324,7 +324,21 @@ class XMLRPCReplyHandler:
 
     def run(self):
         '''
-        get events from unisono and forward them to the corresponding connector
+        get events from unisono and process them.
+        currently, the handler processes the following events:
+
+        DELIVER: deliver a result to the corresponding connector
+                 the result structure is a dictionary (or XMLRPC struct) with
+                 the following structure:
+                 * all entries of the original order (including orderid,
+                   requested data item etc.
+                 * a key:value pair for each data item, e.g.
+                   RTT = 123
+                 * error: the error code of the measurement
+                 * errortext: a specific error text for the error code
+                 * result: the result of the first requested data item. This
+                   entry is deprecated, it can not handle orders with more then
+                   one data item.
         '''
         while True:
             event = self.replyq.get()
@@ -350,5 +364,3 @@ class XMLRPCReplyHandler:
                 self.logger.debug('Got an unknown event type: %s. What now?',
                                   event.type)
 
-    def sendResult(self, result):
-        pass
