@@ -96,7 +96,6 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 	// try to send 'packetcount' ICMP-packets (echo requests)
 	while ((mvars.seqno < packetcount * 2) && (mvars.received < packetcount)) {
 		//prepare the packet for sending
-		//logging_debug("packet " + ltos(seqno) + " will be sent now.");
 		icp->un.echo.sequence = (mvars.seqno << 8);
 		// calculate checksum of packet after everything is set
 		icp->checksum = 0;
@@ -108,12 +107,8 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 				sizeof(struct sockaddr_in))) < 0) {
 			mvars.error = errno;
 			mvars.errortext = strerror(mvars.error);
-			printf("sendto KAPUTT!!!! \n");
-			//logging_debug("probing packet not sent " + errorstr);
-			//setErrorCode(CLIO_ERROR_CDELAY_SENDTO);
 			return mvars;
 		} else {
-			//logging_debug("packet " + ltos(seqno) + " successfully sent.");
 			// count up seqno
 			mvars.seqno++;
 		}
@@ -128,8 +123,6 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 					< 0) {
 				mvars.error = errno;
 				mvars.errortext = strerror(mvars.error);
-				//setErrorCode(CLIO_ERROR_CDELAY_SELECT);
-				//logging_debug("select didnt work");
 				return mvars;
 			}
 			if (!FD_ISSET(rawsock, &fds)) {
@@ -145,7 +138,6 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 					(socklen_t*) &addrlen)) < 0) {
 				mvars.error = errno;
 				mvars.errortext = strerror(mvars.error);
-				//setErrorCode(CLIO_ERROR_CDELAY_RECVFROM);
 				return mvars;
 			}
 			// current time on this node AFTER the packet has been received
@@ -157,11 +149,8 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 			if ((icp_reply->un.echo.id == ident) && (icp_reply->type
 					== ICMP_ECHOREPLY)) {
 				// everything seems to be ok, calculate RTT
-				//logging_debug("reply " + ltos(seqno) + " successfully received.");
 				// do not account times for losses!
 				delays[mvars.received] = deltaTime64(*t2, *t1);
-				//				printf("reply %i received. Delay was %i .\n", mvars.seqno,
-				//						delays[mvars.received]);
 				mvars.received++;
 				notforus = false;
 				if (((struct iphdr*) buffer)->ttl > 128) {
@@ -172,7 +161,6 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 					mvars.hopcount = 65 - ((struct iphdr*) buffer)->ttl;
 				}
 			} else {
-				//logging_debug("this icmp packet is not for us, ignore it and listen again")
 				printf("got a wrong icmp packet. why?\n");
 				notforus = true;
 			}
@@ -196,28 +184,27 @@ struct t_result measure(struct t_request req) {
 	memset(&addr_buf, 0, sizeof(addr_buf));
 	target = (struct sockaddr *) (&addr_buf);
 	if (res.error = parse_addr_str(req.identifier2, target, &target_len)) {
-	    res.errortext = "invalid identifier";
-	    res.HOPCOUNT = -1;
-	    res.RTT = -1;
-	    res.RTT_MIN = -1;
-	    res.RTT_MAX = -1;
-	    res.RTT_DEVIATION = -1;
-    	res.RTT_JITTER = -1;
-	    res.OWD = -1;
-    	res.OWD_MIN = -1;
-    	res.OWD_MAX = -1;
-    	res.OWD_DEVIATION = -1;
-    	res.OWD_JITTER = -1;
-    	res.LOSSRATE = -1;
+		res.errortext = "invalid identifier";
+		res.HOPCOUNT = -1;
+		res.RTT = -1;
+		res.RTT_MIN = -1;
+		res.RTT_MAX = -1;
+		res.RTT_DEVIATION = -1;
+		res.RTT_JITTER = -1;
+		res.OWD = -1;
+		res.OWD_MIN = -1;
+		res.OWD_MAX = -1;
+		res.OWD_DEVIATION = -1;
+		res.OWD_JITTER = -1;
+		res.LOSSRATE = -1;
 		return res;
 	}
 	if (target->sa_family == AF_INET) {
-		mvars
-				= measure_ipv4(delays, packetcount,
-						(struct sockaddr_in *) target);
+		mvars = measure_ipv4(delays, packetcount,
+				       (struct sockaddr_in *) target);
 	} else if (target->sa_family == AF_INET6) {
 		mvars = measure_ipv6(delays, packetcount,
-				(struct sockaddr_in6 *) target);
+				     (struct sockaddr_in6 *) target);
 	} else {
 		// handle unknown protocol
 	}
@@ -245,7 +232,7 @@ struct t_result measure(struct t_request req) {
 	}
 	res.HOPCOUNT = mvars.hopcount;
 	// add the error code
-	res.error = mvars.error; //getErrorCode();
+	res.error = mvars.error;
 	res.errortext = mvars.errortext;
 	return res;
 }
