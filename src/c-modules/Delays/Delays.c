@@ -76,9 +76,9 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 	memset(buffer, 0, sizeof(struct iphdr) + packetsize);
 	// create RAW socket
 	if ((rawsock = socket(AF_INET,SOCK_RAW, IPPROTO_ICMP)) < 0) {
-		//throw CLIOCoreException("Raw Socket Error.", -1, __FILE__, __LINE__);
-		// clean old counter
-		// todo return some error
+		mvars.error = errno;
+		mvars.errortext = "could not open raw socket";
+		return mvars;
 	}
 	// set up ICMP header
 	icp->type = ICMP_ECHO;
@@ -153,9 +153,9 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 			// skip the IP header of the received packet and look at the ICMP header
 			icp_reply = (struct icmphdr*) (buffer + sizeof(struct iphdr));
 			// does the packet belong to us? and is it an echo reply?
-			// FIXME: this looks wrong: assignment instead of comparison is always true
-			if ((icp_reply->un.echo.id = ident) || (icp_reply->type
-					= ICMP_ECHOREPLY)) {
+			// NOW: comparison instead of assignment, both comparisons must be true -> AND
+			if ((icp_reply->un.echo.id == ident) && (icp_reply->type
+					== ICMP_ECHOREPLY)) {
 				// everything seems to be ok, calculate RTT
 				//logging_debug("reply " + ltos(seqno) + " successfully received.");
 				// do not account times for losses!
