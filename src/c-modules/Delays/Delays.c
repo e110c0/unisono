@@ -32,7 +32,7 @@
  * for ipv6
  */
 struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
-		struct sockaddr_in6 *addr) {
+			    struct sockaddr_in6 *addr) {
 
 }
 
@@ -41,13 +41,11 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
  */
 
 struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
-		struct sockaddr_in *addr) {
+			    struct sockaddr_in *addr) {
 	int ident = 0; // is different for each process, so that echo replies do not
 	struct t_mvars mvars;
 	struct timeval timeout; //Timeout for sending packets
 	int addrlen, recv_bytes, rawsock;
-	char* hpoint;
-	socklen_t addr_len;
 	unsigned int headersize = sizeof(struct icmphdr);
 	unsigned int datasize = sizeof(struct timeval);
 	unsigned int packetsize = headersize + datasize;
@@ -62,7 +60,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 	struct icmphdr *icp_reply;
 	struct timeval *t1 = (struct timeval*) &packet[headersize]; // now
 	struct timeval *t2 = (struct timeval*) &buffer[sizeof(struct icmphdr)
-			+ sizeof(struct iphdr)]; // receive
+						       + sizeof(struct iphdr)]; // receive
 	fd_set fds; // socket-container for select()
 	// prepare mvars
 	mvars.seqno = 0; // packet number
@@ -104,7 +102,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 		icp->checksum = checksum((u_short*) icp, packetsize);
 		// send the packet
 		if ((sendto(rawsock, packet, packetsize, 0, (struct sockaddr*) addr,
-				sizeof(struct sockaddr_in))) < 0) {
+			    sizeof(struct sockaddr_in))) < 0) {
 			mvars.error = errno;
 			mvars.errortext = strerror(mvars.error);
 			return mvars;
@@ -119,23 +117,23 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 		while (notforus) {
 			timeout.tv_sec = DEFAULT_TIMEOUT;
 			timeout.tv_usec = 0;
-			if (select(rawsock + 1, &fds, (fd_set*) 0, (fd_set*) 0, &timeout)
-					< 0) {
+			if (select(rawsock + 1, &fds, (fd_set*) 0, (fd_set*) 0, &timeout) < 0) {
 				mvars.error = errno;
 				mvars.errortext = strerror(mvars.error);
 				return mvars;
 			}
+			
 			if (!FD_ISSET(rawsock, &fds)) {
 				// count this as loss
 				mvars.loss++;
 				printf("no reply for packet %i. Counted as loss.\n",
-						mvars.seqno);
+				       mvars.seqno);
 				break;
 			}
 			// there is some data on the socket, read it
 			if ((recv_bytes = recvfrom(rawsock, buffer, sizeof(struct iphdr)
-					+ packetsize, 0, (struct sockaddr*) addr,
-					(socklen_t*) &addrlen)) < 0) {
+						   + packetsize, 0, (struct sockaddr*) addr,
+						   (socklen_t*) &addrlen)) < 0) {
 				mvars.error = errno;
 				mvars.errortext = strerror(mvars.error);
 				return mvars;
@@ -146,8 +144,8 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 			icp_reply = (struct icmphdr*) (buffer + sizeof(struct iphdr));
 			// does the packet belong to us? and is it an echo reply?
 			// NOW: comparison instead of assignment, both comparisons must be true -> AND
-			if ((icp_reply->un.echo.id == ident) && (icp_reply->type
-					== ICMP_ECHOREPLY)) {
+			if ((icp_reply->un.echo.id == ident) 
+			     && (icp_reply->type == ICMP_ECHOREPLY)) {
 				// everything seems to be ok, calculate RTT
 				// do not account times for losses!
 				delays[mvars.received] = deltaTime64(*t2, *t1);
@@ -201,7 +199,7 @@ struct t_result measure(struct t_request req) {
 	}
 	if (target->sa_family == AF_INET) {
 		mvars = measure_ipv4(delays, packetcount,
-				       (struct sockaddr_in *) target);
+				     (struct sockaddr_in *) target);
 	} else if (target->sa_family == AF_INET6) {
 		mvars = measure_ipv6(delays, packetcount,
 				     (struct sockaddr_in6 *) target);
