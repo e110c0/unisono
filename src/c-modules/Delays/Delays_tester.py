@@ -34,6 +34,7 @@ without UNISONO running.
 '''
 from ctypes import *
 from os import path, getcwd
+import sys
 
 class DelaysRequest(Structure):
     '''
@@ -66,9 +67,9 @@ cdll.LoadLibrary(path.join(getcwd(),'libDelays.so'))
 libmodule = CDLL(path.join(getcwd(),'libDelays.so'))
 req = DelaysRequest()
 libmodule.measure.restype = DelaysResult
-req.identifier1 = c_char_p("127.0.0.1")
+req.identifier1 = c_char_p(sys.argv[1])
 #req.identifier2 = c_char_p("127.0.0.1")
-req.identifier2 = c_char_p("192.168.178.24")
+req.identifier2 = c_char_p(sys.argv[2])
 #req.identifier2 = c_char_p("134.2.172.174")
 #req.identifier2 = c_char_p("216.239.59.104")
 result = libmodule.measure(req)
