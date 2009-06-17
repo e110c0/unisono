@@ -154,10 +154,14 @@ class Dispatcher:
                     self.logger.debug('Got an unknown event, discarding.')
 
     def process_order(self, order):
-        # TODO sanity checks
+        # sanity checks
         for i in ['type','dataitem']:
             if i not in order.keys():
                 self.logger.error('Order is incomplete (missing %s), discarding', i)
+                self.logger.debug('%s', order)
+                order['error'] = 400
+                order['errortext'] = 'Order incomplete, missing ' + i
+                self.replyq.put(Event('DISCARD', order))
                 return;
         if (order['type'] > 0):
             self.logger.debug('Got a periodic or triggered order')

@@ -177,6 +177,15 @@ class ConnectorFunctions:
         self.logger.debug('RPC function \'commit_order\'.')
         self.logger.debug('Order: %s', paramap)
         status = 0
+        # sanity checks
+        for i in ['orderid']:
+            if i not in paramap.keys():
+                self.logger.error('Order is incomplete (missing %s), discarding', i)
+                status = 400
+                #order['errortext'] = 'Order incomplete, missing ' + i
+                #self.replyq.put(Event('DISCARD', order))
+                return status;
+        # TODO: check for orderid clashes here??
         # check registration
         self.logger.debug('conmap %s', self.conmap.conmap)
         if conid in self.conmap.conmap.keys():
@@ -186,7 +195,7 @@ class ConnectorFunctions:
             self.eventq.put(Event('ORDER', paramap))
         else:
             self.logger.error('Connector %s is unknown, discarding order!', conid)
-            status = - 1
+            status = 401
         return status
 
     def cancel_order(self, callerid, orderid):
@@ -324,6 +333,11 @@ class XMLRPCReplyHandler:
         reply_thread.start()
         print("XMLRPC reply handler loop running in thread:", reply_thread.name)
 
+    def find_requester(self,conid):
+        uri = 'http://' + self.conmap.conmap[conid][0] + ':' + str(self.conmap.conmap[conid][1]) + "/RPC2"
+        connector = ServerProxy(uri)
+        return connector
+
     def run(self):
         '''
         get events from unisono and process them.
@@ -341,27 +355,51 @@ class XMLRPCReplyHandler:
                  * result: the result of the first requested data item. This
                    entry is deprecated, it can not handle orders with more then
                    one data item.
+        DISCARD: discard an order if UNISONO isn't able to process it.
+                 the result structure is a dictionary (or XMLRPC struct) with
+                 the following structure:
+                 * orderid of the discarded order
+                 * error: the error code of the measurement
+                 * errortext: a specific error text for the error code
         '''
         while True:
             event = self.replyq.get()
             # TODO do stuff
+            self.logger.debug('got event %s',event.type)
             if event.type == 'DELIVER':
                 # payload is the result
                 result = event.payload
                 self.logger.debug('Our result is: %s', result)
                 # find requester
-                self.logger.debug('host: %s port: %s', self.conmap.conmap[result['conid']][0], self.conmap.conmap[result['conid']][1])
-                uri = 'http://' + self.conmap.conmap[result['conid']][0] + ':' + str(self.conmap.conmap[result['conid']][1]) + "/RPC2"
-                self.logger.debug('we try to connect to ' + uri + ' now.')
-                connector = ServerProxy(uri)
+                try:
+                    connector = self.find_requester(result['conid'])
+                except KeyError:
+                    self.logger.error('Unknown connector %s, discarding order', result['conid'])
+                    self.eventq.put(Event('CANCEL', (result['conid'], result['orderid'])))
+                    continue
                 try:
                     connector.on_result(result)
                 except:
-                    # TODO: error message should be more specific
-                    self.logger.error('Connector unreachable!')
+                    self.logger.error('Connector %s unreachable!', result['conid'])
                     self.eventq.put(Event('CANCEL', (result['conid'], None)))
                     self.conmap.deregister_connector(result['conid'])
-                    
+            elif event.type == 'DISCARD':
+                # prepare paramap
+                paramap = dict( ((k,v) for (k,v) in event.payload.items() 
+                                if k in ('orderid','error','errortext') ))
+                self.logger.debug('Discarding: %s', paramap)
+                # find requester
+                try:
+                    connector = self.find_requester(event.payload['conid'])
+                except KeyError:
+                    self.logger.error('Unknown connector %s, discarding order', event.payload['conid'])
+                    self.eventq.put(Event('CANCEL', (event.payload['conid'], event.payload['orderid'])))
+                    continue
+                try:
+                    connector.on_discard(paramap)
+                except:
+                    self.logger.error('Connector %s unreachable!', event.payload['conid'])
+                    self.conmap.deregister_connector(event.payload['conid'])
             else:
                 self.logger.debug('Got an unknown event type: %s. What now?',
                                   event.type)

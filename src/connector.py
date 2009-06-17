@@ -50,6 +50,10 @@ def on_result(result):
 #        print('Done with all 10!')
     return True
 
+def on_discard(result):
+    print("Something happened: %s", result)
+    return True
+        
 if __name__ == '__main__':
 
     # start server to get the result...
@@ -57,6 +61,7 @@ if __name__ == '__main__':
     print("Listening on port 43222...")
     server.register_multicall_functions()
     server.register_function(on_result,'on_result')
+    server.register_function(on_discard,'on_discard')
     thread = threading.Thread(target=server.serve_forever)
     # Exit the server thread when the main thread terminates
     thread.setDaemon(True)
@@ -83,9 +88,15 @@ if __name__ == '__main__':
                                                       'type':1,
                                                       'dataitem':i}))
 #    print('commit order: ' ,s.commit_order(myID, {'orderid': str(34), 
-#                                                      'identifier1':'127.0.0.1',
+#                                                      'identifier1':'193.196.31.38',
 #                                                      'identifier2':'134.2.172.172',
+#                                                      'type':1,
 #                                                      'dataitem':'RTT'}))
+#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(35), 
+#                                                  'identifier1':'193.196.31.38',
+#                                                  'identifier2':'134.2.172.172',
+#                                                  #'type':1,
+#                                                  'dataitem':'RTT'}))
         orderid = orderid+1
     ch = stdin.read(1)
     print('shutting down.')

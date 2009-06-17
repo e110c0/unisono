@@ -29,3 +29,8 @@
 # this file translates all errorcodes used in unisono into something useful
 
 0	everything is fine
+
+# request errors (all start with 4xx)
+400 order incomplete
+401 connector unknown
+404 data item not found
