@@ -114,9 +114,7 @@ class MMcTemplate(MMTemplate):
         creqstruct = self.prepare_request(self.request)
         # call c measurement function
         self.libmodule.measure.restype = self.cresstruct.__class__
-        self.logger.debug('set result type to: %s , calling c function now', self.libmodule.measure.restype)
         self.cresstruct = self.libmodule.measure(creqstruct)
-        self.logger.debug('c function returned with result: %s', self.cresstruct)
         # put result into self.request
         for i in self.cresstruct._fields_:
             self.request[i[0]] = getattr(self.cresstruct,i[0])
