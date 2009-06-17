@@ -155,6 +155,12 @@ class Dispatcher:
 
     def process_order(self, order):
         # TODO sanity checks
+        for i in ['type','dataitem']:
+            if i not in order.keys():
+                self.logger.error('Order is incomplete (missing %s), discarding', i)
+                return;
+        if (order['type'] > 0):
+            self.logger.debug('Got a periodic or triggered order')
         if self.satisfy_from_cache(order):
             return
         elif self.aggregate_order(order):
