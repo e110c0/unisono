@@ -74,12 +74,12 @@ if __name__ == '__main__':
 
     for i in s.list_available_dataitems():
         print('my order:', {'orderid': str(orderid), 
-                                                      'identifier1':'10.192.128.43',
-                                                      'identifier2':'10.192.128.43',
+                                                      'identifier1':'127.0.0.1',
+                                                      'identifier2':'127.0.0.1',
                                                       'dataitem':i})
         print('commit order: ' ,s.commit_order(myID, {'orderid': str(orderid), 
-                                                      'identifier1':'10.192.128.43',
-                                                      'identifier2':'10.192.128.43',
+                                                      'identifier1':'127.0.0.1',
+                                                      'identifier2':'127.0.0.1',
                                                       'dataitem':i}))
 
         orderid = orderid+1
