@@ -37,88 +37,88 @@
 #                  connection between to nodes (therefore, it requires 2
 #                  identifiers)
 #
-# name					type	explanation
+# name					type	impl	explanation
 # Data items for link properties (2 identifier)
 # bandwidth
-AVAILABLE_BANDWIDTH		l		available Bandwidth from NodeID2 -> NodeID1 in bit/s
-ADR 					l		guessed value: upper bound for availBW, lower bound for capacity in bit/s
-CAPACITY				l		capacity of the Link between NodeID2 -> NodeID1 in bit/s
+AVAILABLE_BANDWIDTH		l				available Bandwidth from NodeID2 -> NodeID1 in bit/s
+ADR 					l				guessed value: upper bound for availBW, lower bound for capacity in bit/s
+CAPACITY				l				capacity of the Link between NodeID2 -> NodeID1 in bit/s
 
 # round trip time
-RTT						l		average round trip time NodeID1 -> NodeID2 -> NodeID1 in usec
-RTT_MIN					l		min -
-RTT_MAX					l		max -
-RTT_DEVIATION			l		standard deviation -
-RTT_JITTER				l		rtt jitter
+RTT						l		*		average round trip time NodeID1 -> NodeID2 -> NodeID1 in usec
+RTT_MIN					l		*		min -
+RTT_MAX					l		*		max -
+RTT_DEVIATION			l		*		standard deviation -
+RTT_JITTER				l		*		rtt jitter
 
 # one way delay
-OWD						l		average one way delay NodeID1 -> NodeID2 in usec
-OWD_MIN					l		min -
-OWD_MAX					l		max -
-OWD_DEVIATION			l		standard deviation -
-OWD_JITTER				l		owd jitter
+OWD						l		*		average one way delay NodeID1 -> NodeID2 in usec
+OWD_MIN					l		*		min -
+OWD_MAX					l		*		max -
+OWD_DEVIATION			l		*		standard deviation -
+OWD_JITTER				l		*		owd jitter
 
-PATHMTU					l		minimal MTU between NodeID1 und NodeID2 in byte
-HOPCOUNT				l		number of hops between NodeID1 und NodeID2
-LOSS					l	end-to-end loss estimation
+PATHMTU					l		*		minimal MTU between NodeID1 und NodeID2 in byte
+HOPCOUNT				l		*		number of hops between NodeID1 und NodeID2
+LOSS					l		*		end-to-end loss estimation
 # QoS
-QOS_E2E					l		end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
+QOS_E2E					l				end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
 
 # Multicast
-IP_MULTICAST_SUPPORT	l		IP multicast support: 0 = false, 1 = true
+IP_MULTICAST_SUPPORT	l				IP multicast support: 0 = false, 1 = true
 
 # Data items for interface properties (1 identifier)
 # generic
-INTERFACE_TYPE			i	type of network interface
-INTERFACE_CAPACITY_RX	i	max receive capacity of the interface
-INTERFACE_CAPACITY_TX	i	max send capacity of the interface
-INTERFACE_MAC			i	MAC address of the interface
-INTERFACE_MTU			i	MTU of the interface
+INTERFACE_TYPE			i		*	type of network interface
+INTERFACE_CAPACITY_RX	i		*	max receive capacity of the interface
+INTERFACE_CAPACITY_TX	i		*	max send capacity of the interface
+INTERFACE_MAC			i		*	MAC address of the interface
+INTERFACE_MTU			i		*	MTU of the interface
 
-USED_BANDWIDTH_RX		i	current in use RX bandwidth 
-USED_BANDWIDTH_TX		i	current in use TX bandwidth 
+USED_BANDWIDTH_RX		i		*	current in use RX bandwidth 
+USED_BANDWIDTH_TX		i		*	current in use TX bandwidth 
 
 # wireless
-WLAN_ESSID				i	essid of the current wlan connection
-WLAN_MODE				i	mode of the wireless network
-WLAN_AP_MAC				i	MAC address of the access point (in int64_t)
-WLAN_LINK				i	WLAN link quality
-WLAN_SIGNAL				i	WLAN signal level
-WLAN_NOISE				i	WLAN noise level
-WLAN_SIGNOISE_RATIO		i	WLAN signal to noise ratio
-WLAN_CHANNEL			i	WLAN channel
-WLAN_FREQUENCY			i	WLAN frequency
+WLAN_ESSID				i		*	essid of the current wlan connection
+WLAN_MODE				i		*	mode of the wireless network
+WLAN_AP_MAC				i		*	MAC address of the access point (in int64_t)
+WLAN_LINK				i		*	WLAN link quality
+WLAN_SIGNAL				i		*	WLAN signal level
+WLAN_NOISE				i		*	WLAN noise level
+WLAN_SIGNOISE_RATIO		i		*	WLAN signal to noise ratio
+WLAN_CHANNEL			i		*	WLAN channel
+WLAN_FREQUENCY			i		*	WLAN frequency
 
 # umts
 
 # bluetooth
 
 # Data items for node properties (no identifier)
-SHARED_BANDWIDTH_RX		n	shared RX bandwidth of local interface in bit/s
-SHARED_BANDWIDTH_TX		n	shared TX bandwidth of local interface in bit/s
+SHARED_BANDWIDTH_RX		n		*	shared RX bandwidth of local interface in bit/s
+SHARED_BANDWIDTH_TX		n		*	shared TX bandwidth of local interface in bit/s
 
-CPU_TYPE				n	CPU model
-CPU_SPEED				n	Speed in MHz
-CPU_CACHE_SIZE			n	Size of the cache in KB
-CPU_CORE_COUNT			n	number of CPU cores
-CPU_LOAD				n	current cpu usage in %
-CPU_LOAD_SYS			n	current sys cpu usage in %
-CPU_LOAD_USER			n	current user cpu usage in %
-CPU_LOAD_NICE			n	current nice cpu usage in %
-CPU_LOAD_WIO			n	current waiting io cpu usage in %
-CPU_LOAD_IDLE			n	current idle cpu usage in %
-SYTEM_LOAD_AVG_NOW		n	current sytem load (last minute)
-SYSTEM_LOAD_AVG_5MIN	n	system load during the last 5 minutes
-SYSTEM_LOAD_AVG_15MIN	n	system load during the last 5 minutes
-HOST_UPTIME				n	uptime of the host in seconds
-HOST_UPTIME_IDLE		n	time the host was idle since boot in seconds
-RAM						n	sytem memory in KB
-RAM_USED				n	currently used memory in KB
-RAM_FREE				n	currently available memory in KB
-SWAP					n	system swap in KB
-SWAP_USED				n	currently used swap in KB
-SWAP_FREE				n	currently available swap in KB
-PERSISTENT_MEMORY		n	persistent memory (i.e. HDD, SSD etc) in KB
-PERSISTENT_MEMORY_MOUNT n   path where the root is mounted
-PERSISTENT_MEMORY_USED	n	currently used persistent memory in KB
-PERSISTENT_MEMORY_FREE	n	currently available persistent memory in KB
+CPU_TYPE				n		*	CPU model
+CPU_SPEED				n		*	Speed in MHz
+CPU_CACHE_SIZE			n		*	Size of the cache in KB
+CPU_CORE_COUNT			n		*	number of CPU cores
+CPU_LOAD				n		*	current cpu usage in %
+CPU_LOAD_SYS			n		*	current sys cpu usage in %
+CPU_LOAD_USER			n		*	current user cpu usage in %
+CPU_LOAD_NICE			n		*	current nice cpu usage in %
+CPU_LOAD_WIO			n		*	current waiting io cpu usage in %
+CPU_LOAD_IDLE			n		*	current idle cpu usage in %
+SYTEM_LOAD_AVG_NOW		n		*	current sytem load (last minute)
+SYSTEM_LOAD_AVG_5MIN	n		*	system load during the last 5 minutes
+SYSTEM_LOAD_AVG_15MIN	n		*	system load during the last 5 minutes
+HOST_UPTIME				n		*	uptime of the host in seconds
+HOST_UPTIME_IDLE		n		*	time the host was idle since boot in seconds
+RAM						n		*	sytem memory in KB
+RAM_USED				n		*	currently used memory in KB
+RAM_FREE				n		*	currently available memory in KB
+SWAP					n		*	system swap in KB
+SWAP_USED				n		*	currently used swap in KB
+SWAP_FREE				n		*	currently available swap in KB
+PERSISTENT_MEMORY		n		*	persistent memory (i.e. HDD, SSD etc) in KB
+PERSISTENT_MEMORY_MOUNT	n		*	path where the root is mounted
+PERSISTENT_MEMORY_USED	n		*	currently used persistent memory in KB
+PERSISTENT_MEMORY_FREE	n		*	currently available persistent memory in KB
