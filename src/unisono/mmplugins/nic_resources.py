@@ -99,14 +99,14 @@ class NicReader(mmtemplates.MMTemplate):
         
       # wireless
         wlaninfo = popen('iwconfig ' + interface).read()
-        if ipaddress in wlaninfo:
+        if "no wireless extensions" not in wlaninfo:
             self.request['WLAN_ESSID']          = wlaninfo.split('\n')[0].strip().split()[3].split(':')[1]
             self.request['WLAN_MODE']           = wlaninfo.split('\n')[1].split()[0].split(':')[1]
             self.request['WLAN_AP_MAC']         = wlaninfo.split('\n')[1].split()[5]
             self.request['WLAN_LINK']           = wlaninfo.split('\n')[5].split()[1]
             self.request['WLAN_SIGNAL']         = wlaninfo.split('\n')[5].split()[3].split(':')[1]
             self.request['WLAN_NOISE']          = wlaninfo.split('\n')[5].split()[6].split('=')[1]
-            self.request['WLAN_SIGNOISE_RATIO'] = "cant find"
+            self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])
             self.request['WLAN_CHANNEL']        = "cant find"
             self.request['WLAN_FREQUENCY']      = wlaninfo.split('\n')[1].split()[1].split(':')[1]
         else:
