@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.0
 # encoding: utf-8
 '''
 unisono_test.py
