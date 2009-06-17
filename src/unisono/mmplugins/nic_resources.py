@@ -77,7 +77,7 @@ class NicReader(mmtemplates.MMTemplate):
         interface = "No interface with this IP"
         intinfo=''
         for i in interfacelist:
-            intinfo = popen('ifconfig ' + interface).read()
+            intinfo = popen('ifconfig ' + i).read()
             if ipaddress in intinfo:
                 interface = i
                 break
@@ -86,12 +86,12 @@ class NicReader(mmtemplates.MMTemplate):
 
         
         #TODO broken
-        #self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
+        self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
         self.request['INTERFACE_CAPACITY_RX'] = "cant find"
         self.request['INTERFACE_CAPACITY_TX'] = "cant find"
         #TODO broken
-        #self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
-        #self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
+        self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
+        self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
         
         self.request['USED_BANDWIDTH_RX'] = "cant find"
         self.request['USED_BANDWIDTH_TX'] = "cant find"
