@@ -82,6 +82,14 @@ class MMTemplate:
     def getCost(self):
         return self.cost
 
+class CRequest(Structure):
+    '''
+    Generic request structure for M&Ms using 2 identifiers
+    '''
+    _fields_ = [('identifier1', c_char_p),
+                ('identifier2', c_char_p)]
+
+
 class MMcTemplate(MMTemplate):
     '''
     Template for M&Ms written in C. Such a plugin must implement its own measure
@@ -116,7 +124,17 @@ class MMcTemplate(MMTemplate):
 
     def prepare_request(self, request):
         '''
-        Prepare the request struct. This must be implemented in a small pyhton
-        wrapper class.
+        Generic implementation of the prepare_request() method. Only useful if 
+        the M&M requires 2 identifiers. If it requires something else, the 
+        wrapper class must implement its own.
         '''
-        raise NotImplementedError('Your c M&M lacks a prepare_request() method!')
+        creqstruct = CRequest()
+        if 'identifier1' in request.keys():
+            creqstruct.identifier1 = c_char_p(request['identifier1'])
+        else:
+            creqstruct.identifier1 = ''
+        if 'identifier2' in request.keys():
+            creqstruct.identifier2 = c_char_p(request['identifier2'])
+        else:
+            creqstruct.identifier2 = ''
+        return creqstruct

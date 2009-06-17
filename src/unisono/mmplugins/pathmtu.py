@@ -32,13 +32,6 @@ from unisono.mmplugins import mmtemplates
 from ctypes import *
 from os import path
 
-class PathMTURequest(Structure):
-    '''
-    Request structure for the PathMTU module
-    '''
-    _fields_ = [('identifier1', c_char_p),
-                ('identifier2', c_char_p)]
-
 class PathMTUResult(Structure):
     '''
     Result structure for the PathMTU module
@@ -69,16 +62,3 @@ class PathMTU(mmtemplates.MMcTemplate):
     def checkrequest(self, request):
         return True
 
-    def prepare_request(self, req):
-        creqstruct = PathMTURequest()
-        self.logger.debug('our request: %s', req)
-        if 'identifier1' in req.keys():
-            creqstruct.identifier1 = c_char_p(req['identifier1'])
-        else:
-            creqstruct.identifier1 = ''
-        if 'identifier2' in req.keys():
-            creqstruct.identifier2 = c_char_p(req['identifier2'])
-        else:
-            creqstruct.identifier2 = ''
-        self.logger.debug('our cstruct request: %s', creqstruct)
-        return creqstruct

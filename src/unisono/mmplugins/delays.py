@@ -102,14 +102,3 @@ class Delays(mmtemplates.MMcTemplate):
             self.request['error'] = 312
             self.request['errortext'] = 'Not running with uid 0, can\'t measure w/o raw socket'
 
-    def prepare_request(self, req):
-        creqstruct = DelaysRequest()
-        if 'identifier1' in req.keys():
-            creqstruct.identifier1 = c_char_p(req['identifier1'])
-        else:
-            creqstruct.identifier1 = ''
-        if 'identifier2' in req.keys():
-            creqstruct.identifier2 = c_char_p(req['identifier2'])
-        else:
-            creqstruct.identifier2 = ''
-        return creqstruct
