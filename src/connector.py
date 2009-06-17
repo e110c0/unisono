@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.0
 '''
-file_name
+connector.py
 
  Created on: Mar 23, 2009
  Authors: dh
