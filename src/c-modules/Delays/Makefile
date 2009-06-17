@@ -4,7 +4,7 @@ LD = /usr/bin/ld
 LDFLAGS = 
 
 LINK_TARGET = libDelays.so
-INSTALL_DIR = ../../unisono/trunk/src/unisono/mmplugins/
+INSTALL_DIR = ../../unisono/mmplugins/
 
 OBJS =  \
 	mathfunctions.o \

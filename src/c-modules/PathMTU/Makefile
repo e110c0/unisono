@@ -4,7 +4,7 @@ LD = /usr/bin/ld
 LDFLAGS = 
 
 LINK_TARGET = libPathMTU.so
-INSTALL_DIR = ../../unisono/trunk/src/unisono/mmplugins/
+INSTALL_DIR = ../../unisono/mmplugins/
 
 OBJS =  \
 	networkfunctions.o \
