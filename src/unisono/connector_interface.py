@@ -69,15 +69,16 @@ class ConnectorMap:
         if not (isinstance(conport, int)):
             raise InvalidTypeError("Port number invalid type (must be int)")
         try:
-            socket.getaddrinfo(conip,None)
+            socket.getaddrinfo(conip, None)
         except socket.gaierror:
             raise InvalidTypeError('provided IP not valid')
         with self.lock:
             # check for ip:port in conmap
             if (conip, conport) in self.conmap.values():
-                conid = [ a for a in self.conmap.keys() 
-                         if self.conmap[a] == (conip, conport)] 
-                return str(conid)
+                conid = [a for a in self.conmap.keys() 
+                        if self.conmap[a] == (conip, conport)]
+                self.logger.info('Connector already known under UUID %s', conid)
+                return conid[0]
             else:
                 conid = uuid.uuid4()
                 self.logger.debug('Created this UUID: %s', conid)
@@ -130,6 +131,7 @@ class ConnectorFunctions:
         self.logger.debug('RPC function register_connector called.')
         self.logger.debug('Connector requested registration for port %s', port)
         callerid = self.conmap.register_connector('127.0.0.1', port)
+        self.logger.debug('CallerID: %s', callerid)
         return callerid
 
     def unregister_connector(self, callerid):
@@ -246,7 +248,7 @@ class ConnectorFunctions:
         return struct the paramap extended with the result
         '''
         # TODO: really check the cache as soon as it is implemented.
-        paramap['error']= 404
+        paramap['error'] = 404
         paramap['errortext'] = 'Data item not found in cache'
         return paramap
 
