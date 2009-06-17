@@ -72,7 +72,7 @@ class NicReader(mmtemplates.MMTemplate):
 
     def measure(self):
         ipaddress = self.request['identifier1']
-        interfacelist = os.popen('dir /proc/net/dev_snmp6/').read().split()
+        interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
         self.logger.debug(interfacelist)
         interface = "No interface with this IP"
         intinfo=''
