@@ -71,17 +71,21 @@ if __name__ == '__main__':
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
     orderid = 0
-
     for i in s.list_available_dataitems():
         print('my order:', {'orderid': str(orderid), 
-                                                      'identifier1':'127.0.0.1',
-                                                      'identifier2':'127.0.0.1',
+                                                      'identifier1':'134.2.172.173',
+                                                      'identifier2':'134.2.172.172',
+                                                      'type':1,
                                                       'dataitem':i})
         print('commit order: ' ,s.commit_order(myID, {'orderid': str(orderid), 
-                                                      'identifier1':'127.0.0.1',
-                                                      'identifier2':'127.0.0.1',
+                                                      'identifier1':'134.2.172.173',
+                                                      'identifier2':'134.2.172.172',
+                                                      'type':1,
                                                       'dataitem':i}))
-
+#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(34), 
+#                                                      'identifier1':'127.0.0.1',
+#                                                      'identifier2':'134.2.172.172',
+#                                                      'dataitem':'RTT'}))
         orderid = orderid+1
     ch = stdin.read(1)
     print('shutting down.')
