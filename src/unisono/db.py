@@ -95,20 +95,23 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
-        command = "select value from " + table + " order by time"
-        
+        #TODO get only the rows with correct identifiers
+        #command = "select * from " + table + "where identifier1=" + identifier1 + " order by time"
+        command = "select * from " + table + " order by time"
+        #command = "select * from ? where identifier1=? and identifier2=?"
         c = self.dbcon.cursor()
         try:
             c.execute(command)
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
-                result[table] = row
+                result[table] = row[3]
                 return result
             else:
                 raise NotInCacheError
-        except sqlite3.OperationalError:
-#            self.logger.error(e)
+        except sqlite3.OperationalError as e:
+            self.logger.error(e)
+            
             raise NotInCacheError
         
 

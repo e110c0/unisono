@@ -189,10 +189,10 @@ class Dispatcher:
         try:
             result = self.cache.check_for(order)
             order.update(result)
-            self.logger.debug('result from cache: %s', result)
-            self.logger.debug('updated order: %s', order)
-#            paramap[paramap['dataitem']] = result
-#            paramap['result'] = result
+            # for at least the ariba connector (deprecated)
+            order['result'] = order[order['dataitem']]
+#            self.logger.debug('result from cache: %s', result)
+#            self.logger.debug('updated order: %s', order)
             order['error'] = 0
             order['errortext'] = 'Everything went fine'
             self.replyq.put(Event('DELIVER', order))
