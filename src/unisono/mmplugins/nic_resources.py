@@ -87,30 +87,78 @@ class NicReader(mmtemplates.MMTemplate):
         
         #TODO broken
         self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
+        print("Interface Type: " + self.request['INTERFACE_TYPE'])
+        
         self.request['INTERFACE_CAPACITY_RX'] = "cant find"
+        print("Interface Capacity RX: " + self.request['INTERFACE_CAPACITY_RX'])
+        
         self.request['INTERFACE_CAPACITY_TX'] = "cant find"
+        print("Interface Type: " + self.request['INTERFACE_TYPE'])
+        
         #TODO broken
         self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
+        print("Interface Mac: " + self.request['INTERFACE_MAC'])
+        
         self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
+        print("Interface MTU: " + self.request['INTERFACE_MTU'])
         
         self.request['USED_BANDWIDTH_RX'] = "cant find"
+        print("Interface Bandwidth RX: " + self.request['USED_BANDWIDTH_RX'])
+        
         self.request['USED_BANDWIDTH_TX'] = "cant find"
+        print("Interface Bandwidth TX: " + self.request['USED_BANDWIDTH_TX'])
         
         
-      # wireless
+        
+        
+        # in diesem bereich wird was wlan behandelt 
+        # im fall das es ein wlan ist dann werden 
+        # die einzelnen felder der dictionary mit 
+        # der ausgabe von iwconfig aufgefült
         wlaninfo = popen('iwconfig ' + interface).read()
         if "no wireless extensions" not in wlaninfo:
             self.request['WLAN_ESSID']          = wlaninfo.split('\n')[0].strip().split()[3].split(':')[1]
+            # nur zur fehler kontrolle
+            print("Wlan Essid: " + self.request['WLAN_ESSID'])
+            
             self.request['WLAN_MODE']           = wlaninfo.split('\n')[1].split()[0].split(':')[1]
+            print("Wlan Mode: " + self.request['WLAN_MODE'])
+            
             self.request['WLAN_AP_MAC']         = wlaninfo.split('\n')[1].split()[5]
+            print("Wlan AP Mac: " + self.request['WLAN_AP_MAC'])
+            
             self.request['WLAN_LINK']           = wlaninfo.split('\n')[5].split()[1]
+            print("Wlan Link: " + self.request['WLAN_LINK'])
+            
             self.request['WLAN_SIGNAL']         = wlaninfo.split('\n')[5].split()[3].split(':')[1]
+            print("Wlan Signal: " + self.request['WLAN_SIGNAL'])
+            
             self.request['WLAN_NOISE']          = wlaninfo.split('\n')[5].split()[6].split('=')[1]
-            self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])
+            print("Wlan Noise: " + self.request['WLAN_NOISE'])
+            
+            #muss die noch richtig ausgerechnet werden
+            #self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])
+            #print("Wlan Essid: " + self.request['WLAN_ESSID'])
+            
             self.request['WLAN_CHANNEL']        = "cant find"
+            print("Wlan Channel: " + self.request['WLAN_CHANNEL'])
+            
             self.request['WLAN_FREQUENCY']      = wlaninfo.split('\n')[1].split()[1].split(':')[1]
+            print("Wlan Frequenz: " + self.request['WLAN_FREQUENCY'])
         else:
-            self.request['wireless error'] = "this is not a wireless interface"
+        # im es sich nicht um ein wlan handel dan 
+        # werden die felder mit "this is not a wireless
+        #interface" aufgefült
+            self.request['WLAN_ESSID']          = "this is not a wireless interface"
+            self.request['WLAN_MODE']           = "this is not a wireless interface"
+            self.request['WLAN_AP_MAC']         = "this is not a wireless interface"
+            self.request['WLAN_LINK']           = "this is not a wireless interface"
+            self.request['WLAN_SIGNAL']         = "this is not a wireless interface"
+            self.request['WLAN_NOISE']          = "this is not a wireless interface"
+            self.request['WLAN_SIGNOISE_RATIO'] = "this is not a wireless interface"
+            self.request['WLAN_CHANNEL']        = "this is not a wireless interface"
+            self.request['WLAN_FREQUENCY']      = "this is not a wireless interface"
+            self.request['wireless error']      = "this is not a wireless interface"
         
         
         self.request['error'] = 0
