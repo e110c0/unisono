@@ -52,6 +52,8 @@ class DataBase():
         '''
         self.dbcon = sqlite3.connect(":memory:")
         self.dbcursor = self.dbcon.cursor()
+        self.create_table('RTT', 2, 'INT')
+        self.purge('RTT', 2132135)
 
     def create_table(self, name, idcount, valuetype):
         '''
@@ -69,7 +71,7 @@ class DataBase():
         command = "create table " + name + "("
         if idcount < 1:
             raise InvalidTableLayout()
-        if valuetype not in ['Text','INT','REAL']:
+        if valuetype not in ['Text', 'INT', 'REAL']:
             raise InvalidTableLayout()
         for i in range(idcount):
             command = command + "identifier" + str(i) + " TEXT,"
@@ -85,6 +87,15 @@ class DataBase():
     def check_for(self, paramap):
         self.logger.debug('Checking db for %s', paramap)
         result = {}
+        table = paramap['dataitem']
+        identifier1 = paramap['identifier1']
+        if 'identifier2' in paramap.keys():
+            identifier2 = paramap['identifier2']
+        else:
+            identifier2 = None
+        command = ""
+        c = self.dbcon.cursor()
+        c.execute(command)
         if paramap['dataitem'] == 'RTT':
             result[paramap['dataitem']] = 1234124
         else:
@@ -95,3 +106,16 @@ class DataBase():
         status = 0
         self.logger.debug('Storing %s', paramap)
         return status
+    
+    def purge(self, table, time):
+        '''
+        Purge all entries in a table upt to a specific time
+        
+        @param table table to be purged (string)
+        @param time unix time stamp in seconds (int) 
+        '''
+        self.logger.debug('Purge table %s up to %s', table, time)
+        c = self.dbcon.cursor()
+        c.execute("delete from " + table + " where time < " + str(time) + ";")
+        
+        self.dbcon.commit()
