@@ -70,7 +70,7 @@ def main():
             exit(0)
     else:
         logger.info("UNISONO ---- start in foreground")
-
+    # init dispatcher
     dp = Dispatcher()
     dp.run()
     logger.info('shutting down.')

@@ -92,5 +92,6 @@ class DataBase():
         return result
 
     def store(self, paramap):
+        status = 0
         self.logger.debug('Storing %s', paramap)
-        pass
+        return status

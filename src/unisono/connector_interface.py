@@ -239,8 +239,9 @@ class ConnectorFunctions:
         (similar to the commit_order() paramap)
         '''
         #  TODO: create event and put it in the eventq
-        self.eventq.put(Event('CACHE', result))
-        return
+        #self.eventq.put(Event('CACHE', result))
+        status = self.dispatcher.cache.store(result)
+        return status
 
     def check_cache(self, conid, paramap):
         '''
