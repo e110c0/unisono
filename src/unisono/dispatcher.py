@@ -29,6 +29,8 @@ dispatcher.py
 '''
 from queue import Queue, Empty
 from unisono.db import DataBase
+from unisono.db import NotInCacheError
+
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
@@ -184,7 +186,19 @@ class Dispatcher:
             self.queue_order(order)
 
     def satisfy_from_cache(self, order):
-        return False
+        try:
+            result = self.cache.check_for(order)
+            order.update(result)
+            self.logger.debug('result from cache: %s', result)
+            self.logger.debug('updated order: %s', order)
+#            paramap[paramap['dataitem']] = result
+#            paramap['result'] = result
+            order['error'] = 0
+            order['errortext'] = 'Everything went fine'
+            self.replyq.put(Event('DELIVER', order))
+            return True
+        except NotInCacheError:
+            return False
 
     def aggregate_order(self, order):
         di = order["dataitem"]
@@ -223,7 +237,7 @@ class Dispatcher:
         try:
             di = order['dataitem']
             order[di] = result[di]
-			# for at least the ariba connector
+            # for at least the ariba connector (deprecated)
             order['result'] = result[di]
         except KeyError:
             order['error'] = 666
@@ -248,6 +262,9 @@ class Dispatcher:
                 self.replyq.put(Event('DELIVER', paramap))
         else:
             self.logger.debug('Everything fine, delivering results now')
+            # cache results
+            self.cache.store(copy.copy(r))
+            # deliver results
             for o in waitinglist:
                 self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
             self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))

@@ -63,11 +63,11 @@ class MMTemplate:
                 # do the measurement
                 self.logger.debug('request is valid, starting measurement')
                 self.measure()
-                self.result['time'] = time()
+                self.request['time'] = time()
             else:
                 # set result to nul and set errorcode
-                self.result['errorcode'] = 409
-                self.result['errortext'] = 'Order invalid'
+                self.request['errorcode'] = 409
+                self.request['errortext'] = 'Order invalid'
             self.logger.debug('The result is: %s', self.request)
             self.outq.put(Event('RESULT', [self.__class__.__name__, self.request]))
             # send event with result

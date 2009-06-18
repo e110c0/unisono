@@ -68,14 +68,16 @@ class DataBase():
         @param valuetype the type of the result values as string. Must be one of
                          TEXT, INT, REAL
         '''
-        command = "create table " + name + "("
+        
         if idcount < 1:
             raise InvalidTableLayout()
         if valuetype not in ['Text', 'INT', 'REAL']:
             raise InvalidTableLayout()
+        
+        command = "create table " + name + "("
         for i in range(idcount):
             command = command + "identifier" + str(i) + " TEXT,"
-        command = command + " time INT, value " + valuetype + ");"
+        command = command + " time REAL, value " + valuetype + ");"
         try:
             self.dbcursor.execute(command)
             self.dbcon.commit()
@@ -93,18 +95,79 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
-        command = ""
+        command = "select value from " + table + " order by time"
+        
         c = self.dbcon.cursor()
-        c.execute(command)
-        if paramap['dataitem'] == 'RTT':
-            result[paramap['dataitem']] = 1234124
-        else:
-            raise NotInCacheError()
-        return result
+        try:
+            c.execute(command)
+            row = c.fetchone()
+            if row != None:
+                self.logger.debug('our cached result: %s', row)
+                result[table] = row
+                return result
+            else:
+                raise NotInCacheError
+        except sqlite3.OperationalError:
+#            self.logger.error(e)
+            raise NotInCacheError
+        
 
     def store(self, paramap):
         status = 0
         self.logger.debug('Storing %s', paramap)
+        # get all stuff out of the paramap
+        timestamp = paramap['time']
+        del paramap['time']
+        identifier1 = paramap['identifier1']
+        del paramap['identifier1']
+        if 'identifier2' in paramap.keys():
+            identifier2 = paramap['identifier2']
+            del paramap['identifier2']
+        else:
+            identifier2 = None
+        # delete what we do not need
+        self.logger.debug('delete stuff %s', paramap)
+        try:
+            del paramap['dataitem']
+            del paramap['id']
+            del paramap['error']
+            del paramap['errortext']
+        except KeyError:
+            self.logger.debug('couldnt delete all items, bad luck...')
+        # process data items
+        self.logger.debug('storing dataitems: %s', paramap)
+        c = self.dbcon.cursor()
+        if identifier2 != None:
+            for d, v in paramap.items():
+                try:
+                    c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
+                except sqlite3.OperationalError:
+                    
+                    if type(v) == str:
+                        t= 'TEXT'
+                    elif type(v) == int:
+                        t = 'INT'
+                    elif type(v) == float:
+                        t = 'REAL'
+                    else:
+                        t = 'NULL'
+                    self.create_table(d, 2, t)
+                    c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
+        else:
+            for d, v in paramap.items():
+                try:
+                    c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
+                except sqlite3.OperationalError:
+                    if type(v) == str:
+                        t= 'TEXT'
+                    elif type(v) == int:
+                        t = 'INT'
+                    elif type(v) == float:
+                        t = 'REAL'
+                    else:
+                        t = 'NULL'
+                    self.create_table(d, 1, t)
+                    c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
         return status
     
     def purge(self, table, time):
