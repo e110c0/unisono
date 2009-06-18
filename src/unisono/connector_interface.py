@@ -33,6 +33,7 @@ from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
 from queue import Queue
 from unisono.event import Event
+from unisono.db import NotInCacheError
 
 class InterfaceError(Exception):
     pass
@@ -241,7 +242,7 @@ class ConnectorFunctions:
         self.eventq.put(Event('CACHE', result))
         return
 
-    def check_cache(self, paramap):
+    def check_cache(self, conid, paramap):
         '''
         with check_cache() it is possible to get a result from UNISONO cache if
         any exists. This should primarily be used to check for results cached
@@ -257,8 +258,18 @@ class ConnectorFunctions:
         return struct the paramap extended with the result
         '''
         # TODO: really check the cache as soon as it is implemented.
-        paramap['error'] = 404
-        paramap['errortext'] = 'Data item not found in cache'
+        try:
+            self.logger.debug('check db for %s', paramap)
+            result = self.dispatcher.cache.check_for(paramap)
+            paramap.update(result)
+#            paramap[paramap['dataitem']] = result
+#            paramap['result'] = result
+            paramap['error'] = 0
+            paramap['errortext'] = 'Everything went fine'
+
+        except NotInCacheError:
+            paramap['error'] = 404
+            paramap['errortext'] = 'Data item not found in cache'
         return paramap
 
 #class CorrelationInterface:

@@ -28,6 +28,7 @@ dispatcher.py
  
 '''
 from queue import Queue, Empty
+from unisono.db import DataBase
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
@@ -49,9 +50,13 @@ class Dispatcher:
         self.config = configuration.get_configparser()
         self.pending_orders = {}
         self.eventq = Queue()
+        self.init_database()
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
         self.init_plugins()
+    
+    def init_database(self):
+        self.cache = DataBase()
     
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is alread running
