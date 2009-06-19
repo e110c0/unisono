@@ -176,7 +176,7 @@ class Dispatcher:
             order['errortext'] = 'Unknown data item ' + order['dataitem']
             self.replyq.put(Event('DISCARD', order))
             return;
-        if (order['type'] > 0):
+        if (order['type'] != "oneshot"):
             self.logger.debug('Got a periodic or triggered order')
         if self.satisfy_from_cache(order):
             return
