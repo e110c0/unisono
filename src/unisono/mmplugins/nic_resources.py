@@ -84,32 +84,32 @@ class NicReader(mmtemplates.MMTemplate):
             else: 
                 self.request['error'] = interface
 
+
         
-        #TODO broken
-        self.request['INTERFACE_TYPE'] = intinfo.split('\n')[0].strip().split()[2].split(':')[1]
-        print("Interface Type: " + self.request['INTERFACE_TYPE'])
+        self.request['INTERFACE_TYPE'] = popen("ifconfig " + interface + " | grep encap | perl -ple '($_) = /encap:([^ ]+)/'").read()
+        print("Interface Type: ****************************************" + self.request['INTERFACE_TYPE'])
         
+        
+        #TODO im system monitor sourcecode die quelle herausfinden
         self.request['INTERFACE_CAPACITY_RX'] = "cant find"
         print("Interface Capacity RX: " + self.request['INTERFACE_CAPACITY_RX'])
-        
+        #TODO im system monitor sourcecode die quelle herausfinden
         self.request['INTERFACE_CAPACITY_TX'] = "cant find"
-        print("Interface Type: " + self.request['INTERFACE_TYPE'])
+        print("Interface Capacity TX: " + self.request['INTERFACE_TYPE'])
         
-        #TODO broken
-        self.request['INTERFACE_MAC'] = intinfo.split('\n')[0].strip().split()[4]
-        print("Interface Mac: " + self.request['INTERFACE_MAC'])
         
-        self.request['INTERFACE_MTU'] = intinfo.split('\n')[3].strip().split()[4].split(':')[1]
+        self.request['INTERFACE_MAC'] = popen("ifconfig " + interface + " | grep HWaddr | perl -ple '($_) = /HWaddr\s(.+)\s/'").read()
+        print("Interface Mac: **************************************** " + self.request['INTERFACE_MAC'])
+        
+        self.request['INTERFACE_MTU'] = popen("ifconfig " + interface + " | grep MTU | perl -ple '($_) = /MTU:([^ ]+)/'").read()
         print("Interface MTU: " + self.request['INTERFACE_MTU'])
         
+        #TODO im system monitor sourcecode die quelle herausfinden
         self.request['USED_BANDWIDTH_RX'] = "cant find"
         print("Interface Bandwidth RX: " + self.request['USED_BANDWIDTH_RX'])
-        
+        #TODO im system monitor sourcecode die quelle herausfinden
         self.request['USED_BANDWIDTH_TX'] = "cant find"
         print("Interface Bandwidth TX: " + self.request['USED_BANDWIDTH_TX'])
-        
-        
-        
         
         # in diesem bereich wird was wlan behandelt 
         # im fall das es ein wlan ist dann werden 
@@ -117,34 +117,34 @@ class NicReader(mmtemplates.MMTemplate):
         # der ausgabe von iwconfig aufgefült
         wlaninfo = popen('iwconfig ' + interface).read()
         if "no wireless extensions" not in wlaninfo:
-            self.request['WLAN_ESSID']          = wlaninfo.split('\n')[0].strip().split()[3].split(':')[1]
+            self.request['WLAN_ESSID']          = popen("iwconfig " + interface + " | grep ESSID | perl -ple '($_) = /ESSID:([^ ]+)/'").read()
             # nur zur fehler kontrolle
-            print("Wlan Essid: " + self.request['WLAN_ESSID'])
+            print("Wlan Essid ****************************************:" + self.request['WLAN_ESSID'])
             
-            self.request['WLAN_MODE']           = wlaninfo.split('\n')[1].split()[0].split(':')[1]
-            print("Wlan Mode: " + self.request['WLAN_MODE'])
+            self.request['WLAN_MODE']           = popen("iwconfig " + interface + " | grep Mode | perl -ple '($_) = /Mode:([^ ]+)/'").read()
+            print("Wlan Mode ****************************************: " + self.request['WLAN_MODE'])
             
-            self.request['WLAN_AP_MAC']         = wlaninfo.split('\n')[1].split()[5]
-            print("Wlan AP Mac: " + self.request['WLAN_AP_MAC'])
+            self.request['WLAN_AP_MAC']         = popen("iwconfig " + interface + " | grep Point | perl -ple '($_) = /Point:\s([^ ]+)/'").read()
+            print("Wlan AP Mac ****************************************: " + self.request['WLAN_AP_MAC'])
             
-            self.request['WLAN_LINK']           = wlaninfo.split('\n')[5].split()[1]
-            print("Wlan Link: " + self.request['WLAN_LINK'])
+            self.request['WLAN_LINK']           = popen("iwconfig " + interface + " | grep Quality | perl -ple '($_) = /Quality=([^ ]+)/'").read()
+            print("Wlan Link ****************************************: " + self.request['WLAN_LINK'])
             
-            self.request['WLAN_SIGNAL']         = wlaninfo.split('\n')[5].split()[3].split(':')[1]
-            print("Wlan Signal: " + self.request['WLAN_SIGNAL'])
+            self.request['WLAN_SIGNAL']         = popen("iwconfig " + interface + " | grep Signal | perl -ple '($_) = /Signal level:([^ ]+)/'").read()
+            print("Wlan Signal ****************************************: " + self.request['WLAN_SIGNAL'])
             
-            self.request['WLAN_NOISE']          = wlaninfo.split('\n')[5].split()[6].split('=')[1]
-            print("Wlan Noise: " + self.request['WLAN_NOISE'])
+            self.request['WLAN_NOISE']          = popen("iwconfig " + interface + " | grep Noise | perl -ple '($_) = /Noise level=([^ ]+)/'").read()
+            print("Wlan Noise ****************************************: " + self.request['WLAN_NOISE'])
             
             #muss die noch richtig ausgerechnet werden
             #self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])
             #print("Wlan Essid: " + self.request['WLAN_ESSID'])
             
-            self.request['WLAN_CHANNEL']        = "cant find"
-            print("Wlan Channel: " + self.request['WLAN_CHANNEL'])
+            self.request['WLAN_CHANNEL']        = popen("iwlist " + interface + " channel | grep Frequency | perl -ple '($_) = /Channel\s([^ ]+)/'").read()
+            print("Wlan Channel ****************************************: " + self.request['WLAN_CHANNEL'])
             
-            self.request['WLAN_FREQUENCY']      = wlaninfo.split('\n')[1].split()[1].split(':')[1]
-            print("Wlan Frequenz: " + self.request['WLAN_FREQUENCY'])
+            self.request['WLAN_FREQUENCY']      = popen("iwconfig " + interface + " | grep Frequency | perl -ple '($_) = /Frequency:([^ ]+)/'").read()
+            print("Wlan Frequenz ****************************************: " + self.request['WLAN_FREQUENCY'])
         else:
         # im es sich nicht um ein wlan handel dan 
         # werden die felder mit "this is not a wireless
