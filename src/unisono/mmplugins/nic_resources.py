@@ -164,4 +164,6 @@ class NicReader(mmtemplates.MMTemplate):
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
 
+def WifiReader(mmtemplate):
+    pass
         
