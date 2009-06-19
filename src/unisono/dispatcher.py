@@ -162,20 +162,26 @@ class Dispatcher:
 
     def process_order(self, order):
         # sanity checks
-        for i in ['type', 'dataitem']:
+        for i in ['type', 'dataitem', 'orderid']:
             if i not in order.keys():
                 self.logger.error('Order is incomplete (missing %s), discarding.', i)
                 self.logger.debug('%s', order)
                 order['error'] = 400
                 order['errortext'] = 'Order incomplete, missing ' + i
                 self.replyq.put(Event('DISCARD', order))
-                return;
+                return
         if order['dataitem'] not in self.dataitems.keys():
             self.logger.error('Order requests unknown data item %s, discarding.', order['dataitem'])
             order['error'] = 404
             order['errortext'] = 'Unknown data item ' + order['dataitem']
             self.replyq.put(Event('DISCARD', order))
-            return;
+            return
+        if order['type'] not in ['oneshot','periodic','triggered']:
+            self.logger.error('Order type %s unknown, discarding.', order['type'])
+            order['error'] = 404
+            order['errortext'] = 'Unknown order type ' + order['type']
+            self.replyq.put(Event('DISCARD', order))
+            return
         if (order['type'] != "oneshot"):
             self.logger.debug('Got a periodic or triggered order')
         if self.satisfy_from_cache(order):
