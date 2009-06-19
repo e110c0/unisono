@@ -95,7 +95,7 @@ class NicReader(mmtemplates.MMTemplate):
         print("Interface Capacity RX: " + self.request['INTERFACE_CAPACITY_RX'])
         #TODO im system monitor sourcecode die quelle herausfinden
         self.request['INTERFACE_CAPACITY_TX'] = "cant find"
-        print("Interface Capacity TX: " + self.request['INTERFACE_TYPE'])
+        print("Interface Capacity TX: " + self.request['INTERFACE_CAPACITY_TX'])
         
         
         self.request['INTERFACE_MAC'] = popen("ifconfig " + interface + " | grep HWaddr | perl -ple '($_) = /HWaddr\s(.+)\s/'").read()
@@ -146,9 +146,9 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['WLAN_FREQUENCY']      = popen("iwconfig " + interface + " | grep Frequency | perl -ple '($_) = /Frequency:([^ ]+)/'").read()
             print("Wlan Frequenz ****************************************: " + self.request['WLAN_FREQUENCY'])
         else:
-        # im es sich nicht um ein wlan handel dan 
-        # werden die felder mit "this is not a wireless
-        #interface" aufgefült
+            # im es sich nicht um ein wlan handel dan 
+            # werden die felder mit "this is not a wireless
+            #interface" aufgefült
             self.request['WLAN_ESSID']          = "this is not a wireless interface"
             self.request['WLAN_MODE']           = "this is not a wireless interface"
             self.request['WLAN_AP_MAC']         = "this is not a wireless interface"
@@ -159,7 +159,7 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['WLAN_CHANNEL']        = "this is not a wireless interface"
             self.request['WLAN_FREQUENCY']      = "this is not a wireless interface"
             self.request['wireless error']      = "this is not a wireless interface"
-        
+    
         
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
