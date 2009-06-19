@@ -273,10 +273,6 @@ class ConnectorFunctions:
             paramap['errortext'] = 'Data item not found in cache'
         return paramap
 
-#class CorrelationInterface:
-#    def correlate_this(self, ditype, parameter1, parameter2):
-#        pass
-
 # Threaded XMPRPC server
 #class ThreadedXMLRPCserver(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
 class ThreadedXMLRPCserver(SimpleXMLRPCServer):
@@ -382,6 +378,10 @@ class XMLRPCReplyHandler:
                 # payload is the result
                 result = event.payload
                 self.logger.debug('Our result is: %s', result)
+                # we have a strict policy for XMLRPC: everything is a string!
+                for k,v in result.items():
+                    if type(v) is not 'string':
+                        result[k]= str(result[k])
                 # find requester
                 try:
                     connector = self.find_requester(result['conid'])
