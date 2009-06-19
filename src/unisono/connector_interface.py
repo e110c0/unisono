@@ -34,6 +34,7 @@ from xmlrpc.client import ServerProxy
 from queue import Queue
 from unisono.event import Event
 from unisono.db import NotInCacheError
+from unisono.db import DataBase
 
 class InterfaceError(Exception):
     pass
@@ -113,7 +114,7 @@ class ConnectorFunctions:
         self.eventq = q
         self.conmap = conmap
         self.dispatcher = dispatcher
-        
+
     def register_connector(self, port):
         '''
         Register a connector to the overlay for callbacks. This is required
@@ -240,7 +241,8 @@ class ConnectorFunctions:
         '''
         #  TODO: create event and put it in the eventq
         #self.eventq.put(Event('CACHE', result))
-        status = self.dispatcher.cache.store(result)
+        cache = DataBase()
+        status = cache.store(result)
         return status
 
     def check_cache(self, conid, paramap):
@@ -261,7 +263,8 @@ class ConnectorFunctions:
         # TODO: really check the cache as soon as it is implemented.
         try:
             self.logger.debug('check db for %s', paramap)
-            result = self.dispatcher.cache.check_for(paramap)
+            cache = DataBase()
+            result = cache.check_for(paramap)
             paramap.update(result)
 #            paramap[paramap['dataitem']] = result
 #            paramap['result'] = result
@@ -271,6 +274,10 @@ class ConnectorFunctions:
         except NotInCacheError:
             paramap['error'] = 404
             paramap['errortext'] = 'Data item not found in cache'
+        # we have a strict policy for XMLRPC: everything is a string!
+        for k,v in paramap.items():
+            if type(v) is not 'string':
+                paramap[k]= str(paramap[k])
         return paramap
 
 # Threaded XMPRPC server

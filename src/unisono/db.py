@@ -31,6 +31,8 @@ db.py
 import logging
 import sqlite3
 
+from unisono.utils import configuration
+
 class NotInCacheError(Exception):
     pass
 
@@ -50,10 +52,16 @@ class DataBase():
         '''
         Constructor
         '''
-        self.dbcon = sqlite3.connect(":memory:")
+        try:
+            dbfile = self.config.get('Cache', 'dbfile')
+            self.logger.info('Initialize DB: %s', dbfile)
+        except:
+            self.logger.info('Initialize DB at default location')
+            dbfile = '/dev/shm/unisono.db'
+        self.config = configuration.get_configparser()
+        self.dbcon = sqlite3.connect(dbfile)
         self.dbcursor = self.dbcon.cursor()
-        self.create_table('RTT', 2, 'INT')
-        self.purge('RTT', 2132135)
+
 
     def create_table(self, name, idcount, valuetype):
         '''
@@ -71,12 +79,12 @@ class DataBase():
         
         if idcount < 1:
             raise InvalidTableLayout()
-        if valuetype not in ['Text', 'INT', 'REAL']:
+        if valuetype not in ['TEXT', 'INT', 'REAL']:
             raise InvalidTableLayout()
         
         command = "create table " + name + "("
         for i in range(idcount):
-            command = command + "identifier" + str(i) + " TEXT,"
+            command = command + "identifier" + str(i+1) + " TEXT,"
         command = command + " time REAL, value " + valuetype + ");"
         try:
             self.dbcursor.execute(command)
@@ -99,13 +107,13 @@ class DataBase():
         else:
             identifier2 = None
         #TODO get only the rows with correct identifiers
-        #command = "select * from " + table + "where identifier1=" + identifier1 + " order by time"
-        command = "select * from " + table + " order by time"
+        command = 'select * from ' + table + ' where identifier1="' + identifier1 + '" order by time desc'
+        #command = "select * from " + table + " order by time"
         #command = "select * from ? where identifier1=? and identifier2=?"
         c = self.dbcon.cursor()
         try:
-#            c.execute(command)
-            c.execute("select * from RTT where identifier1='193.196.31.38'")
+            c.execute(command)
+#            c.execute('select * from RTT where identifier1="193.196.31.38"; ')
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
@@ -139,6 +147,7 @@ class DataBase():
             del paramap['id']
             del paramap['error']
             del paramap['errortext']
+            del paramap['type']
         except KeyError:
             self.logger.debug('couldnt delete all items, bad luck...')
         # process data items
@@ -175,6 +184,7 @@ class DataBase():
                         t = 'NULL'
                     self.create_table(d, 1, t)
                     c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
+        self.dbcon.commit()
         return status
     
     def purge(self, table, time):
@@ -187,5 +197,5 @@ class DataBase():
         self.logger.debug('Purge table %s up to %s', table, time)
         c = self.dbcon.cursor()
         c.execute("delete from " + table + " where time < " + str(time) + ";")
-        
+        c.close()
         self.dbcon.commit()

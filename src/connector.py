@@ -33,6 +33,7 @@ from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 import xmlrpc.client
 import threading
 from sys import stdin
+from time import sleep
 
 counter = 0
 myID = ""
@@ -40,8 +41,8 @@ myID = ""
 def on_result(result):
     global counter
     global myID
-    counter +=1
-    print("Oh yeah, got my result: %s",result)
+    counter += 1
+    print("Oh yeah, got my result: %s", result)
 #    if counter < 10:
 #        print('commit order: ' ,
 #              s.commit_order(myID, {'orderid':counter, 'identifier2':'127.0.0.1', 'dataitem':'PATHMTU'}))
@@ -57,11 +58,11 @@ def on_discard(result):
 if __name__ == '__main__':
 
     # start server to get the result...
-    server = SimpleXMLRPCServer(("localhost", 43222),logRequests=False)
+    server = SimpleXMLRPCServer(("localhost", 43222), logRequests=False)
     print("Listening on port 43222...")
     server.register_multicall_functions()
-    server.register_function(on_result,'on_result')
-    server.register_function(on_discard,'on_discard')
+    server.register_function(on_result, 'on_result')
+    server.register_function(on_discard, 'on_discard')
     thread = threading.Thread(target=server.serve_forever)
     # Exit the server thread when the main thread terminates
     thread.setDaemon(True)
@@ -76,28 +77,43 @@ if __name__ == '__main__':
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
     orderid = 0
-    for i in s.list_available_dataitems():
-        print('my order:', {'orderid': str(orderid), 
-                                                      'identifier1':'134.2.172.173',
-                                                      'identifier2':'134.2.172.172',
-                                                      'type':1,
-                                                      'dataitem':i})
-        print('commit order: ' ,s.commit_order(myID, {'orderid': str(orderid), 
-                                                      'identifier1':'134.2.172.173',
-                                                      'identifier2':'134.2.172.172',
-                                                      'type':1,
-                                                      'dataitem':i}))
-#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(34), 
-#                                                      'identifier1':'193.196.31.38',
+#    for i in s.list_available_dataitems():
+#        print('my order:', {'orderid': str(orderid), 
+#                                                      'identifier1':'134.2.172.173',
 #                                                      'identifier2':'134.2.172.172',
 #                                                      'type':1,
-#                                                      'dataitem':'RTT'}))
-#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(35), 
-#                                                  'identifier1':'193.196.31.38',
-#                                                  'identifier2':'134.2.172.172',
-#                                                  #'type':1,
-#                                                  'dataitem':'RTT'}))
-        orderid = orderid+1
+#                                                      'dataitem':i})
+#        print('commit order: ' ,s.commit_order(myID, {'orderid': str(orderid), 
+#                                                      'identifier1':'134.2.172.173',
+#                                                      'identifier2':'134.2.172.172',
+#                                                      'type':1,
+#                                                      'dataitem':i}))
+#        orderid = orderid+1
+    print('commit order: ' ,s.commit_order(myID, {'orderid': str(34), 
+                                                      'identifier1':'193.196.31.38',
+                                                      'identifier2':'134.2.172.172',
+                                                      'type':'periodic',
+                                                      'dataitem':'RTT'}))
+    sleep(3)
+    print('commit order: ' ,s.commit_order(myID, {'orderid': str(35), 
+                                                  'identifier1':'193.196.31.38',
+                                                  'identifier2':'134.2.172.172',
+                                                  'type':'periodic',
+                                                  'dataitem':'RTT_MIN'}))
+    sleep(3)
+## cache testing:
+    print('check cache: ' , s.check_cache(myID, {
+                                              'identifier1':'193.196.31.38',
+                                              'identifier2':'134.2.172.172',
+                                              'type':1,
+                                              'dataitem':'RTT'}))
+    print('check cache: ' , s.check_cache(myID, {
+                                              'identifier1':'193.196.31.38',
+                                              'identifier2':'134.2.172.172',
+                                              'type':1,
+                                              'dataitem':'RTT_MIN'}))
+
+
     ch = stdin.read(1)
     print('shutting down.')
     print(s.unregister_connector(myID))
