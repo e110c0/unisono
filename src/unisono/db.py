@@ -90,7 +90,10 @@ class DataBase():
         self.logger.debug('Checking db for %s', paramap)
         result = {}
         table = paramap['dataitem']
-        identifier1 = paramap['identifier1']
+        if 'identifier1' in paramap.keys():
+            identifier1 = paramap['identifier1']
+        else:
+            raise NotInCacheError
         if 'identifier2' in paramap.keys():
             identifier2 = paramap['identifier2']
         else:
@@ -101,7 +104,8 @@ class DataBase():
         #command = "select * from ? where identifier1=? and identifier2=?"
         c = self.dbcon.cursor()
         try:
-            c.execute(command)
+#            c.execute(command)
+            c.execute("select * from RTT where identifier1='193.196.31.38'")
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
