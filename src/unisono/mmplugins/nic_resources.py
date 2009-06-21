@@ -55,6 +55,20 @@ class NicReader(mmtemplates.MMTemplate):
 
                           'USED_BANDWIDTH_RX', 
                           'USED_BANDWIDTH_TX',
+
+                          #Wireless
+                          'WLAN_ESSID',
+                          'WLAN_MODE',
+                          'WLAN_AP_MAC',
+                          'WLAN_LINK',
+                          'WLAN_SIGNAL',
+                          'WLAN_NOISE',            
+                          'WLAN_SIGNOISE_RATIO',
+                          'WLAN_CHANNEL',
+                          'WLAN_FREQUENCY'
+
+                          
+                          
                           ]
         self.cost = 500
 
@@ -87,8 +101,7 @@ class NicReader(mmtemplates.MMTemplate):
         else:
             self.request['INTERFACE_TYPE'] = "Information not Available"
         
-        
-        
+        print("++++++++++++++++++++++" + self.request['INTERFACE_TYPE'])
         #TODO find information on Receive Rate
         intcaprx = re.search("++++++:(.*)", intinfo)
         if intcaprx != None:
@@ -149,107 +162,53 @@ class NicReader(mmtemplates.MMTemplate):
         self.logger.debug('The result is: %s', self.request['USED_BANDWIDTH_RX'])
         self.logger.debug('The result is: %s', self.request['USED_BANDWIDTH_TX'])
             
-        self.request['error'] = 0
-        self.request['errortext'] = 'Measurement successful'
-
-
-
-
-
-def WifiReader(mmtemplate):
-
-    '''
-    generic template for all M&Ms
-    '''
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-
-    def __init__(self, *args):
-        '''
-        init the M&M and start the thread
-        '''
-        super().__init__(*args)
-        self.dataitems = [
-                          'WLAN_ESSID',
-                          'WLAN_MODE',
-                          'WLAN_AP_MAC',
-                          'WLAN_LINK',
-                          'WLAN_SIGNAL',
-                          'WLAN_NOISE',            
-                          'WLAN_SIGNOISE_RATIO',
-                          'WLAN_CHANNEL',
-                          'WLAN_FREQUENCY'
-                          ]
-        self.cost = 500
-
-    def checkrequest(self, request):
-        return True
-
-
-    def measure(self):
-        
-        ipaddress = self.request['identifier1']
-        interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
-        self.logger.debug(interfacelist)
-        interface = "No wireless interface with this IP"
-        intinfo=''
-        for i in interfacelist:
-            intinfo = popen('iwconfig ' + i).read()
-            if ipaddress in intinfo:
-                interface = i
-                break
-            else: 
-                self.request['error'] = interface   
-        
-       
-        # In this part the programs 
-        
-        
-        
         wlaninfo = popen('iwconfig ' + interface).read()
         if len(wlaninfo) != 0:
             
-            
-            essid = re.search("ESSID:(.*)", wlaninfo)
+            essid = re.search('ESSID:([^ ]+)', wlaninfo)
             if essid != None:
                 essid = essid.group()
-                self.request['WLAN_ESSID'] = essid
+                self.request['WLAN_ESSID'] = essid.split(":")[1]
             else:
                 self.request['WLAN_ESSID'] = "Information not available"
             
             
-            mode = re.search("Mode:(.*)", wlaninfo)
+            mode = re.search('Mode:([^ ]+)', wlaninfo)
             if mode != None:
                 mode = mode.group()
-                self.request['WLAN_MODE'] = mode
+                self.request['WLAN_MODE'] = mode.split(':')[1]
             else:
                 self.request['WLAN_MODE'] = "Information not available"
             
-            apmac = re.search("Access Point:(.*)", wlaninfo)
+            # Access Point MAC Address:
+            apmac = re.search('Access Point: ([^ ]+)', wlaninfo)
             if apmac != None:
                 apmac = apmac.group()
-                self.request['WLAN_AP_MAC'] = apmac
+                self.request['WLAN_AP_MAC'] = apmac.split()[2]
             else:
                 self.request['WLAN_AP_MAC'] = "Information not available"
             
-            link = re.search("Mode(.*)", wlaninfo)
+            # Link quality:
+            link = re.search('Link Quality=([^ ]+)', wlaninfo)
             if link != None:
                 link = link.group()
-                self.request['WLAN_LINK'] = link
+                self.request['WLAN_LINK'] = link.split()[1].split("=")[1]
             else:
                 self.request['WLAN_LINK'] = "Information not available"
         
-            signal = re.search("Signal level:(.*)", wlaninfo)
+            # Signal Level:
+            signal = re.search('Signal level:([^ ]+)', wlaninfo)
             if signal != None:
                 signal = signal.group()
-                self.request['WLAN_SIGNAL'] = signal 
+                self.request['WLAN_SIGNAL'] = signal.split(':')[1]
             else:
                 self.request['WLAN_SIGNAL'] = "Information not available"
-        
-            noise = re.search("Noise level=(.*)", wlaninfo)
+                
+            # Noise Level:
+            noise = re.search('Noise level=([^ ]+)', wlaninfo)
             if noise != None:
                 noise = noise.group()
-                self.request['WLAN_NOISE'] = noise
+                self.request['WLAN_NOISE'] = noise.split('=')[1]
             else:
                 self.request['WLAN_NOISE'] = "Information not available"
             
@@ -258,21 +217,25 @@ def WifiReader(mmtemplate):
             self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
             
             
-            channel = re.search("Mode(.*)", wlaninfo).group()
-            self.request['WLAN_CHANNEL']        = popen("iwlist " + interface + " channel | grep Frequency | perl -ple '($_) = /Channel\s([^ ]+)/'").read()
+            # Used Wireless Channel:
+            chaninfo = popen("iwlist " + interface + " channel | grep Frequency").read()
+            channel = re.search('Channel ([^ ]+)', wlaninfo)
+            if channel != None:
+                channel = channel.group()
+                self.request['WLAN_CHANNEL'] = channel.split()[1]
+            else:
+                self.request['WLAN_CHANNEL'] = "Information not available"
             
-
-            freq = re.search("Frequency:(.*)", wlaninfo)
+            # Wireless Frequency:
+            freq = re.search('Frequency=([^ ]+)', wlaninfo)
             if freq != None:
                 freq = freq.group()
-                self.request['WLAN_FREQUENCY'] = freq
+                self.request['WLAN_FREQUENCY'] = freq.split('=')[1]
             else:
                 self.request['WLAN_FREQUENCY'] = "Information not available"
             
         else:
-            # im es sich nicht um ein wlan handel dan 
-            # werden die felder mit "this is not a wireless
-            #interface" aufgefült
+            # Case when we have no wireless device:
             self.request['WLAN_ESSID']          = "this is not a wireless interface"
             self.request['WLAN_MODE']           = "this is not a wireless interface"
             self.request['WLAN_AP_MAC']         = "this is not a wireless interface"
@@ -297,6 +260,160 @@ def WifiReader(mmtemplate):
 
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
+
+
+
+
+
+#def WifiReader(mmtemplate):
+#
+#    '''
+#    generic template for all M&Ms
+#    '''
+#    logger = logging.getLogger(__name__)
+#    logger.setLevel(logging.DEBUG)
+#
+#    def __init__(self, *args):
+#        '''
+#        init the M&M and start the thread
+#        '''
+#        super().__init__(*args)
+#        self.dataitems = [
+#                          'WLAN_ESSID',
+#                          'WLAN_MODE',
+#                          'WLAN_AP_MAC',
+#                          'WLAN_LINK',
+#                          'WLAN_SIGNAL',
+#                          'WLAN_NOISE',            
+#                          'WLAN_SIGNOISE_RATIO',
+#                          'WLAN_CHANNEL',
+#                          'WLAN_FREQUENCY'
+#                          ]
+#        self.cost = 500
+#
+#    def checkrequest(self, request):
+#        return True
+#
+#
+#    def measure(self):
+#        
+#        ipaddress = self.request['identifier1']
+#        interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
+#        self.logger.debug(interfacelist)
+#        interface = "No wireless interface with this IP"
+#        intinfo=''
+#        for i in interfacelist:
+#            intinfo = popen('iwconfig ' + i).read()
+#            if ipaddress in intinfo:
+#                interface = i
+#                break
+#            else: 
+#                self.request['error'] = interface   
+#        
+#       
+#        # In this part the programs 
+#        
+#        
+#                wlaninfo = popen('iwconfig ' + interface).read()
+#        if len(wlaninfo) != 0:
+#            
+#            essid = re.search('ESSID:([^ ]+)', wlaninfo)
+#            if essid != None:
+#                essid = essid.group()
+#                self.request['WLAN_ESSID'] = essid.split(":")[1]
+#            else:
+#                self.request['WLAN_ESSID'] = "Information not available"
+#            
+#            
+#            mode = re.search('Mode:([^ ]+)', wlaninfo)
+#            if mode != None:
+#                mode = mode.group()
+#                self.request['WLAN_MODE'] = mode.split(':')[1]
+#            else:
+#                self.request['WLAN_MODE'] = "Information not available"
+#            
+#            # Access Point MAC Address:
+#            apmac = re.search('Access Point: ([^ ]+)', wlaninfo)
+#            if apmac != None:
+#                apmac = apmac.group()
+#                self.request['WLAN_AP_MAC'] = apmac.split()[2]
+#            else:
+#                self.request['WLAN_AP_MAC'] = "Information not available"
+#            
+#            # Link quality:
+#            link = re.search('Link Quality=([^ ]+)', wlaninfo)
+#            if link != None:
+#                link = link.group()
+#                self.request['WLAN_LINK'] = link.split()[1].split("=")[1]
+#            else:
+#                self.request['WLAN_LINK'] = "Information not available"
+#        
+#            # Signal Level:
+#            signal = re.search('Signal level:([^ ]+)', wlaninfo)
+#            if signal != None:
+#                signal = signal.group()
+#                self.request['WLAN_SIGNAL'] = signal.split(':')[1]
+#            else:
+#                self.request['WLAN_SIGNAL'] = "Information not available"
+#                
+#            # Noise Level:
+#            noise = re.search('Noise level=([^ ]+)', wlaninfo)
+#            if noise != None:
+#                noise = noise.group()
+#                self.request['WLAN_NOISE'] = noise.split('=')[1]
+#            else:
+#                self.request['WLAN_NOISE'] = "Information not available"
+#            
+#            
+#            # given in dB by Ratio = 10*lg(Signal/Noise)
+#            self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
+#            
+#            
+#            # Used Wireless Channel:
+#            chaninfo = popen("iwlist " + interface + " channel | grep Frequency").read()
+#            channel = re.search('Channel ([^ ]+)', wlaninfo)
+#            if channel != None:
+#                channel = channel.group()
+#                self.request['WLAN_CHANNEL'] = channel.split()[1]
+#            else:
+#                self.request['WLAN_CHANNEL'] = "Information not available"
+#            
+#            # Wireless Frequency:
+#            freq = re.search('Frequency=([^ ]+)', wlaninfo)
+#            if freq != None:
+#                freq = freq.group()
+#                self.request['WLAN_FREQUENCY'] = freq.split('=')[1]
+#            else:
+#                self.request['WLAN_FREQUENCY'] = "Information not available"
+#            
+#        else:
+#            # Case when we have no wireless device:
+#            self.request['WLAN_ESSID']          = "this is not a wireless interface"
+#            self.request['WLAN_MODE']           = "this is not a wireless interface"
+#            self.request['WLAN_AP_MAC']         = "this is not a wireless interface"
+#            self.request['WLAN_LINK']           = "this is not a wireless interface"
+#            self.request['WLAN_SIGNAL']         = "this is not a wireless interface"
+#            self.request['WLAN_NOISE']          = "this is not a wireless interface"
+#            self.request['WLAN_SIGNOISE_RATIO'] = "this is not a wireless interface"
+#            self.request['WLAN_CHANNEL']        = "this is not a wireless interface"
+#            self.request['WLAN_FREQUENCY']      = "this is not a wireless interface"
+#            
+#
+#
+#        #Wireless information for the debugger
+#        self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_MODE'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_AP_MAC'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_LINK'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_SIGNAL'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_NOISE'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
+#        self.logger.debug('The result is: %s', self.request['WLAN_FREQUENCY'])
+#
+#        
+
+#        self.request['error'] = 0
+#        self.request['errortext'] = 'Measurement successful'
 
 
 
