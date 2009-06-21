@@ -1,5 +1,5 @@
 '''
-nic_resources.py
+file_name
 
  Created on: May 14, 2009
  Authors: dh
@@ -28,7 +28,7 @@ nic_resources.py
  
 '''
 
-import threading, logging, re, string, sys, math
+import threading, logging, re, string, sys
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import popen
@@ -46,7 +46,6 @@ class NicReader(mmtemplates.MMTemplate):
         '''
         super().__init__(*args)
         self.dataitems = [
-                          'INTERFACE',
                           'INTERFACE_TYPE',
                           'INTERFACE_CAPACITY_RX',
                           'INTERFACE_CAPACITY_TX',    
@@ -55,8 +54,7 @@ class NicReader(mmtemplates.MMTemplate):
 
                           'USED_BANDWIDTH_RX', 
                           'USED_BANDWIDTH_TX',
-
-                          #Wireless
+                          # wireless
                           'WLAN_ESSID',
                           'WLAN_MODE',
                           'WLAN_AP_MAC',
@@ -66,9 +64,6 @@ class NicReader(mmtemplates.MMTemplate):
                           'WLAN_SIGNOISE_RATIO',
                           'WLAN_CHANNEL',
                           'WLAN_FREQUENCY'
-
-                          
-                          
                           ]
         self.cost = 500
 
@@ -88,9 +83,9 @@ class NicReader(mmtemplates.MMTemplate):
                 break
             else: 
                 self.request['error'] = interface
-                
 
 
+        
         ## Properties Information:
         
         # Interface Type:        
@@ -101,7 +96,7 @@ class NicReader(mmtemplates.MMTemplate):
         else:
             self.request['INTERFACE_TYPE'] = "Information not Available"
         
-        print("++++++++++++++++++++++" + self.request['INTERFACE_TYPE'])
+        
         #TODO find information on Receive Rate
         intcaprx = re.search("++++++:(.*)", intinfo)
         if intcaprx != None:
@@ -109,49 +104,49 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['INTERFACE_CAPACITY_RX'] = intcaprx
         else:
             self.request['INTERFACE_CAPACITY_RX'] = "Information not Available"
-        
+
+
         #TODO find information Transmission Rate
         intcaptx = re.search("++++++:(.*)", intinfo)
         if intcaptx != None:
             intcaptx = intcaptx.group()
-            self.request['INTERFACE_CAPACITY_TX'] = "cant find"
+            self.request['INTERFACE_CAPACITY_TX'] = intcaptx
         else:
             self.request['INTERFACE_CAPACITY_TX'] = "Information not Available"
         
-        
-        
+        # MAC Address: 
         mac = re.search("HWaddr(.*)", intinfo)
         if mac != None:
             mac = mac.group()
             self.request['INTERFACE_MAC'] = mac.split()[1] 
         else:
             self.request['INTERFACE_MAC'] = "Information not Available"
-
-    
+        
+        # MTU
         mtu = re.search("MTU:(.*)", intinfo)
         if mtu != None:
             mtu = mtu.group()
             self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
         else:
             self.request['INTERFACE_MTU'] = "Information not Available"
+
         
-        
-        #TODO find information source in Systemmonitor
-        usbandrx = re.search("++++++:(.*)", intinfo)
+        # Received bytes
+        usbandrx = re.search('RX bytes:([^ ]+)', intinfo)
         if usbandrx != None:
             usbandrx = usbandrx.group()
-            self.request['USED_BANDWIDTH_RX'] = usbandrx
+            self.request['USED_BANDWIDTH_RX'] = usbandrx.split(':')[1]
         else:
             self.request['USED_BANDWIDTH_RX'] = "Information not Available"
-        
-        
-        #TODO find information source in Systemmonitor
-        usbandtx = re.search("++++++:(.*)", intinfo)
+            
+        # Transmitted bytes
+        usbandtx = re.search('TX bytes:([^ ]+)', intinfo)
         if usbandtx != None:
             usbandtx = usbandtx.group()
-            self.request['USED_BANDWIDTH_TX'] = "cant find"
+            self.request['USED_BANDWIDTH_TX'] = usbandtx.split(':')[1]
         else:
             self.request['USED_BANDWIDTH_TX'] = "Information not Available"
+
 
         #Interface Information for the debugger
         self.logger.debug('The result is: %s', self.request['INTERFACE_TYPE'])
@@ -161,25 +156,31 @@ class NicReader(mmtemplates.MMTemplate):
         self.logger.debug('The result is: %s', self.request['INTERFACE_MTU'])
         self.logger.debug('The result is: %s', self.request['USED_BANDWIDTH_RX'])
         self.logger.debug('The result is: %s', self.request['USED_BANDWIDTH_TX'])
-            
+
+        
+        #Wireless interfaces
         wlaninfo = popen('iwconfig ' + interface).read()
+        # if we have a wirelss interface -> 1
+        # else -> 2
         if len(wlaninfo) != 0:
+            # -> 1 each field will be initialized
             
+            # ESSID of the Wireless connection:
             essid = re.search('ESSID:([^ ]+)', wlaninfo)
             if essid != None:
                 essid = essid.group()
                 self.request['WLAN_ESSID'] = essid.split(":")[1]
             else:
                 self.request['WLAN_ESSID'] = "Information not available"
-            
-            
+
+            # Connection mode:
             mode = re.search('Mode:([^ ]+)', wlaninfo)
             if mode != None:
                 mode = mode.group()
                 self.request['WLAN_MODE'] = mode.split(':')[1]
             else:
                 self.request['WLAN_MODE'] = "Information not available"
-            
+
             # Access Point MAC Address:
             apmac = re.search('Access Point: ([^ ]+)', wlaninfo)
             if apmac != None:
@@ -187,7 +188,7 @@ class NicReader(mmtemplates.MMTemplate):
                 self.request['WLAN_AP_MAC'] = apmac.split()[2]
             else:
                 self.request['WLAN_AP_MAC'] = "Information not available"
-            
+                        
             # Link quality:
             link = re.search('Link Quality=([^ ]+)', wlaninfo)
             if link != None:
@@ -195,7 +196,7 @@ class NicReader(mmtemplates.MMTemplate):
                 self.request['WLAN_LINK'] = link.split()[1].split("=")[1]
             else:
                 self.request['WLAN_LINK'] = "Information not available"
-        
+
             # Signal Level:
             signal = re.search('Signal level:([^ ]+)', wlaninfo)
             if signal != None:
@@ -203,19 +204,17 @@ class NicReader(mmtemplates.MMTemplate):
                 self.request['WLAN_SIGNAL'] = signal.split(':')[1]
             else:
                 self.request['WLAN_SIGNAL'] = "Information not available"
-                
+            
             # Noise Level:
             noise = re.search('Noise level=([^ ]+)', wlaninfo)
             if noise != None:
                 noise = noise.group()
                 self.request['WLAN_NOISE'] = noise.split('=')[1]
             else:
-                self.request['WLAN_NOISE'] = "Information not available"
-            
+                self.request['WLAN_NOISE'] = "Information not available"            
             
             # given in dB by Ratio = 10*lg(Signal/Noise)
             self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
-            
             
             # Used Wireless Channel:
             chaninfo = popen("iwlist " + interface + " channel | grep Frequency").read()
@@ -233,8 +232,11 @@ class NicReader(mmtemplates.MMTemplate):
                 self.request['WLAN_FREQUENCY'] = freq.split('=')[1]
             else:
                 self.request['WLAN_FREQUENCY'] = "Information not available"
-            
+    
         else:
+            # -> 2 each field will be initialized with
+            # "this is not a wireless interface" 
+            
             # Case when we have no wireless device:
             self.request['WLAN_ESSID']          = "this is not a wireless interface"
             self.request['WLAN_MODE']           = "this is not a wireless interface"
@@ -245,10 +247,9 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['WLAN_SIGNOISE_RATIO'] = "this is not a wireless interface"
             self.request['WLAN_CHANNEL']        = "this is not a wireless interface"
             self.request['WLAN_FREQUENCY']      = "this is not a wireless interface"
-            
+            self.request['wireless error']      = "this is not a wireless interface"
 
 
-        #Wireless information for the debugger
         self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
         self.logger.debug('The result is: %s', self.request['WLAN_MODE'])
         self.logger.debug('The result is: %s', self.request['WLAN_AP_MAC'])
@@ -257,13 +258,15 @@ class NicReader(mmtemplates.MMTemplate):
         self.logger.debug('The result is: %s', self.request['WLAN_NOISE'])
         self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
         self.logger.debug('The result is: %s', self.request['WLAN_FREQUENCY'])
-
+    
+        
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
 
 
+    
 
-
+#WifiReader is implemented.
 
 #def WifiReader(mmtemplate):
 #
@@ -414,7 +417,4 @@ class NicReader(mmtemplates.MMTemplate):
 
 #        self.request['error'] = 0
 #        self.request['errortext'] = 'Measurement successful'
-
-
-
         
