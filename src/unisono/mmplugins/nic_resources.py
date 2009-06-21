@@ -158,7 +158,7 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['WLAN_SIGNOISE_RATIO'] = "this is not a wireless interface"
             self.request['WLAN_CHANNEL']        = "this is not a wireless interface"
             self.request['WLAN_FREQUENCY']      = "this is not a wireless interface"
-            self.request['wireless error']      = "this is not a wireless interface"
+            
     
         
         self.request['error'] = 0
