@@ -28,7 +28,7 @@ nic_resources.py
  
 '''
 
-import threading, logging, re, string, sys
+import threading, logging, re, string, sys, math
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import popen
@@ -74,18 +74,22 @@ class NicReader(mmtemplates.MMTemplate):
                 break
             else: 
                 self.request['error'] = interface
+                
+
 
         ## Properties Information:
         
-        type = re.search("Mode:(.*)", intinfo)
+        # Interface Type:        
+        type = re.search("Link encap:(.*)", intinfo)
         if type != None:
             type = type.group()
-            self.request['INTERFACE_TYPE'] = type
+            self.request['INTERFACE_TYPE'] = type.split()[1].split(':')[1]
         else:
             self.request['INTERFACE_TYPE'] = "Information not Available"
         
         
-        #TODO find information source in Systemmonitor
+        
+        #TODO find information on Receive Rate
         intcaprx = re.search("++++++:(.*)", intinfo)
         if intcaprx != None:
             intcaprx = intcaprx.group()
@@ -93,7 +97,7 @@ class NicReader(mmtemplates.MMTemplate):
         else:
             self.request['INTERFACE_CAPACITY_RX'] = "Information not Available"
         
-        #TODO find information source in Systemmonitor
+        #TODO find information Transmission Rate
         intcaptx = re.search("++++++:(.*)", intinfo)
         if intcaptx != None:
             intcaptx = intcaptx.group()
@@ -101,10 +105,12 @@ class NicReader(mmtemplates.MMTemplate):
         else:
             self.request['INTERFACE_CAPACITY_TX'] = "Information not Available"
         
+        
+        
         mac = re.search("HWaddr(.*)", intinfo)
         if mac != None:
             mac = mac.group()
-            self.request['INTERFACE_MAC'] = mac     
+            self.request['INTERFACE_MAC'] = mac.split()[1] 
         else:
             self.request['INTERFACE_MAC'] = "Information not Available"
 
@@ -112,7 +118,7 @@ class NicReader(mmtemplates.MMTemplate):
         mtu = re.search("MTU:(.*)", intinfo)
         if mtu != None:
             mtu = mtu.group()
-            self.request['INTERFACE_MTU'] = mtu
+            self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
         else:
             self.request['INTERFACE_MTU'] = "Information not Available"
         
@@ -145,6 +151,10 @@ class NicReader(mmtemplates.MMTemplate):
             
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
+
+
+
+
 
 def WifiReader(mmtemplate):
 
@@ -243,15 +253,14 @@ def WifiReader(mmtemplate):
             else:
                 self.request['WLAN_NOISE'] = "Information not available"
             
-#            TODO add correct calculation 
-#            signoirat = re.search("Mode(.*)", wlaninfo)
-#            if essid != None:
-#                essid.group()
-#            self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])         
-#            
-#            channel = re.search("Mode(.*)", wlaninfo).group()
-#            self.request['WLAN_CHANNEL']        = popen("iwlist " + interface + " channel | grep Frequency | perl -ple '($_) = /Channel\s([^ ]+)/'").read()
-#            
+            
+            # given in dB by Ratio = 10*lg(Signal/Noise)
+            self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
+            
+            
+            channel = re.search("Mode(.*)", wlaninfo).group()
+            self.request['WLAN_CHANNEL']        = popen("iwlist " + interface + " channel | grep Frequency | perl -ple '($_) = /Channel\s([^ ]+)/'").read()
+            
 
             freq = re.search("Frequency:(.*)", wlaninfo)
             if freq != None:
