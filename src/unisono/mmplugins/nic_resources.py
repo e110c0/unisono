@@ -75,20 +75,66 @@ class NicReader(mmtemplates.MMTemplate):
             else: 
                 self.request['error'] = interface
 
+        ## Properties Information:
+        
+        type = re.search("Mode:(.*)", intinfo)
+        if type != None:
+            type = type.group()
+            self.request['INTERFACE_TYPE'] = type
+        else:
+            self.request['INTERFACE_TYPE'] = "Information not Available"
+        
+        
+        #TODO find information source in Systemmonitor
+        intcaprx = re.search("++++++:(.*)", intinfo)
+        if intcaprx != None:
+            intcaprx = intcaprx.group()
+            self.request['INTERFACE_CAPACITY_RX'] = intcaprx
+        else:
+            self.request['INTERFACE_CAPACITY_RX'] = "Information not Available"
+        
+        #TODO find information source in Systemmonitor
+        intcaptx = re.search("++++++:(.*)", intinfo)
+        if intcaptx != None:
+            intcaptx = intcaptx.group()
+            self.request['INTERFACE_CAPACITY_TX'] = "cant find"
+        else:
+            self.request['INTERFACE_CAPACITY_TX'] = "Information not Available"
+        
+        mac = re.search("HWaddr(.*)", intinfo)
+        if mac != None:
+            mac = mac.group()
+            self.request['INTERFACE_MAC'] = mac     
+        else:
+            self.request['INTERFACE_MAC'] = "Information not Available"
 
-        self.request['INTERFACE_TYPE'] = popen("ifconfig " + interface + " | grep encap | perl -ple '($_) = /encap:([^ ]+)/'").read()
+    
+        mtu = re.search("MTU:(.*)", intinfo)
+        if mtu != None:
+            mtu = mtu.group()
+            self.request['INTERFACE_MTU'] = mtu
+        else:
+            self.request['INTERFACE_MTU'] = "Information not Available"
+        
+        
         #TODO find information source in Systemmonitor
-        self.request['INTERFACE_CAPACITY_RX'] = "cant find"
+        usbandrx = re.search("++++++:(.*)", intinfo)
+        if usbandrx != None:
+            usbandrx = usbandrx.group()
+            self.request['USED_BANDWIDTH_RX'] = usbandrx
+        else:
+            self.request['USED_BANDWIDTH_RX'] = "Information not Available"
+        
+        
         #TODO find information source in Systemmonitor
-        self.request['INTERFACE_CAPACITY_TX'] = "cant find"
-        self.request['INTERFACE_MAC'] = popen("ifconfig " + interface + " | grep HWaddr | perl -ple '($_) = /HWaddr\s(.+)\s/'").read()     
-        self.request['INTERFACE_MTU'] = popen("ifconfig " + interface + " | grep MTU | perl -ple '($_) = /MTU:([^ ]+)/'").read()
-        #TODO find information source in Systemmonitor
-        self.request['USED_BANDWIDTH_RX'] = "cant find"
-        #TODO find information source in Systemmonitor
-        self.request['USED_BANDWIDTH_TX'] = "cant find"
+        usbandtx = re.search("++++++:(.*)", intinfo)
+        if usbandtx != None:
+            usbandtx = usbandtx.group()
+            self.request['USED_BANDWIDTH_TX'] = "cant find"
+        else:
+            self.request['USED_BANDWIDTH_TX'] = "Information not Available"
 
-        #Interface Information
+        #Interface Information for the debugger
         self.logger.debug('The result is: %s', self.request['INTERFACE_TYPE'])
         self.logger.debug('The result is: %s', self.request['INTERFACE_CAPACITY_RX'])
         self.logger.debug('The result is: %s', self.request['INTERFACE_CAPACITY_TX'])
@@ -145,22 +191,74 @@ def WifiReader(mmtemplate):
             else: 
                 self.request['error'] = interface   
         
+       
+        # In this part the programs 
         
         
-        # in diesem bereich wird was wlan behandelt im fall das es ein wlan ist dann werden 
-        # die einzelnen felder der dictionary mit der ausgabe von iwconfig aufgefült
+        
         wlaninfo = popen('iwconfig ' + interface).read()
-        if "no wireless extensions" not in wlaninfo:
-            self.request['WLAN_ESSID']          = popen("iwconfig " + interface + " | grep ESSID | perl -ple '($_) = /ESSID:([^ ]+)/'").read()
-            self.request['WLAN_MODE']           = popen("iwconfig " + interface + " | grep Mode | perl -ple '($_) = /Mode:([^ ]+)/'").read()
-            self.request['WLAN_AP_MAC']         = popen("iwconfig " + interface + " | grep Point | perl -ple '($_) = /Point:\s([^ ]+)/'").read()        
-            self.request['WLAN_LINK']           = popen("iwconfig " + interface + " | grep Quality | perl -ple '($_) = /Quality=([^ ]+)/'").read()
-            self.request['WLAN_SIGNAL']         = popen("iwconfig " + interface + " | grep Signal | perl -ple '($_) = /Signal level:([^ ]+)/'").read()
-            self.request['WLAN_NOISE']          = popen("iwconfig " + interface + " | grep Noise | perl -ple '($_) = /Noise level=([^ ]+)/'").read()
-            #TODO add correct calculation 
-            self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])         
-            self.request['WLAN_CHANNEL']        = popen("iwlist " + interface + " channel | grep Frequency | perl -ple '($_) = /Channel\s([^ ]+)/'").read()
-            self.request['WLAN_FREQUENCY']      = popen("iwconfig " + interface + " | grep Frequency | perl -ple '($_) = /Frequency:([^ ]+)/'").read()
+        if len(wlaninfo) != 0:
+            
+            
+            essid = re.search("ESSID:(.*)", wlaninfo)
+            if essid != None:
+                essid = essid.group()
+                self.request['WLAN_ESSID'] = essid
+            else:
+                self.request['WLAN_ESSID'] = "Information not available"
+            
+            
+            mode = re.search("Mode:(.*)", wlaninfo)
+            if mode != None:
+                mode = mode.group()
+                self.request['WLAN_MODE'] = mode
+            else:
+                self.request['WLAN_MODE'] = "Information not available"
+            
+            apmac = re.search("Access Point:(.*)", wlaninfo)
+            if apmac != None:
+                apmac = apmac.group()
+                self.request['WLAN_AP_MAC'] = apmac
+            else:
+                self.request['WLAN_AP_MAC'] = "Information not available"
+            
+            link = re.search("Mode(.*)", wlaninfo)
+            if link != None:
+                link = link.group()
+                self.request['WLAN_LINK'] = link
+            else:
+                self.request['WLAN_LINK'] = "Information not available"
+        
+            signal = re.search("Signal level:(.*)", wlaninfo)
+            if signal != None:
+                signal = signal.group()
+                self.request['WLAN_SIGNAL'] = signal 
+            else:
+                self.request['WLAN_SIGNAL'] = "Information not available"
+        
+            noise = re.search("Noise level=(.*)", wlaninfo)
+            if noise != None:
+                noise = noise.group()
+                self.request['WLAN_NOISE'] = noise
+            else:
+                self.request['WLAN_NOISE'] = "Information not available"
+            
+#            TODO add correct calculation 
+#            signoirat = re.search("Mode(.*)", wlaninfo)
+#            if essid != None:
+#                essid.group()
+#            self.request['WLAN_SIGNOISE_RATIO'] = (self.request['WLAN_SIGNAL'] / self.request['WLAN_NOISE'])         
+#            
+#            channel = re.search("Mode(.*)", wlaninfo).group()
+#            self.request['WLAN_CHANNEL']        = popen("iwlist " + interface + " channel | grep Frequency | perl -ple '($_) = /Channel\s([^ ]+)/'").read()
+#            
+
+            freq = re.search("Frequency:(.*)", wlaninfo)
+            if freq != None:
+                freq = freq.group()
+                self.request['WLAN_FREQUENCY'] = freq
+            else:
+                self.request['WLAN_FREQUENCY'] = "Information not available"
             
         else:
             # im es sich nicht um ein wlan handel dan 
@@ -178,7 +276,7 @@ def WifiReader(mmtemplate):
             
 
 
-        #Wireless information
+        #Wireless information for the debugger
         self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
         self.logger.debug('The result is: %s', self.request['WLAN_MODE'])
         self.logger.debug('The result is: %s', self.request['WLAN_AP_MAC'])
