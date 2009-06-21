@@ -55,16 +55,6 @@ class NicReader(mmtemplates.MMTemplate):
 
                           'USED_BANDWIDTH_RX', 
                           'USED_BANDWIDTH_TX',
-                          # wireless
-                          'WLAN_ESSID',
-                          'WLAN_MODE',
-                          'WLAN_AP_MAC',
-                          'WLAN_LINK',
-                          'WLAN_SIGNAL',
-                          'WLAN_NOISE',            
-                          'WLAN_SIGNOISE_RATIO',
-                          'WLAN_CHANNEL',
-                          'WLAN_FREQUENCY'
                           ]
         self.cost = 500
 
@@ -98,8 +88,6 @@ class NicReader(mmtemplates.MMTemplate):
         #TODO find information source in Systemmonitor
         self.request['USED_BANDWIDTH_TX'] = "cant find"
 
-
-
         #Interface Information
         self.logger.debug('The result is: %s', self.request['INTERFACE_TYPE'])
         self.logger.debug('The result is: %s', self.request['INTERFACE_CAPACITY_RX'])
@@ -109,18 +97,41 @@ class NicReader(mmtemplates.MMTemplate):
         self.logger.debug('The result is: %s', self.request['USED_BANDWIDTH_RX'])
         self.logger.debug('The result is: %s', self.request['USED_BANDWIDTH_TX'])
             
-    
-        
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
 
 def WifiReader(mmtemplate):
-    pass
-        
-        
-        
+
+    '''
+    generic template for all M&Ms
+    '''
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    def __init__(self, *args):
+        '''
+        init the M&M and start the thread
+        '''
+        super().__init__(*args)
+        self.dataitems = [
+                          'WLAN_ESSID',
+                          'WLAN_MODE',
+                          'WLAN_AP_MAC',
+                          'WLAN_LINK',
+                          'WLAN_SIGNAL',
+                          'WLAN_NOISE',            
+                          'WLAN_SIGNOISE_RATIO',
+                          'WLAN_CHANNEL',
+                          'WLAN_FREQUENCY'
+                          ]
+        self.cost = 500
+
+    def checkrequest(self, request):
+        return True
+
 
     def measure(self):
+        
         ipaddress = self.request['identifier1']
         interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
         self.logger.debug(interfacelist)
@@ -134,13 +145,15 @@ def WifiReader(mmtemplate):
             else: 
                 self.request['error'] = interface   
         
+        
+        
         # in diesem bereich wird was wlan behandelt im fall das es ein wlan ist dann werden 
         # die einzelnen felder der dictionary mit der ausgabe von iwconfig aufgefült
         wlaninfo = popen('iwconfig ' + interface).read()
         if "no wireless extensions" not in wlaninfo:
             self.request['WLAN_ESSID']          = popen("iwconfig " + interface + " | grep ESSID | perl -ple '($_) = /ESSID:([^ ]+)/'").read()
             self.request['WLAN_MODE']           = popen("iwconfig " + interface + " | grep Mode | perl -ple '($_) = /Mode:([^ ]+)/'").read()
-            self.request['WLAN_AP_MAC']         = popen("iwconfig " + interface + " | grep Point | perl -ple '($_) = /Point:\s([^ ]+)/'").read(        
+            self.request['WLAN_AP_MAC']         = popen("iwconfig " + interface + " | grep Point | perl -ple '($_) = /Point:\s([^ ]+)/'").read()        
             self.request['WLAN_LINK']           = popen("iwconfig " + interface + " | grep Quality | perl -ple '($_) = /Quality=([^ ]+)/'").read()
             self.request['WLAN_SIGNAL']         = popen("iwconfig " + interface + " | grep Signal | perl -ple '($_) = /Signal level:([^ ]+)/'").read()
             self.request['WLAN_NOISE']          = popen("iwconfig " + interface + " | grep Noise | perl -ple '($_) = /Noise level=([^ ]+)/'").read()
@@ -175,6 +188,8 @@ def WifiReader(mmtemplate):
         self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
         self.logger.debug('The result is: %s', self.request['WLAN_FREQUENCY'])
 
+        self.request['error'] = 0
+        self.request['errortext'] = 'Measurement successful'
 
 
 
