@@ -75,7 +75,7 @@ class NicReader(mmtemplates.MMTemplate):
         interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
         self.logger.debug(interfacelist)
         interface = "No interface with this IP"
-        intinfo=''
+        intinfo=''            
         for i in interfacelist:
             intinfo = popen('ifconfig ' + i).read()
             if ipaddress in intinfo:
@@ -213,8 +213,13 @@ class NicReader(mmtemplates.MMTemplate):
             else:
                 self.request['WLAN_NOISE'] = "Information not available"            
             
-            # given in dB by Ratio = 10*lg(Signal/Noise)
-            self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
+            # given in dB by Ratio = 10*lg(Signal/Noise) 
+            # we have to assure that Signal and Noise are available
+            if "Information not available" not in self.request['WLAN_SIGNAL'] and "Information not available" not in self.request['WLAN_NOISE']: 
+                self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
+            else:
+                self.request['WLAN_SIGNOISE_RATIO'] = "Information not available" 
+            
             
             # Used Wireless Channel:
             chaninfo = popen("iwlist " + interface + " channel | grep Frequency").read()
@@ -247,7 +252,8 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['WLAN_SIGNOISE_RATIO'] = "this is not a wireless interface"
             self.request['WLAN_CHANNEL']        = "this is not a wireless interface"
             self.request['WLAN_FREQUENCY']      = "this is not a wireless interface"
-            self.request['wireless error']      = "this is not a wireless interface"
+#            self.request['wireless error']      = "this is not a wireless interface"
+
 
 
         self.logger.debug('The result is: %s', self.request['WLAN_ESSID'])
@@ -264,10 +270,40 @@ class NicReader(mmtemplates.MMTemplate):
         self.request['errortext'] = 'Measurement successful'
 
 
+
+class NicTest(unittest.TestCase):                            
     
+    # Case where the input IP doesn't match with any Interface.
+    def nonexistingnic(self, NicReader):                           
+        #identifier1 has to be an IP address                                          
+        NicReader.measure(self.request['identifier1' : "Nonsense"])
+        self.assertEqual(NicReader.dataitems['error'], "No interface with this IP")
+
+    # Case when we have a loopback Interface
+    def lopdevice(self, NicReader):
+        #identifier1 has to be 127.0.0.1
+        NicReader.measure(self.request['identifier1' : "Nonsense"])
+        # This is neither a common interface nor a wireless interface
+        # the difference from the common nic is that "lo" doesn't have
+        # MAC address so:
+        self.assertEqual(NicReader.dataitems['INTERFACE_MAC'], "Information not Available")
+        self.assertEqual(NicReader.dataitems['WLAN_ESSID'], "this is not a wireless interface")
+        self.assertEqual(NicReader.dataitems['WLAN_MODE'], "this is not a wireless interface")
+        self.assertEqual(NicReader.dataitems['WLAN_AP_MAC'], "this is not a wireless interface")
+
+    # Case when we have a common network interface
+    def ethdevice(self, NicReader):
+        PASS
+        #TODO:
+
+    # Case when we have a wireless network interface
+    def wlandevive(self, NicReader):
+        PASS
+        #TODO
+
+
 
 #WifiReader is implemented.
-
 #def WifiReader(mmtemplate):
 #
 #    '''
