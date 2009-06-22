@@ -28,6 +28,8 @@ connector_interface.py
 
 '''
 
+from __future__ import with_statement
+
 import socketserver, threading, logging, uuid, socket
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
@@ -100,7 +102,7 @@ class ConnectorMap:
             # delete connector entry from the map
             del self.conmap[conid]
             self.logger.debug('now: %s', self.conmap)
-        return 0;
+        return 0
 
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
@@ -172,7 +174,12 @@ class ConnectorFunctions:
         parameters
         conid   - UUID of the connector (string)
         paramap - the paramap includes the complete order in key:value pairs 
-        (i.e. a python dictionary)
+        (i.e. a python dictionary), required keys:
+             type (str): 'oneshot', 'periodic' or 'triggered' 
+             dataitem (str): see list_available_dataitems for valid dataitems 
+             orderid (str): the tupel (conid, orderid) has to be unique 
+        if type is periodic or triggered:
+             interval (int)
         
         returns int the status of the request
         '''
@@ -180,13 +187,21 @@ class ConnectorFunctions:
         self.logger.debug('Order: %s', paramap)
         status = 0
         # sanity checks
-        for i in ['orderid']:
+        for i in ['orderid', 'type', 'dataitem']:
             if i not in paramap.keys():
-                self.logger.error('Order is incomplete (missing %s), discarding', i)
+                self.logger.error('Order is incomplete (missing %s), discarding'%i)
                 status = 400
-                #order['errortext'] = 'Order incomplete, missing ' + i
-                #self.replyq.put(Event('DISCARD', order))
-                return status;
+        if paramap['type'] not in ('oneshot', 'periodic', 'triggered'):
+            self.logger.error('Order type %r unkown, discarding'%paramap['type'])
+            status = 400
+        if paramap['type'] in ('periodic', 'triggered') \
+                and ('interval' not in paramap or not isinstance(paramap["interval"], int)):
+            self.logger.error('Repeated order without integer interval')
+            status = 411
+        if paramap['dataitem'] not in self.dispatcher.dataitems:
+            self.logger.error('Order requests unknown data item %r, discarding.'%paramap['dataitem'])
+            status = 404
+        if status != 0: return status
         # TODO: check for orderid clashes here??
         # check registration
         self.logger.debug('conmap %s', self.conmap.conmap)
@@ -422,4 +437,3 @@ class XMLRPCReplyHandler:
             else:
                 self.logger.debug('Got an unknown event type: %s. What now?',
                                   event.type)
-

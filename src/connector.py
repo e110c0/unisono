@@ -34,6 +34,7 @@ import xmlrpc.client
 import threading
 from sys import stdin
 from time import sleep
+from itertools import count
 
 counter = 0
 myID = ""
@@ -56,6 +57,7 @@ def on_discard(result):
     return True
         
 if __name__ == '__main__':
+    orderid = count()
 
     # start server to get the result...
     server = SimpleXMLRPCServer(("localhost", 43222), logRequests=False)
@@ -76,7 +78,6 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
-    orderid = 0
 #    for i in s.list_available_dataitems():
 #        print('my order:', {'orderid': str(orderid), 
 #                                                      'identifier1':'134.2.172.173',
@@ -89,16 +90,23 @@ if __name__ == '__main__':
 #                                                      'type':1,
 #                                                      'dataitem':i}))
 #        orderid = orderid+1
-    print('commit order: ' ,s.commit_order(myID, {'orderid': str(34), 
+    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                       'identifier1':'193.196.31.38',
                                                       'identifier2':'134.2.172.172',
                                                       'type':'periodic',
-                                                      'dataitem':'RTT'}))
+                                                      'interval': 10,
+                                                      'dataitem':'SHARED_BANDWIDTH_RX'}))
+    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
+                                                      'identifier1':'193.196.31.38',
+                                                      'identifier2':'134.2.172.172',
+                                                      'type':'triggered',
+                                                      'interval': 15,
+                                                      'dataitem':'SHARED_BANDWIDTH_RX'}))
     sleep(3)
-    print('commit order: ' ,s.commit_order(myID, {'orderid': str(35), 
+    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                   'identifier1':'193.196.31.38',
                                                   'identifier2':'134.2.172.172',
-                                                  'type':'periodic',
+                                                  'type':'oneshot',
                                                   'dataitem':'RTT_MIN'}))
     sleep(3)
 ## cache testing:

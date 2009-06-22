@@ -28,6 +28,9 @@ unisono.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+
+from __future__ import with_statement
+
 from unisono.dispatcher import Dispatcher
 from unisono.utils import unilog
 import logging, threading, os

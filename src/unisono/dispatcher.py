@@ -27,7 +27,9 @@ dispatcher.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+from heapq import heappush, heapreplace, heapify
 from queue import Queue, Empty
+from time import time as system_time
 from unisono.db import DataBase
 from unisono.db import NotInCacheError
 
@@ -38,9 +40,66 @@ from unisono.mmplugins.mmtemplates import MMTemplate
 
 import logging, copy
 import threading
+
+
+class Scheduler:
+    '''
+    Schedules periodic/triggerd measurements and cleanup tasks. Think of this as a glorified heapq.
+    '''
+    
+    class Task:
+        def __init__(self, at, data):
+            self.at = at
+            self.data = data
+        
+        def __lt__(self, other):
+            return self.at < other.at
+    
+        def __repr__(self):
+            return "Task(at=%r, data=%r)"%(self.at, self.data)
+    
+    def __init__(self, parent):
+        """ The parent object is a dispatcher. """
+        self.parent = parent
+        self.queue = parent.eventq
+        self.tasks = []
+
+    def now(self):
+        return int(system_time())
+
+    def schedule_order(self, order):
+        """ Add an order to the task list. """
+        t = Scheduler.Task(int(self.now() + order["interval"]), order)
+        heappush(self.tasks, t)
+        
+    def cancel_order(self, conid, orderid):
+        self.tasks = [t for t in self.tasks if "orderid" not in t.data or not (t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid))]
+        heapify(self.tasks)
+
+    def get(self):
+        """ Get event, either from schedule or from outside world """
+        # On empty scheduler, just wait for event
+        if not self.tasks:
+            return self.queue.get()
+        # else wait till next task
+        nextt = self.tasks[0]
+        wait = max(0, nextt.at - self.now())
+        try:
+            ev = self.queue.get(timeout=wait)
+        except Empty:
+            ev = Event("SCHED", nextt.data)
+            nextt.at = self.now() + ev.payload["interval"]
+            print(self.tasks)
+            heapreplace(self.tasks, nextt)
+            print(self.tasks)
+        return ev
+
 class Dispatcher:
     '''
-    classdocs
+    This is the unisono event loop with associated helper functions.
+    
+    It will listen on the input queue for events and dispatch them to
+    it's subsystems as apropriate.
     '''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -52,6 +111,8 @@ class Dispatcher:
         self.config = configuration.get_configparser()
         self.pending_orders = {}
         self.eventq = Queue()
+        # TODO: add bogus task to help signal handling / cache garbage collection
+        self.scheduler = Scheduler(self)
         self.init_database()
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
@@ -141,49 +202,47 @@ class Dispatcher:
         Main loop of the dispatcher
         '''
         while True:
-            try:
-                event = self.eventq.get(timeout=5)
-            except Empty:
+            event = self.scheduler.get()
+            self.logger.debug('got an event: %s', event.type)
+            if event.type == 'CACHE':
                 pass
+            elif event.type == 'CANCEL':
+                self.cancel_order(*event.payload)
+            elif event.type == 'SCHED':
+                self.logger.debug('scheduler event: %s', event.payload)
+                if event.payload == "IDLE":
+                    continue
+                self.process_sched_order(event.payload)
+            elif event.type == 'ORDER':
+                self.logger.debug('order: %s', event.payload)
+                self.process_order(event.payload)
+            elif event.type == 'RESULT':
+                self.logger.debug('result. %s', event.payload)
+                self.process_result(event.payload)
             else:
-                self.logger.debug('got an event: %s', event.type)
-                if event.type == 'CACHE':
-                    pass
-                elif event.type == 'CANCEL':
-                    pass
-                elif event.type == 'ORDER':
-                    self.logger.debug('order: %s', event.payload)
-                    self.process_order(event.payload)
-                elif event.type == 'RESULT':
-                    self.logger.debug('result. %s', event.payload)
-                    self.process_result(event.payload)
-                else:
-                    self.logger.debug('Got an unknown event, discarding.')
+                self.logger.debug('Got an unknown event %r, discarding.'%(event.type,))
+
+    def cancel_order(self, conid, orderid=None):
+        """ 
+        Cancel an order (or, if no orderid is given, all orders belonging to one connector).
+        """
+        self.scheduler.cancel_order(conid, orderid)
+        # TODO: cancel one-shot orders. BC of order aggregation and threaded MM's,
+        # this is not as simple as it sounds.
+
+    def process_sched_order(self, order):
+        order["subid"] += 1
+        neword = copy.copy(order)
+        neword["type"] = "oneshot"
+        self.process_order(neword)
 
     def process_order(self, order):
         # sanity checks
-        for i in ['type', 'dataitem', 'orderid']:
-            if i not in order.keys():
-                self.logger.error('Order is incomplete (missing %s), discarding.', i)
-                self.logger.debug('%s', order)
-                order['error'] = 400
-                order['errortext'] = 'Order incomplete, missing ' + i
-                self.replyq.put(Event('DISCARD', order))
-                return
-        if order['dataitem'] not in self.dataitems.keys():
-            self.logger.error('Order requests unknown data item %s, discarding.', order['dataitem'])
-            order['error'] = 404
-            order['errortext'] = 'Unknown data item ' + order['dataitem']
-            self.replyq.put(Event('DISCARD', order))
-            return
-        if order['type'] not in ['oneshot','periodic','triggered']:
-            self.logger.error('Order type %s unknown, discarding.', order['type'])
-            order['error'] = 404
-            order['errortext'] = 'Unknown order type ' + order['type']
-            self.replyq.put(Event('DISCARD', order))
-            return
-        if (order['type'] != "oneshot"):
+        if order['type'] in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
+            order['subid'] = 0
+            self.scheduler.schedule_order(order)
+            return
         if self.satisfy_from_cache(order):
             return
         elif self.aggregate_order(order):
@@ -254,7 +313,12 @@ class Dispatcher:
         mm = result[0]
         r = result[1]
         id = r['id']
-        curmm, mmlist, paramap, waitinglist = self.pending_orders[id]
+        try:
+            curmm, mmlist, paramap, waitinglist = self.pending_orders[id]
+        except KeyError:
+            # order has been canceled
+            self.logger.debug("Dropping connector %r order %r result"%id)
+            return
         
         if r['error'] != 0:
             self.logger.debug('The result included an error')
