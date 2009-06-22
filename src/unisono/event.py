@@ -30,6 +30,7 @@ event.py
 
 class Event:
     # FIXME: DISCARD should probably be named DELIVER_ERROR, and it doesn't really need to exist at all
+    # TODO: If this ever crosses process boundaries, make it a NamedTuple
     '''
     Generic event class for unisono
     

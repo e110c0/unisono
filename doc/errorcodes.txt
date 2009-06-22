@@ -35,3 +35,4 @@
 401 connector unknown
 404 data item not found
 409 order incorrect
+411 interval parameter missing / invalid

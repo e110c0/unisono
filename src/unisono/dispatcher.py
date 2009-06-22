@@ -89,9 +89,7 @@ class Scheduler:
         except Empty:
             ev = Event("SCHED", nextt.data)
             nextt.at = self.now() + ev.payload["interval"]
-            print(self.tasks)
             heapreplace(self.tasks, nextt)
-            print(self.tasks)
         return ev
 
 class Dispatcher:
@@ -99,7 +97,7 @@ class Dispatcher:
     This is the unisono event loop with associated helper functions.
     
     It will listen on the input queue for events and dispatch them to
-    it's subsystems as apropriate.
+    it's subsystems as appropriate.
     '''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -122,7 +120,7 @@ class Dispatcher:
         self.cache = DataBase()
     
     def start_xmlrpcserver(self):
-        # TODO: check whether XMLRPCserver is alread running
+        # TODO: check whether XMLRPCserver is already running
         self.xsrv = XMLRPCServer(self.eventq, self)
 
     def start_xmlrpcreplyhandler(self):
@@ -132,7 +130,7 @@ class Dispatcher:
     def init_plugins(self):
         # list of registered plugins with their queue and object
         self.plugins = {}
-        # list of datitems with the registered plugin and its cost
+        # list of dataitems with the registered plugin and its cost
         self.dataitems = {}
         # initialize M&Ms
 
