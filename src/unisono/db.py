@@ -149,7 +149,7 @@ class DataBase():
             del paramap['errortext']
             del paramap['type']
         except KeyError:
-            self.logger.debug('couldn't delete all items, bad luck...')
+            self.logger.debug('couldn\'t delete all items, bad luck...')
         # process data items
         self.logger.debug('storing dataitems: %s', paramap)
         c = self.dbcon.cursor()
