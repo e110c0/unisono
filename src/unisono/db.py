@@ -30,6 +30,7 @@ db.py
 
 import logging
 import sqlite3
+import time
 
 from unisono.utils import configuration
 
@@ -52,13 +53,13 @@ class DataBase():
         '''
         Constructor
         '''
+        self.config = configuration.get_configparser()
         try:
             dbfile = self.config.get('Cache', 'dbfile')
             self.logger.info('Initialize DB: %s', dbfile)
         except:
             self.logger.info('Initialize DB at default location')
             dbfile = '/dev/shm/unisono.db'
-        self.config = configuration.get_configparser()
         self.dbcon = sqlite3.connect(dbfile)
         self.dbcursor = self.dbcon.cursor()
 
@@ -84,7 +85,7 @@ class DataBase():
         
         command = "create table " + name + "("
         for i in range(idcount):
-            command = command + "identifier" + str(i+1) + " TEXT,"
+            command = command + "identifier" + str(i + 1) + " TEXT,"
         command = command + " time REAL, value " + valuetype + ");"
         try:
             self.dbcursor.execute(command)
@@ -106,14 +107,16 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
+        age = time.time()-30
         #TODO get only the rows with correct identifiers
         command = 'select * from ' + table + ' where identifier1="' + identifier1 + '" order by time desc'
         #command = "select * from " + table + " order by time"
         #command = "select * from ? where identifier1=? and identifier2=?"
         c = self.dbcon.cursor()
         try:
-            c.execute(command)
+#            c.execute(command)
 #            c.execute('select * from RTT where identifier1="193.196.31.38"; ')
+            c.execute("select * from " + table + " where identifier1=? and identifier2=? and time>? order by time desc;",(identifier1,identifier2,age))
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
@@ -141,13 +144,14 @@ class DataBase():
         else:
             identifier2 = None
         # delete what we do not need
-        self.logger.debug('delete stuff %s', paramap)
         try:
             del paramap['dataitem']
             del paramap['id']
             del paramap['error']
             del paramap['errortext']
             del paramap['type']
+            del paramap['interval']
+            del paramap['subid']
         except KeyError:
             self.logger.debug('couldn\'t delete all items, bad luck...')
         # process data items
@@ -160,12 +164,12 @@ class DataBase():
                 except sqlite3.OperationalError:
                     
                     if type(v) == str:
-                        t= 'TEXT'
+                        t = 'TEXT'
                     elif type(v) == int:
                         t = 'INT'
                     elif type(v) == float:
                         t = 'REAL'
-                    else:
+                    else: 
                         t = 'NULL'
                     self.create_table(d, 2, t)
                     c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
@@ -175,7 +179,7 @@ class DataBase():
                     c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
                 except sqlite3.OperationalError:
                     if type(v) == str:
-                        t= 'TEXT'
+                        t = 'TEXT'
                     elif type(v) == int:
                         t = 'INT'
                     elif type(v) == float:
@@ -199,3 +203,9 @@ class DataBase():
         c.execute("delete from " + table + " where time < " + str(time) + ";")
         c.close()
         self.dbcon.commit()
+
+    def vacuum(self):
+        '''
+        Purge the database from old entries
+        '''
+        pass
