@@ -160,7 +160,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 					mvars.hopcount = 65 - ((struct iphdr*) buffer)->ttl;
 				}
 			} else {
-				printf("got a wrong icmp packet. why?\n");
+				//printf("got a wrong icmp packet. why?\n");
 				notforus = true;
 			}
 		}
