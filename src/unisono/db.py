@@ -82,13 +82,13 @@ class DataBase():
             raise InvalidTableLayout()
         if valuetype not in ['TEXT', 'INT', 'REAL']:
             raise InvalidTableLayout()
-        
+        c = self.dbcon.cursor()
         command = "create table " + name + "("
         for i in range(idcount):
             command = command + "identifier" + str(i + 1) + " TEXT,"
         command = command + " time REAL, value " + valuetype + ");"
         try:
-            self.dbcursor.execute(command)
+            c.execute(command)
             self.dbcon.commit()
             self.logger.debug("table %s created ! ", name)
         except sqlite3.OperationalError:
