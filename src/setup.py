@@ -37,7 +37,7 @@ setup(name='UNISONO',
       author_email='spovnet@ri.uni-tuebingen.de',
       url='http://projects.net.in.tum.de/projects/unisono/',
       packages=['unisono', 'unisono.mmplugins', 'unisono.utils'],
-      scripts=['unisono.py'],
+      scripts=['unisono-startup'],
       ext_modules=[Extension('unisono.mmplugins.libPathMTU',
                              ['c-modules/PathMTU/networkfunctions.c',
                               'c-modules/PathMTU/PathMTU.c',
@@ -49,8 +49,4 @@ setup(name='UNISONO',
                               ],
                               extra_compile_args=['-std=gnu99'])
                    ],
-      entry_points="""
-        [console_scripts]
-        unisono = unisono:main
-        """
      )
