@@ -118,6 +118,24 @@ class NicReader(mmtemplates.MMTemplate):
         #Interface Information for the debugger
         self.logger.debug('The result is: %s', self.request)
 
+class BandwidthUsage(mmtemplates.MMTemplate):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.dataitems = [
+                          'USED_BANDWIDTH_RX',
+                          'USED_BANDWIDTH_TX'
+                          ]
+        self.cost = 2000
+
+    def checkrequest(self, request):
+        return True
+
+
+    def measure(self):
+        self.request["error"] = 0
+        self.request["errortext"] = 'Everything went fine.'
+
+
 class WifiReader(mmtemplates.MMTemplate):
     def __init__(self, *args):
         super().__init__(*args)
