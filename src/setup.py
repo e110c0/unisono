@@ -33,8 +33,8 @@ from distutils.core import setup, Extension
 setup(name='UNISONO',
       version='0.1',
       description='Unified Information Service for Overlay Network Organization',
-      author='Greg Ward',
-      author_email='gward@python.net',
+      author='Computer Networks and Internet, University of Tuebingen',
+      author_email='spovnet@ri.uni-tuebingen.de',
       url='http://projects.net.in.tum.de/projects/unisono/',
       packages=['unisono', 'unisono.mmplugins', 'unisono.utils'],
       scripts=['unisono.py'],
@@ -48,6 +48,9 @@ setup(name='UNISONO',
                               'c-modules/Delays/Delays.c',
                               ],
                               extra_compile_args=['-std=gnu99'])
-                   ]
-      
+                   ],
+      entry_points="""
+        [console_scripts]
+        unisono = unisono:main
+        """
      )
