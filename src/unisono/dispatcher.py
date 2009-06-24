@@ -116,6 +116,10 @@ class Dispatcher:
         self.start_xmlrpcreplyhandler()
         self.init_plugins()
     
+    def __del__(self):
+        self.logger.debug("Calling descructor for Dispatcher")
+        self.cache.save()
+
     def init_database(self):
         self.cache = DataBase()
     

@@ -61,7 +61,7 @@ class DataBase():
             self.logger.info('Initialize DB at default location')
             dbfile = '/dev/shm/unisono.db'
         self.dbcon = sqlite3.connect(dbfile)
-        self.dbcursor = self.dbcon.cursor()
+        self.restore()
 
 
     def create_table(self, name, idcount, valuetype):
@@ -96,7 +96,6 @@ class DataBase():
 
         
     def check_for(self, paramap):
-        self.vacuum()
         self.logger.debug('Checking db for %s', paramap)
         result = {}
         table = paramap['dataitem']
@@ -243,5 +242,24 @@ class DataBase():
         except:
             persistentfile = ''
         if storagemode == 'persistent':
-            pass
-        
+            self.logger.info('Persistent mode, storing db at %s.', persistentfile)
+            self.vacuum()
+            c = self.dbcon.cursor()
+            with open(persistentfile, 'w') as f:
+                for line in c.iterdump():
+                    f.write('%s\n', line)
+    def restore(self):
+        '''
+        restore db to in_memory database
+        '''
+        try:
+            storagemode = self.config.get('Cache', 'storagemode')
+        except:
+            storagemode = 'transient'
+        try:
+            persistentfile = self.config.get('Cache', 'persistentfile')
+        except:
+            persistentfile = ''
+        if storagemode == 'persistent':
+            self.logger.info('Persistent mode, restoring db from %s.', persistentfile)
+            c = self.dbcon.cursor()
