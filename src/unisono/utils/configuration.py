@@ -35,7 +35,7 @@ __unisonoconfig = None
 def init_configuration():
     global __unisonoconfig
     __unisonoconfig = configparser.SafeConfigParser()
-    files = ['/etc/unisono.cfg', '~/.unisono.cfg', '../etc/unisono.cfg']
+    files = ['/etc/unisono/unisono.cfg', '~/.unisono.cfg', '../etc/unisono.cfg']
     foundany = 0
     for i in range(len(files)):
         try:

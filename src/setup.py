@@ -49,4 +49,5 @@ setup(name='UNISONO',
                               ],
                               extra_compile_args=['-std=gnu99'])
                    ],
+      data_files=[('/etc/unisono',['../etc/unisono.cfg'])]
      )
