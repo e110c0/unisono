@@ -107,7 +107,7 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
-        age = time.time()-30
+        age = time.time() - 30
         #TODO get only the rows with correct identifiers
         command = 'select * from ' + table + ' where identifier1="' + identifier1 + '" order by time desc'
         #command = "select * from " + table + " order by time"
@@ -116,7 +116,7 @@ class DataBase():
         try:
 #            c.execute(command)
 #            c.execute('select * from RTT where identifier1="193.196.31.38"; ')
-            c.execute("select * from " + table + " where identifier1=? and identifier2=? and time>? order by time desc;",(identifier1,identifier2,age))
+            c.execute("select * from " + table + " where identifier1=? and identifier2=? and time>? order by time desc;", (identifier1, identifier2, age))
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
@@ -208,4 +208,18 @@ class DataBase():
         '''
         Purge the database from old entries
         '''
-        pass
+        try:
+            dbmode = self.config.get('Cache', 'dbmode')
+        except:
+            maxage = 300
+        try:
+            maxage = self.config.get('Cache', 'maxage')
+        except:
+            maxage = 300
+        if dbmode != 'evaluation':
+            self.logger.info('Purging database.')
+            age = time.time() - maxage
+            c = self.dbcon.cursor()
+            c.execute('show tables;')
+            tables = c.fetchall()
+            self.logger.debug('Tables in DB: %s', tables)
