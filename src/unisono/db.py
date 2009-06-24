@@ -96,6 +96,7 @@ class DataBase():
 
         
     def check_for(self, paramap):
+        self.vacuum()
         self.logger.debug('Checking db for %s', paramap)
         result = {}
         table = paramap['dataitem']
@@ -200,7 +201,11 @@ class DataBase():
         '''
         self.logger.debug('Purge table %s up to %s', table, time)
         c = self.dbcon.cursor()
+#        c.execute("select * from " + table + ";")
+#        self.logger.debug('entries before purge: %s',len(c.fetchall()))
         c.execute("delete from " + table + " where time < " + str(time) + ";")
+#        c.execute("select * from " + table + ";")
+#        self.logger.debug('entries after purge: %s',len(c.fetchall()))
         c.close()
         self.dbcon.commit()
 
@@ -211,15 +216,32 @@ class DataBase():
         try:
             dbmode = self.config.get('Cache', 'dbmode')
         except:
-            maxage = 300
+            dbmode = 'normal'
         try:
-            maxage = self.config.get('Cache', 'maxage')
+            maxage = self.config.getint('Cache', 'maxage')
         except:
-            maxage = 300
+            maxage = 3600
         if dbmode != 'evaluation':
             self.logger.info('Purging database.')
             age = time.time() - maxage
             c = self.dbcon.cursor()
-            c.execute('show tables;')
+            c.execute("select name from sqlite_master where type = 'table';")
             tables = c.fetchall()
-            self.logger.debug('Tables in DB: %s', tables)
+            for i in tables:
+                self.purge(i[0], age)
+    
+    def save(self):
+        '''
+        store the in_memory database to a preconfigured location
+        '''
+        try:
+            storagemode = self.config.get('Cache', 'storagemode')
+        except:
+            storagemode = 'transient'
+        try:
+            persistentfile = self.config.get('Cache', 'persistentfile')
+        except:
+            persistentfile = ''
+        if storagemode == 'persistent':
+            pass
+        

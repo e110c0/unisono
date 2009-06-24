@@ -401,7 +401,7 @@ class XMLRPCReplyHandler:
                 result = event.payload
                 self.logger.debug('Our result is: %s', result)
                 # we have a strict policy for XMLRPC: everything is a string!
-                if type(result["result"]) is not 'string':
+                if "result" in result.keys() and type(result["result"]) is not 'string':
                     result["result"] = str(result["result"])
                 # find requester
                 try:
