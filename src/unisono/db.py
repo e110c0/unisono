@@ -42,16 +42,18 @@ class InvalidTableLayout(Exception):
 
 class DataBase():
     '''
-    DataBase class for unisono caching
+    DataBase connector for unisono caching
     
     This class provides a generic interface for all caching purposes.
-    The database is created in memory. 
     '''
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     def __init__(self):
         '''
-        Constructor
+        The first instance of DataBase creates a mysqlite database at the 
+        configured location. All further instances connect to this existing
+        database. This works also for in-memory databases (the preferred db
+        type for unisono)
         '''
         self.config = configuration.get_configparser()
         try:
@@ -59,10 +61,8 @@ class DataBase():
             self.logger.info('Initialize DB: %s', dbfile)
         except:
             self.logger.info('Initialize DB at default location')
-            dbfile = '/dev/shm/unisono.db'
+            dbfile = ':memory:'
         self.dbcon = sqlite3.connect(dbfile)
-        self.restore()
-
 
     def create_table(self, name, idcount, valuetype):
         '''
@@ -96,6 +96,12 @@ class DataBase():
 
         
     def check_for(self, paramap):
+        '''
+        check for a cached value to satisfy the order
+        
+        @param paramap: The order in question
+        @return: the cached value. Raises an NotInCacheError if the lookup fails.
+        '''
         self.logger.debug('Checking db for %s', paramap)
         result = {}
         table = paramap['dataitem']
@@ -107,16 +113,13 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
-        age = time.time() - 30
-        #TODO get only the rows with correct identifiers
-        command = 'select * from ' + table + ' where identifier1="' + identifier1 + '" order by time desc'
-        #command = "select * from " + table + " order by time"
-        #command = "select * from ? where identifier1=? and identifier2=?"
+        age = get_max_dataitem_age(table)
         c = self.dbcon.cursor()
         try:
-#            c.execute(command)
-#            c.execute('select * from RTT where identifier1="193.196.31.38"; ')
-            c.execute("select * from " + table + " where identifier1=? and identifier2=? and time>? order by time desc;", (identifier1, identifier2, age))
+            if identifier2 != None:
+                c.execute("select * from " + table + " where identifier1=? and identifier2=? and time>? order by time desc;", (identifier1, identifier2, age))
+            else:
+                c.execute("select * from " + table + " where identifier1=? and time>? order by time desc;", (identifier1, age))
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
@@ -126,11 +129,13 @@ class DataBase():
                 raise NotInCacheError
         except sqlite3.OperationalError as e:
             self.logger.error(e)
-            
             raise NotInCacheError
-        
 
     def store(self, paramap):
+        '''
+        store a number of values in the cache
+        @param paramap a result with dataitems and values.
+        '''
         status = 0
         self.logger.debug('Storing %s', paramap)
         # get all stuff out of the paramap
@@ -160,7 +165,10 @@ class DataBase():
         if identifier2 != None:
             for d, v in paramap.items():
                 try:
-                    c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
+                    if identfier2 != None:
+                        c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
+                    else:
+                        c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
                 except sqlite3.OperationalError:
                     
                     if type(v) == str:
@@ -248,6 +256,7 @@ class DataBase():
             with open(persistentfile, 'w') as f:
                 for line in c.iterdump():
                     f.write('%s\n', line)
+
     def restore(self):
         '''
         restore db to in_memory database
@@ -263,3 +272,13 @@ class DataBase():
         if storagemode == 'persistent':
             self.logger.info('Persistent mode, restoring db from %s.', persistentfile)
             c = self.dbcon.cursor()
+
+    def get_max_dataitem_age(self, dataitem):
+        '''
+        get the maximum age an cache entry of dataitem is allowed to have before
+        it cannot be reused.
+        
+        @param dataitem: name of the dataitem
+        @return: int maximum age in seconds
+        '''
+        return 30

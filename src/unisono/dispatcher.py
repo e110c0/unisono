@@ -122,6 +122,7 @@ class Dispatcher:
 
     def init_database(self):
         self.cache = DataBase()
+        self.cache.restore()
     
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is already running
