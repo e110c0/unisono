@@ -33,6 +33,21 @@ from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import popen
 
+def get_interfaces_for_ip(self, ip):
+    """
+    Returns a list of all network interfaces present, such as [eth0, eth1, lo]
+    """
+    proc_net_dev = open("/proc/net/dev")
+    lines = proc_net_dev.readlines()
+    proc_net_dev.seek(0)
+    iflist = [ l[:l.find(":")].strip() for l in lines if ":" in l ]
+    for i in iflist:
+        # TODO: get rid of this popen!
+        intinfo = popen('ifconfig ' + i).read()
+        if ip in intinfo:
+            return i
+    return None
+
 class NicReader(mmtemplates.MMTemplate):
     '''
     generic template for all M&Ms
@@ -57,23 +72,10 @@ class NicReader(mmtemplates.MMTemplate):
     def checkrequest(self, request):
         return True
 
-    def get_interfaces_for_ip(self, ip):
-        """
-        Returns a list of all network interfaces present, such as [eth0, eth1, lo]
-        """
-        proc_net_dev = open("/proc/net/dev")
-        lines = proc_net_dev.readlines()
-        proc_net_dev.seek(0)
-        iflist = [ l[:l.find(":")].strip() for l in lines if ":" in l ]
-        for i in iflist:
-            # TODO: get rid of this popen!
-            intinfo = popen('ifconfig ' + i).read()
-            if ip in intinfo:
-                return i
-        return None
+
 
     def measure(self):
-        interface = self.get_interfaces_for_ip(self.request['identifier1'])
+        interface = get_interfaces_for_ip(self.request['identifier1'])
         if interface == None:
             self.request["error"] = 404
             self.request["errortext"] = 'No interface found with this ip'
@@ -160,7 +162,7 @@ class WifiReader(mmtemplates.MMTemplate):
     def measure(self):
         
         ipaddress = self.request['identifier1']
-        interfacelist = popen('dir /proc/net/dev_snmp6/').read().split()
+        interfacelist = popen('ls /proc/net/dev_snmp6/').read().split()
         self.logger.debug(interfacelist)
         interface = "No wireless interface with this IP"
         intinfo=''
@@ -215,8 +217,8 @@ class WifiReader(mmtemplates.MMTemplate):
             
             
             # Used Wireless Channel:
-            chaninfo = popen("iwlist " + interface + " channel | grep Frequency").read()
-            channel = re.search('Channel ([^ ]+)', wlaninfo)
+            chaninfo = popen("iwlist " + interface + " channel").read()
+            channel = re.search('Channel ([^ ]+)', chaninfo)
             if channel != None:
                 channel = channel.group()
                 self.request['WLAN_CHANNEL'] = channel.split()[1]
