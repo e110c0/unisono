@@ -1,8 +1,8 @@
 '''
-file_name
+nic_resources.py
 
  Created on: May 14, 2009
- Authors: dh
+ Authors: dh, cilku
  
  $LastChangedBy$
  $LastChangedDate$
