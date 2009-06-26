@@ -27,6 +27,8 @@ nic_resources.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
+import unittest
+
 class NicTest(unittest.TestCase):                            
     
     # Case where the input IP doesn't match with any Interface.
