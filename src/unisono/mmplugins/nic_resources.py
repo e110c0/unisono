@@ -34,19 +34,28 @@ from unisono.utils import configuration
 from os import popen
 
 def get_interfaces_for_ip(self, ip):
-    """
-    Returns a list of all network interfaces present, such as [eth0, eth1, lo]
-    """
+    
+    #NEW
+    # Returns the interface with the given IP, such as eth0, eth1, wlan1, etc.
     proc_net_dev = open("/proc/net/dev")
     lines = proc_net_dev.readlines()
     proc_net_dev.seek(0)
     iflist = [ l[:l.find(":")].strip() for l in lines if ":" in l ]
     for i in iflist:
-        # TODO: get rid of this popen!
-        intinfo = popen('ifconfig ' + i).read()
-        if ip in intinfo:
+        intip = get_ip_for_interface(self, i)
+        if intip.strip() == ip.strip():
             return i
     return None
+
+    #NEW
+    # Get IP address for Interface
+def get_ip_for_interface(self, iface):
+    
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ipinfo = fcntl.ioctl(s.fileno(), 0x8915, ifr)
+    ip = socket.inet_ntoa(result[20:24])
+    return ip
+
 
 class NicReader(mmtemplates.MMTemplate):
     '''
@@ -81,8 +90,16 @@ class NicReader(mmtemplates.MMTemplate):
             self.request["error"] = 404
             self.request["errortext"] = 'No interface found with this ip'
             return
-        # TODO: get rid of this popen!
+        tsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
+        
+        
+        
+        
+        
+        # TODO: get rid of this popen! ONLY MTU is depending on this
         intinfo = popen('ifconfig ' + interface).read()
+        
         
         ## Properties Information:
         
@@ -92,41 +109,35 @@ class NicReader(mmtemplates.MMTemplate):
             type = type.group()
             self.request['INTERFACE_TYPE'] = type.split()[1].split(':')[1]
 
-#        # find information on Receive Rate
-#        intcaprx = re.search("++++++:(.*)", intinfo)
-#        if intcaprx != None:
-#            intcaprx = intcaprx.group()
-#            self.request['INTERFACE_CAPACITY_RX'] = intcaprx
-#
-#        # find information Transmission Rate
-#        intcaptx = re.search("++++++:(.*)", intinfo)
-#        if intcaptx != None:
-#            intcaptx = intcaptx.group()
-#            self.request['INTERFACE_CAPACITY_TX'] = intcaptx
+        # find information on Receive Rate Old:
+        intcaprx = re.search("++++++:(.*)", intinfo)
+        if intcaprx != None:
+            intcaprx = intcaprx.group()
+            self.request['INTERFACE_CAPACITY_RX'] = intcaprx
 
-        # MAC Address New Code: 
-#        newsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#        iface = interface + '\0'*(32-len(iface))
-#        try:
-#            info = fcntl.ioctl(s.fileno(), SIOCGIFHWADDR, ifr)
-#            addr = map(__strip_hex, info[18:24])
-#            ret = (':'.join(map(addr, str)))
-#        except IOError:
-#            self.request['INTERFACE_MAC'] = ''
-#        self.request['INTERFACE_MAC'] = ret
-        
-        # MAC Address Old Code:
-#        mac = re.search("HWaddr(.*)", intinfo)
-#        if mac != None:
-#            mac = mac.group()
-#            self.request['INTERFACE_MAC'] = mac.split()[1] 
+        # find information Transmission Rate Old:
+        intcaptx = re.search("++++++:(.*)", intinfo)
+        if intcaptx != None:
+            intcaptx = intcaptx.group()
+            self.request['INTERFACE_CAPACITY_TX'] = intcaptx
 
-        # MTU
+        # MAC Address New: 
+        iface = interface + '\0'*(32-len(iface))
+        try:
+            info = fcntl.ioctl(tsoc.fileno(), 0x8927, iface)
+            mac = (':'.join(map(lambda n: "%02x" % n, info[18:24])))
+        except IOError:
+            self.request['INTERFACE_MAC'] = ''
+        self.request['INTERFACE_MAC'] = mac
+
+        # MTU Old:
         mtu = re.search("MTU:(.*)", intinfo)
         if mtu != None:
             mtu = mtu.group()
             self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
-        self.request["error"] = 0
+
+        
+        self.request["e    #NEWrror"] = 0
         self.request["errortext"] = 'Everything went fine.'
 
         #Interface Information for the debugger
