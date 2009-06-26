@@ -35,7 +35,6 @@ from os import popen
 
 def get_interfaces_for_ip(self, ip):
     
-    #NEW
     # Returns the interface with the given IP, such as eth0, eth1, wlan1, etc.
     proc_net_dev = open("/proc/net/dev")
     lines = proc_net_dev.readlines()
@@ -46,8 +45,7 @@ def get_interfaces_for_ip(self, ip):
         if intip.strip() == ip.strip():
             return i
     return None
-
-    #NEW
+    
     # Get IP address for Interface
 def get_ip_for_interface(self, iface):
     
@@ -93,7 +91,19 @@ class NicReader(mmtemplates.MMTemplate):
         tsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         
+        #--------------------NEW-------------------------
         
+        # MAC Address: 
+        iface = interface + '\0'*(32-len(iface))
+        try:
+            info = fcntl.ioctl(tsoc.fileno(), 0x8927, iface)
+            mac = (':'.join(map(lambda n: "%02x" % n, info[18:24])))
+        except IOError:
+            self.request['INTERFACE_MAC'] = ''
+        self.request['INTERFACE_MAC'] = mac
+        
+        
+        #--------------------OLD-------------------------
         
         
         
@@ -121,14 +131,7 @@ class NicReader(mmtemplates.MMTemplate):
             intcaptx = intcaptx.group()
             self.request['INTERFACE_CAPACITY_TX'] = intcaptx
 
-        # MAC Address New: 
-        iface = interface + '\0'*(32-len(iface))
-        try:
-            info = fcntl.ioctl(tsoc.fileno(), 0x8927, iface)
-            mac = (':'.join(map(lambda n: "%02x" % n, info[18:24])))
-        except IOError:
-            self.request['INTERFACE_MAC'] = ''
-        self.request['INTERFACE_MAC'] = mac
+
 
         # MTU Old:
         mtu = re.search("MTU:(.*)", intinfo)
@@ -137,7 +140,7 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
 
         
-        self.request["e    #NEWrror"] = 0
+        self.request["error"] = 0
         self.request["errortext"] = 'Everything went fine.'
 
         #Interface Information for the debugger
