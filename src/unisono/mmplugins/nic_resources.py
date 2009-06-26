@@ -28,7 +28,7 @@ nic_resources.py
  
 '''
 
-import threading, logging, re, string, sys
+import threading, logging, re, string, sys, fcntl, socket
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import popen
@@ -76,6 +76,7 @@ class NicReader(mmtemplates.MMTemplate):
 
     def measure(self):
         interface = get_interfaces_for_ip(self.request['identifier1'])
+        interface = interface.strip()
         if interface == None:
             self.request["error"] = 404
             self.request["errortext"] = 'No interface found with this ip'
@@ -103,11 +104,22 @@ class NicReader(mmtemplates.MMTemplate):
 #            intcaptx = intcaptx.group()
 #            self.request['INTERFACE_CAPACITY_TX'] = intcaptx
 
-        # MAC Address: 
-        mac = re.search("HWaddr(.*)", intinfo)
-        if mac != None:
-            mac = mac.group()
-            self.request['INTERFACE_MAC'] = mac.split()[1] 
+        # MAC Address New Code: 
+#        newsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#        iface = interface + '\0'*(32-len(iface))
+#        try:
+#            info = fcntl.ioctl(s.fileno(), SIOCGIFHWADDR, ifr)
+#            addr = map(__strip_hex, info[18:24])
+#            ret = (':'.join(map(addr, str)))
+#        except IOError:
+#            self.request['INTERFACE_MAC'] = ''
+#        self.request['INTERFACE_MAC'] = ret
+        
+        # MAC Address Old Code:
+#        mac = re.search("HWaddr(.*)", intinfo)
+#        if mac != None:
+#            mac = mac.group()
+#            self.request['INTERFACE_MAC'] = mac.split()[1] 
 
         # MTU
         mtu = re.search("MTU:(.*)", intinfo)
