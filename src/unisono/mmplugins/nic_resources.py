@@ -102,6 +102,21 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['INTERFACE_MAC'] = ''
         self.request['INTERFACE_MAC'] = mac
         
+        # Interface Type:
+        
+        type = interface
+        if ('eth' in type): self.request['INTERFACE_TYPE'] = "Ethernet interface"
+        if ('wlan' in type): self.request['INTERFACE_TYPE'] = "Wireless interface"
+        if ('ppp' in type): self.request['INTERFACE_TYPE'] = "Dial-up interface"
+        if ('tun' in type): self.request['INTERFACE_TYPE'] = "Routed IP tunnel"
+        if ('sit' in type): self.request['INTERFACE_TYPE'] = "IPv6 tunnel"
+        if ('tap' in type): self.request['INTERFACE_TYPE'] = "VPN tunnel"
+        if ('lo' in type): self.request['INTERFACE_TYPE'] = "Loopback interface"
+        else:
+            self.request['INTERFACE_TYPE'] = "Unspecified interface"
+        
+        
+        
         
         #--------------------OLD-------------------------
         
@@ -116,7 +131,7 @@ class NicReader(mmtemplates.MMTemplate):
         # Interface Type:        
         type = re.search("Link encap:(.*)", intinfo)
         if type != None:
-            type = type.group()
+            type = type.group() 
             self.request['INTERFACE_TYPE'] = type.split()[1].split(':')[1]
 
         # find information on Receive Rate Old:
