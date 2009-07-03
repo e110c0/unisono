@@ -28,7 +28,7 @@ nic_resources.py
  
 '''
 
-import threading, logging, re, string, sys, fcntl, socket
+import threading, logging, re, string, sys, fcntl, socket, time
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import popen
@@ -84,6 +84,7 @@ class NicReader(mmtemplates.MMTemplate):
     def measure(self):
         interface = get_interfaces_for_ip(self.request['identifier1'])
         interface = interface.strip()
+        self.request['INTERFACE'] = interface
         if interface == None:
             self.request["error"] = 404
             self.request["errortext"] = 'No interface found with this ip'
@@ -122,18 +123,12 @@ class NicReader(mmtemplates.MMTemplate):
         
         
         
-        # TODO: get rid of this popen! ONLY MTU is depending on this
+        # TODO: get rid of this popen! ONLY MTU is dependingself.request[' on this
         intinfo = popen('ifconfig ' + interface).read()
         
         
         ## Properties Information:
         
-        # Interface Type:        
-        type = re.search("Link encap:(.*)", intinfo)
-        if type != None:
-            type = type.group() 
-            self.request['INTERFACE_TYPE'] = type.split()[1].split(':')[1]
-
         # find information on Receive Rate Old:
         intcaprx = re.search("++++++:(.*)", intinfo)
         if intcaprx != None:
@@ -175,6 +170,29 @@ class BandwidthUsage(mmtemplates.MMTemplate):
 
 
     def measure(self):
+        
+        history = dict()
+        hist_item = { "hist" : [0]*size, "prev" : 0, "max" : 0 }
+        
+        # Current Messure
+        history[self.request['INTERFACE']] = { "out" : copy.deepcopy(hist_item), "in" : copy.deepcopy(hist_item) }
+        bw_in  = history[self.request['INTERFACE']]["in"]["hist"][-1:][0]
+        bw_out = history[self.request['INTERFACE']]["out"]["hist"][-1:][0]
+
+        # Meassure after one second
+        time.sleep(1)
+        
+        history[self.request['INTERFACE']] = { "out" : copy.deepcopy(hist_item), "in" : copy.deepcopy(hist_item) }
+        bw_in2  = history[self.request['INTERFACE']]["in"]["hist"][-1:][0]
+        bw_out2 = history[self.request['INTERFACE']]["out"]["hist"][-1:][0]
+
+        try:
+            self.request['USED_BANDWIDTH_RX'] = (bw_in+bw_in2)/2
+            self.request['USED_BANDWIDTH_TX'] = (bw_out+bw_out2)/2
+        except IOError:
+            self.request['USED_BANDWIDTH_RX'] = 0
+            self.request['USED_BANDWIDTH_TX'] = 0
+        
         self.request["error"] = 0
         self.request["errortext"] = 'Everything went fine.'
 
