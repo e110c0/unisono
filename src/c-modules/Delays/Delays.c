@@ -34,7 +34,145 @@
  */
 struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 			    struct sockaddr_in6 *addr) {
+	int i;
+	int rawsock, ident, addrlen, recv_bytes;
+	struct t_mvars mvars;	// return vars
+	struct timeval timeout; // timeout for sending packets
+	unsigned int headersize = sizeof(struct icmp6_hdr);
+	unsigned int datasize = sizeof(struct timeval);
+	unsigned int packetsize = headersize + datasize;
+	unsigned char packet[packetsize]; // echo request
+	// receiving buffer for incoming packets
+	unsigned char buffer[sizeof(struct ip6_hdr) + packetsize]; // echo reply
+	struct icmp6_hdr *icp = (struct icmp6_hdr*) packet;
+	struct icmp6_hdr *icp_reply;
+	struct timeval *t1 = (struct timeval*) &packet[headersize]; // now
+	// the IPv6 header is automatically removed on received packets. see:
+	// http://manpages.ubuntu.com/manpages/hardy/man4/icmp6.4.html
+	struct timeval *t2 = (struct timeval*) &buffer[sizeof(struct icmp6_hdr)]; // receive
 
+	struct icmp6_filter fil;
+
+	fd_set fds; // socket-container for select()
+	// prepare mvars
+	mvars.seqno = 0; // packet number
+	mvars.received = 0; // number of received replys
+	mvars.loss = 0;
+	mvars.error = 0;
+	// init buffers
+	memset(delays, 0, sizeof(int64_t) * packetcount);
+	memset(packet, 0, packetsize);
+	memset(buffer, 0, sizeof(struct ip6_hdr) + packetsize);
+	// create RAW socket
+	if ((rawsock = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6)) < 0) {
+		mvars.error = errno;
+		mvars.errortext = "could not open raw socket";
+		return mvars;
+	}
+	// set up ICMP header
+	icp->icmp6_type = ICMP6_ECHO_REQUEST;
+	icp->icmp6_code = 0;
+	ident = 42; //getpid() & 0xFFFF;
+	icp->icmp6_id = ident;
+	// set up destination structure -> mostly done
+	addr->sin6_port = 0;
+	addrlen = sizeof(addr);
+	// fill the socket-container
+	FD_ZERO(&fds);
+	FD_SET(rawsock, &fds);
+
+	ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &fil);
+	setsockopt (rawsock, IPPROTO_ICMPV6, ICMP6_FILTER, &fil, sizeof (fil));
+
+	// try to send 'packetcount' ICMP-packets (echo requests)
+	while ((mvars.seqno < packetcount) && (mvars.received < packetcount)) {
+		//prepare the packet for sending
+		icp->icmp6_seq = (mvars.seqno << 8);
+		// current time on this node
+		gettimeofday(t1, NULL);
+		// checksum is provided by IP6-header and calculated automatically
+		icp->icmp6_cksum = 0;
+		//icp->icmp6_cksum = checksum((u_short*) icp, packetsize);
+		// send the packet
+		if ((sendto(rawsock, packet, packetsize, 0, (struct sockaddr*) addr,
+			    sizeof(struct sockaddr_in6))) < 0) {
+			mvars.error = errno;
+			mvars.errortext = strerror(mvars.error);
+			return mvars;
+		} else {
+			// count up seqno
+			mvars.seqno++;
+		}
+		// wait for an incoming packet (with timeout)
+		// listen in a loop as we might receive packets
+		// that are not meant for us
+		bool notforus = true;
+		while (notforus) {
+			timeout.tv_sec = DEFAULT_TIMEOUT;
+			timeout.tv_usec = 0;
+			
+			if (select(rawsock + 1, &fds, (fd_set*) 0, (fd_set*) 0, &timeout) < 0) {
+				mvars.error = errno;
+				mvars.errortext = strerror(mvars.error);
+				return mvars;
+			}
+			
+			if (!FD_ISSET(rawsock, &fds)) {
+				// count this as loss
+				mvars.loss++;
+				printf("no reply for packet %i. Counted as loss.\n",
+				       mvars.seqno);
+				break;
+			}
+			// there is some data on the socket, read it
+			if ((recv_bytes = recvfrom(rawsock, buffer, sizeof(buffer), 0, (struct sockaddr*) addr,
+						   (socklen_t*) &addrlen)) < 0) {
+				mvars.error = errno;
+				mvars.errortext = strerror(mvars.error);
+				return mvars;
+			}
+			// current time on this node AFTER the packet has been received
+			gettimeofday(t1, NULL);
+			// compare with IPv4: buffer has no offset anymore, since the IPv6 header is already
+			// removed on receive.
+			icp_reply = (struct icmp6_hdr*) (buffer);
+			// does the packet belong to us? and is it an echo reply?
+			// NOW: comparison instead of assignment, both comparisons must be true -> AND
+
+			// 06.07.2009: should always be true, since we implemented a filter above, but just leave it for
+			// debug functionality
+			if ((icp_reply->icmp6_id == ident) 
+			     && (icp_reply->icmp6_type == ICMP6_ECHO_REPLY)) {
+				// everything seems to be ok, calculate RTT
+				// do not account times for losses!
+				delays[mvars.received] = deltaTime64(*t2, *t1);
+				mvars.received++;
+				notforus = false;
+				/*
+				if (((struct ip6_hdr*) buffer)->ip6_hlim > 128) {
+					mvars.hopcount = 255 - ((struct ip6_hdr*) buffer)->ip6_hlim;
+				} else if (((struct iphdr*) buffer)->ttl > 128) {
+					mvars.hopcount = 129 - ((struct ip6_hdr*) buffer)->ip6_hlim;
+				} else {
+					mvars.hopcount = 65 - ((struct ip6_hdr*) buffer)->ip6_hlim;
+				}*/
+				// we cant read out the hop limit at the moment (06.07.2009)
+				mvars.hopcount = 1;
+			} else {
+				//printf("got a wrong icmp packet. why?\n");
+				notforus = true;
+			}
+		}
+	}
+	// if we lost too many packets, set error message
+	if (mvars.loss > (packetcount - FEWDATA_LIMIT)) {
+		mvars.error = 50;
+		mvars.errortext = "Not enough data gathered for evaluation. Destination host unreachable?";
+	} else {
+		mvars.error = 0;
+		mvars.errortext = "Everything went fine.";
+	}
+	return mvars;
 }
 
 /*
@@ -93,7 +231,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 	FD_SET(rawsock, &fds);
 
 	// try to send 'packetcount' ICMP-packets (echo requests)
-	while ((mvars.seqno < packetcount * 2) && (mvars.received < packetcount)) {
+	while ((mvars.seqno < packetcount) && (mvars.received < packetcount)) {
 		//prepare the packet for sending
 		icp->un.echo.sequence = (mvars.seqno << 8);
 		// calculate checksum of packet after everything is set
@@ -127,8 +265,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 			if (!FD_ISSET(rawsock, &fds)) {
 				// count this as loss
 				mvars.loss++;
-				printf("no reply for packet %i. Counted as loss.\n",
-				       mvars.seqno);
+				printf("no reply for packet %i. Counted as loss.\n", mvars.seqno);
 				break;
 			}
 			// there is some data on the socket, read it
@@ -165,8 +302,14 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 			}
 		}
 	}
-	mvars.error = 0;
-	mvars.errortext = "Everything went fine.";
+	// if we lost too many packets, set error message
+	if (mvars.loss > (packetcount - FEWDATA_LIMIT)) {
+		mvars.error = 50;
+		mvars.errortext = "Not enough data gathered for evaluation. Destination host unreachable?";
+	} else {
+		mvars.error = 0;
+		mvars.errortext = "Everything went fine.";
+	}
 	return mvars;
 }
 
