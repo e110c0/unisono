@@ -90,7 +90,7 @@ struct t_mvars {
  * Constants
  * ****************************************************************************/
 static const int DEFAULT_PACKETCOUNT = 10;
-static const int DEFAULT_TIMEOUT = 5;
+static const int DEFAULT_TIMEOUT = 2;
 static const int FEWDATA_LIMIT = 2;
 
 
@@ -120,5 +120,12 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
  * @return Checksum of the packetheader
  */
 u_short checksum(void *b, int len);
+
+/**
+ * Reads IPv6 hop limit from ancillary data
+ * @param msg The message received by recvmsg
+ * @return Hop limit or 0, if hop limit couldn't be read
+ */
+int read_hops(struct msghdr *msg);
 
 #endif /* CDELAY_H_ */

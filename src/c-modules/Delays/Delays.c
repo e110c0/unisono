@@ -29,12 +29,29 @@
 
 #include "Delays.h"
 
+/* read hopcount from ancillary msg */
+int read_hops(struct msghdr *msg) {
+	struct cmsghdr *c;
+	int hops = 0;
+
+	for (c = CMSG_FIRSTHDR(msg); c != NULL; c = CMSG_NXTHDR(msg, c)) {
+		if (c->cmsg_level != SOL_IPV6)
+			continue;
+		switch(c->cmsg_type) {
+		case IPV6_HOPLIMIT:
+			if (c->cmsg_len < CMSG_LEN(sizeof(int)))
+				continue;
+			hops = *(int*)CMSG_DATA(c);
+		}
+	}
+	return hops;
+}
+
 /*
  * for ipv6
  */
 struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 			    struct sockaddr_in6 *addr) {
-	int i;
 	int rawsock, ident, addrlen, recv_bytes;
 	struct t_mvars mvars;	// return vars
 	struct timeval timeout; // timeout for sending packets
@@ -50,8 +67,14 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 	// the IPv6 header is automatically removed on received packets. see:
 	// http://manpages.ubuntu.com/manpages/hardy/man4/icmp6.4.html
 	struct timeval *t2 = (struct timeval*) &buffer[sizeof(struct icmp6_hdr)]; // receive
-
+	
 	struct icmp6_filter fil;
+
+	char addrbuf[128];
+	char ans_data[4096];
+	struct iovec iov;
+	struct msghdr msg;
+	int on = 1;
 
 	fd_set fds; // socket-container for select()
 	// prepare mvars
@@ -59,6 +82,7 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 	mvars.received = 0; // number of received replys
 	mvars.loss = 0;
 	mvars.error = 0;
+	mvars.hopcount = 0;
 	// init buffers
 	memset(delays, 0, sizeof(int64_t) * packetcount);
 	memset(packet, 0, packetsize);
@@ -83,6 +107,22 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 
 	ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &fil);
 	setsockopt (rawsock, IPPROTO_ICMPV6, ICMP6_FILTER, &fil, sizeof (fil));
+	if (setsockopt(rawsock, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &on, sizeof(on)) == -1) {
+		mvars.error = 51;
+		mvars.errortext = "could not setsockopt IPV6_RECVHOPLIMIT. we won't be able to read IPv6 hop limits.";
+	}
+ 	    
+	// used by sendmsg()
+	memset(&msg, 0, sizeof(msg));
+	memset(&addrbuf, 0, sizeof(addrbuf));
+	iov.iov_len = sizeof(buffer);
+	iov.iov_base = &buffer;
+	msg.msg_name = addrbuf;
+	msg.msg_namelen = sizeof(addrbuf);
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_control = ans_data;
+	msg.msg_controllen = sizeof(ans_data);
 
 	// try to send 'packetcount' ICMP-packets (echo requests)
 	while ((mvars.seqno < packetcount) && (mvars.received < packetcount)) {
@@ -125,8 +165,7 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 				break;
 			}
 			// there is some data on the socket, read it
-			if ((recv_bytes = recvfrom(rawsock, buffer, sizeof(buffer), 0, (struct sockaddr*) addr,
-						   (socklen_t*) &addrlen)) < 0) {
+			if ((recv_bytes = recvmsg(rawsock, &msg, 0)) < 0) {
 				mvars.error = errno;
 				mvars.errortext = strerror(mvars.error);
 				return mvars;
@@ -148,16 +187,19 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 				delays[mvars.received] = deltaTime64(*t2, *t1);
 				mvars.received++;
 				notforus = false;
-				/*
-				if (((struct ip6_hdr*) buffer)->ip6_hlim > 128) {
-					mvars.hopcount = 255 - ((struct ip6_hdr*) buffer)->ip6_hlim;
-				} else if (((struct iphdr*) buffer)->ttl > 128) {
-					mvars.hopcount = 129 - ((struct ip6_hdr*) buffer)->ip6_hlim;
-				} else {
-					mvars.hopcount = 65 - ((struct ip6_hdr*) buffer)->ip6_hlim;
-				}*/
-				// we cant read out the hop limit at the moment (06.07.2009)
-				mvars.hopcount = 1;
+//				getsockopt(rawsock, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &socket_hlim, sizeof(socket_hlim));
+				mvars.hopcount = read_hops(&msg);
+				// not a very safe calculation of hop count, because the hop limit
+				// could have been changed on the socket. but for now, it must be sufficient.
+				if (mvars.hopcount < 65) {
+					mvars.hopcount = 65 - mvars.hopcount;
+				}
+				else if (mvars.hopcount < 129) {
+					mvars.hopcount = 129 - mvars.hopcount;
+				}
+				else {
+					mvars.hopcount = 255 - mvars.hopcount;
+				}
 			} else {
 				//printf("got a wrong icmp packet. why?\n");
 				notforus = true;
@@ -206,6 +248,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 	mvars.received = 0; // number of received replys
 	mvars.loss = 0;
 	mvars.error = 0;
+	mvars.hopcount = 0;
 	// init buffers
 
 	memset(delays, 0, sizeof(int64_t) * packetcount);
@@ -322,10 +365,10 @@ struct t_result measure(struct t_request req) {
 	struct t_result res;
 	struct t_mvars mvars;
 	int64_t delays[packetcount]; // array with RTTs
-
+	mvars.received = -1;
 	memset(&addr_buf, 0, sizeof(addr_buf));
 	target = (struct sockaddr *) (&addr_buf);
-	if (res.error = parse_addr_str(req.identifier2, target, &target_len)) {
+	if ((res.error = parse_addr_str(req.identifier2, target, &target_len))) {
 		res.errortext = "invalid identifier";
 		res.HOPCOUNT = -1;
 		res.RTT = -1;
