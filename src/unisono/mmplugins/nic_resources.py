@@ -47,6 +47,8 @@ def get_interfaces_for_ip(self, ip):
                 return i
             else: return None
     except IOError:
+        self.request['error'] = 999
+        self.request['errortext'] = 'no Interface for given IP'
         raise IOError
     
     # Get IP address for Interface
@@ -57,6 +59,8 @@ def get_ip_for_interface(self, iface):
         ip = socket.inet_ntoa(result[20:24])
         return ip
     except IOError:
+        self.request['error'] = 999
+        self.request['errortext'] = 'no IP for given Interface'
         raise IOError
 
 
@@ -151,25 +155,42 @@ class NicReader(mmtemplates.MMTemplate):
         ## Properties Information:
         
         # find information on Receive Rate Old:
-        
-        intcaprx = re.search("++++++:(.*)", intinfo)
-        if intcaprx != None:
-            intcaprx = intcaprx.group()
-            self.request['INTERFACE_CAPACITY_RX'] = intcaprx
+        try:
+            intcaprx = re.search("++++++:(.*)", intinfo)
+            if intcaprx != None:
+                intcaprx = intcaprx.group()
+                self.request['INTERFACE_CAPACITY_RX'] = intcaprx
+        except Error:
+            self.request['error'] = 999
+            self.request['errortext'] = 'no IP for given Interface'
+            raise Error
+
 
         # find information Transmission Rate Old:
-        intcaptx = re.search("++++++:(.*)", intinfo)
-        if intcaptx != None:
-            intcaptx = intcaptx.group()
-            self.request['INTERFACE_CAPACITY_TX'] = intcaptx
-
+        try:
+            intcaptx = re.search("++++++:(.*)", intinfo)
+            if intcaptx != None:
+                intcaptx = intcaptx.group()
+                self.request['INTERFACE_CAPACITY_TX'] = intcaptx
+        except Error:
+            self.request['error'] = 999
+            self.request['errortext'] = 'no IP for given Interface'
+            raise Error
 
 
         # MTU Old:
-        mtu = re.search("MTU:(.*)", intinfo)
-        if mtu != None:
-            mtu = mtu.group()
-            self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
+        try:
+            mtu = re.search("MTU:(.*)", intinfo)
+            if mtu != None:
+                mtu = mtu.group()
+                self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
+        except Error:
+            self.request['error'] = 999
+            self.request['errortext'] = 'no IP for given Interface'
+            raise Error
+
+
+
 
         
         self.request["error"] = 0
@@ -194,32 +215,38 @@ class BandwidthUsage(mmtemplates.MMTemplate):
     def measure(self):
         
         # Gives the current Bandwidth usage RX and TX in bytes/s
-        # TODO get interface
-        proc_net_dev = open("/proc/net/dev")
-        lines = proc_net_dev.readlines()
-        proc_net_dev.seek(0)
+        try:
+        
+            proc_net_dev = open("/proc/net/dev")
+            lines = proc_net_dev.readlines()
+            proc_net_dev.seek(0)
+        
+            iface = get_ip_for_interface(self.request['identifier1'])
+        
+            keys_dyn_data = ["bytes_in", "packets_in", "bytes_out", "packets_out" ]
+            delim = "%s:" % (iface)
+            if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
+            iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
+            bw_in  = iface_data["bytes_in"]
+            bw_out = iface_data["bytes_out"]
 
-        iface = self.request['INTERFACE']
-        keys_dyn_data = ["bytes_in", "packets_in", "bytes_out", "packets_out" ]
-        delim = "%s:" % (iface)
-        if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
-        iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
-        bw_in  = iface_data["bytes_in"]
-        bw_out = iface_data["bytes_out"]
+            time.sleep(1)
 
-        time.sleep(1)
-
-        proc_net_dev = open("/proc/net/dev")
-        lines = proc_net_dev.readlines()
-
-        if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
-        iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
-        bw_in2  = iface_data["bytes_in"]
-        bw_out2 = iface_data["bytes_out"]
-
-        self.request['USED_BANDWIDTH_RX'] = bw_in2 - bw_in
-        self.request['USED_BANDWIDTH_TX'] = bw_out2 - bw_out
-
+            proc_net_dev = open("/proc/net/dev")
+            lines = proc_net_dev.readlines()
+            
+            if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
+            iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
+            bw_in2  = iface_data["bytes_in"]
+            bw_out2 = iface_data["bytes_out"]
+            
+            self.request['USED_BANDWIDTH_RX'] = bw_in2 - bw_in
+            self.request['USED_BANDWIDTH_TX'] = bw_out2 - bw_out
+        
+        except Error:
+            self.request['error'] = 999
+            self.request['errortext'] = 'could calculate current RT and TX'            
+            raise Error
         # Debugger
 
         self.logger.debug('Got this Interface Data: %s', iface_data)
@@ -255,19 +282,20 @@ class WifiReader(mmtemplates.MMTemplate):
 
     def measure(self):
         
-        ipaddress = self.request['identifier1']
-        interfacelist = popen('ls /proc/net/dev_snmp6/').read().split()
-        self.logger.debug(interfacelist)
-        interface = "No wireless interface with this IP"
-        intinfo=''
-        for i in interfacelist:
-            intinfo = popen('iwconfig ' + i).read()
-            if ipaddress in intinfo:
-                interface = i
-                break
-            else: 
-                self.request['error'] = 404   
-                self.request['errortext'] = "no wireless interface with this ip"
+        interface = get_ip_for_interface(self.request['identifier1'])
+        
+#        interfacelist = popen('ls /proc/net/dev_snmp6/').read().split()
+#        self.logger.debug(interfacelist)
+#        interface = "No wireless interface with this IP"
+#        intinfo=''
+#        for i in interfacelist:
+#            intinfo = popen('iwconfig ' + i).read()
+#            if ipaddress in intinfo:
+#                interface = i
+#                break
+#            else: 
+#                self.request['error'] = 404   
+#                self.request['errortext'] = "no wireless interface with this ip"
 
         wlaninfo = popen('iwconfig ' + interface).read()
         if len(wlaninfo) != 0:
@@ -276,12 +304,18 @@ class WifiReader(mmtemplates.MMTemplate):
             if essid != None:
                 essid = essid.group()
                 self.request['WLAN_ESSID'] = essid.split(":")[1]
-            
-            mode = re.search('Mode:([^ ]+)', wlaninfo)
-            if mode != None:
-                mode = mode.group()
-                self.request['WLAN_MODE'] = mode.split(':')[1]
 
+            # Wireless Mode:
+            try: 
+                mode = re.search('Mode:([^ ]+)', wlaninfo)
+                if mode != None:
+                    mode = mode.group()
+                    self.request['WLAN_MODE'] = mode.split(':')[1]
+            except Error:
+                self.request['error'] = 999
+                self.request['errortext'] = 'could not get wireless mode'
+                raise Error
+                    
             # Access Point MAC Address:
             try:
                 apmac = re.search('Access Point: ([^ ]+)', wlaninfo)
@@ -289,6 +323,8 @@ class WifiReader(mmtemplates.MMTemplate):
                     apmac = apmac.group()
                     self.request['WLAN_AP_MAC'] = apmac.split()[2]
             except Error:
+                self.request['error'] = 999
+                self.request['errortext'] = 'could not get AP_MAC address'
                 raise Error        
             
 
@@ -300,7 +336,7 @@ class WifiReader(mmtemplates.MMTemplate):
                     self.request['WLAN_LINK'] = link.split()[1].split("=")[1]
             except Error:
                 self.request['error'] = 999
-                self.request['errortext'] = '**************'
+                self.request['errortext'] = 'Could not get Link Quality'
                 raise Error
 
             # Signal Level:
@@ -311,7 +347,7 @@ class WifiReader(mmtemplates.MMTemplate):
                     self.request['WLAN_SIGNAL'] = signal.split(':')[1]
             except Error:
                 self.request['error'] = 999
-                self.request['errortext'] = '**************'
+                self.request['errortext'] = 'could not get Signal Level'
                 raise Error
 
             # Noise Level:
@@ -322,7 +358,7 @@ class WifiReader(mmtemplates.MMTemplate):
                     self.request['WLAN_NOISE'] = noise.split('=')[1]
             except Error:
                 self.request['error'] = 999
-                self.request['errortext'] = '**************'
+                self.request['errortext'] = 'could not get Noise Level'
                 raise Error
 
             # given in dB by Ratio = 10*lg(Signal/Noise)
@@ -330,7 +366,7 @@ class WifiReader(mmtemplates.MMTemplate):
                 self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
             except Error:
                 self.request['error'] = 999
-                self.request['errortext'] = '**************'
+                self.request['errortext'] = 'could not get S/N Ratio'
                 raise Error
             
             # Used Wireless Channel:
@@ -342,7 +378,7 @@ class WifiReader(mmtemplates.MMTemplate):
                     self.request['WLAN_CHANNEL'] = channel.split()[1]
             except Error:
                 self.request['error'] = 999
-                self.request['errortext'] = '**************'
+                self.request['errortext'] = 'could not get wireless channel'
                 raise Error
 
 
@@ -357,7 +393,7 @@ class WifiReader(mmtemplates.MMTemplate):
                 self.request['errortext'] = '**************'
                 raise Error
 
-#        #Wireless information for the debugger
+            # Wireless information for the debugger
         self.logger.debug('The result is: %s', self.request)
 
         self.request['error'] = 0
