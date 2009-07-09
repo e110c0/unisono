@@ -29,8 +29,8 @@ nic_resources.py
 '''
 
 import threading, logging, re, string, sys, fcntl, socket, time
-#from unisono.mmplugins import mmtemplates
-#from unisono.utils import configuration
+from unisono.mmplugins import mmtemplates
+from unisono.utils import configuration
 from os import popen
 
 def get_interfaces_for_ip(self, ip):

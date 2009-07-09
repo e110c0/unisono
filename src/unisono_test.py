@@ -35,13 +35,16 @@ unisono_test.py
 import unittest
 # unisono imports
 import unisono.test.connector_interface
+import unisono.test.nic_resources
 
 # init testsuites
 connector_interface_testsuite = unisono.test.connector_interface.suite()
+nic_resources_testsuite = unisono.test.nic_resources.suite()
 
 # join testsuites
 alltests = unittest.TestSuite((
-        connector_interface_testsuite
+        connector_interface_testsuite,
+        nic_resources_testsuite
         ))
 
 # init testrunner as textbased runner
