@@ -245,7 +245,7 @@ class BandwidthUsage(mmtemplates.MMTemplate):
         
         except Error:
             self.request['error'] = 999
-            self.request['errortext'] = 'could calculate current RT and TX'            
+            self.request['errortext'] = 'could not calculate current RT and TX'            
             raise Error
         # Debugger
 
@@ -283,19 +283,6 @@ class WifiReader(mmtemplates.MMTemplate):
     def measure(self):
         
         interface = get_ip_for_interface(self.request['identifier1'])
-        
-#        interfacelist = popen('ls /proc/net/dev_snmp6/').read().split()
-#        self.logger.debug(interfacelist)
-#        interface = "No wireless interface with this IP"
-#        intinfo=''
-#        for i in interfacelist:
-#            intinfo = popen('iwconfig ' + i).read()
-#            if ipaddress in intinfo:
-#                interface = i
-#                break
-#            else: 
-#                self.request['error'] = 404   
-#                self.request['errortext'] = "no wireless interface with this ip"
 
         wlaninfo = popen('iwconfig ' + interface).read()
         if len(wlaninfo) != 0:
