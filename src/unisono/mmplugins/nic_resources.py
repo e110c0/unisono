@@ -100,17 +100,7 @@ class NicReader(mmtemplates.MMTemplate):
         
         # I've added a new Entry in the dictionary so i don't have to check
         # each time which interface i have to use 
-        
-#        try:
-#            self.request['INTERFACE'] = interface
-#            if interface == None:
-#                self.request["error"] = 404
-#                self.request["errortext"] = 'No interface found with this ip'
-#                return
-#            
-#        except Error:
-#            raise Error
-            
+                   
         # Opening measurment socket
         try:
             tsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -124,7 +114,8 @@ class NicReader(mmtemplates.MMTemplate):
             info = fcntl.ioctl(tsoc.fileno(), 0x8927, iface)
             mac = (':'.join(map(lambda n: "%02x" % n, info[18:24])))
         except IOError:
-            self.request['INTERFACE_MAC'] = ''
+            self.request['error'] = 999
+            self.request['errortext'] = 'could not get MAC address'
         self.request['INTERFACE_MAC'] = mac
         
         # Interface Type:
@@ -140,6 +131,8 @@ class NicReader(mmtemplates.MMTemplate):
             else:
                 self.request['INTERFACE_TYPE'] = "Unspecified interface"
         except Error:
+            self.request['error'] = 999
+            self.request['errortext'] = 'unknown interface type'
             Error
         
         
