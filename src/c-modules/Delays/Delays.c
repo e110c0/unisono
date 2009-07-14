@@ -108,7 +108,7 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 	ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &fil);
 	setsockopt (rawsock, IPPROTO_ICMPV6, ICMP6_FILTER, &fil, sizeof (fil));
 	if (setsockopt(rawsock, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &on, sizeof(on)) == -1) {
-		mvars.error = 51;
+		mvars.error = ERROR_SETSOCKOPT_IPV6;
 		mvars.errortext = "could not setsockopt IPV6_RECVHOPLIMIT. we won't be able to read IPv6 hop limits.";
 	}
  	    
@@ -208,7 +208,7 @@ struct t_mvars measure_ipv6(int64_t delays[], int packetcount,
 	}
 	// if we lost too many packets, set error message
 	if (mvars.loss > (packetcount - FEWDATA_LIMIT)) {
-		mvars.error = 50;
+		mvars.error = ERROR_FEWDATA_LIMIT;
 		mvars.errortext = "Not enough data gathered for evaluation. Destination host unreachable?";
 	} else {
 		mvars.error = 0;
@@ -347,7 +347,7 @@ struct t_mvars measure_ipv4(int64_t delays[], int packetcount,
 	}
 	// if we lost too many packets, set error message
 	if (mvars.loss > (packetcount - FEWDATA_LIMIT)) {
-		mvars.error = 50;
+		mvars.error = ERROR_FEWDATA_LIMIT;
 		mvars.errortext = "Not enough data gathered for evaluation. Destination host unreachable?";
 	} else {
 		mvars.error = 0;

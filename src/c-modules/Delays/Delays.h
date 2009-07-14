@@ -128,4 +128,6 @@ u_short checksum(void *b, int len);
  */
 int read_hops(struct msghdr *msg);
 
+#define ERROR_FEWDATA_LIMIT 450
+#define ERROR_SETSOCKOPT_IPV6 451
 #endif /* CDELAY_H_ */
