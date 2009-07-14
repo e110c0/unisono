@@ -7,6 +7,7 @@ Created on 14.07.2009
 '''
 
 class OrderError(ValueError):
+    """ An Error with a numeric status code, much like EnvironmentError's errno """
     def __init__(self, status, *args, **kwargs):
         self.status = status
         super().__init__(*args, **kwargs)
@@ -20,8 +21,20 @@ class OrderKeyInvalid(OrderError):
 class Order(dict):
     '''
     An UNISONO order™
+    
+    This will check for all the required fields on __init__ as good as it can.
+    If any of them is missing or invalid you'll get an OrderError.
+    To access the numeric error code use OrderError.status.
+    
+    Fields:
+         type (str): 'oneshot', 'periodic' or 'triggered' 
+         dataitem (str): a valid dataitem 
+         orderid (str): the unique orderid 
+    periodic or triggered:
+             interval (int)
+    triggered:
+            low, high: trigger watermarks
     '''
-
 
     def __init__(self, *args, **kwargs):
         # TODO: this still has to migrate to the new calling convention
