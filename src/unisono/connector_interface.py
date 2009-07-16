@@ -391,6 +391,7 @@ class XMLRPCReplyHandler:
                  * orderid of the discarded order
                  * error: the error code of the measurement
                  * errortext: a specific error text for the error code
+        FINISHED: finish an order gracefully, e.g. if its lifetime expired.
         '''
         while True:
             event = self.replyq.get()
@@ -430,6 +431,23 @@ class XMLRPCReplyHandler:
                     continue
                 try:
                     connector.on_discard(paramap)
+                except:
+                    self.logger.error('Connector %s unreachable!', event.payload['conid'])
+                    self.conmap.deregister_connector(event.payload['conid'])
+            elif event.type == 'FINISHED':
+                # prepare paramap
+                paramap = dict( ((k,v) for (k,v) in event.payload.items() 
+                                if k in ('orderid','error','errortext') ))
+                self.logger.debug('Finished: %s', paramap)
+                # find requester
+                try:
+                    connector = self.find_requester(event.payload['conid'])
+                except KeyError:
+                    self.logger.error('Unknown connector %s, discarding order', event.payload['conid'])
+                    self.eventq.put(Event('CANCEL', (event.payload['conid'], event.payload['orderid'])))
+                    continue
+                try:
+                    connector.on_finished(paramap)
                 except:
                     self.logger.error('Connector %s unreachable!', event.payload['conid'])
                     self.conmap.deregister_connector(event.payload['conid'])
