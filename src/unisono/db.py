@@ -58,9 +58,9 @@ class DataBase():
         self.config = configuration.get_configparser()
         try:
             dbfile = self.config.get('Cache', 'dbfile')
-            self.logger.info('Initialize DB: %s', dbfile)
+            self.logger.info('Connecting to DB: %s', dbfile)
         except:
-            self.logger.info('Initialize DB at default location')
+            self.logger.info('Connecting to DB at default location')
             dbfile = ':memory:'
         self.dbcon = sqlite3.connect(dbfile)
 
@@ -113,7 +113,7 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
-        age = get_max_dataitem_age(table)
+        age = self.get_max_dataitem_age(table)
         c = self.dbcon.cursor()
         try:
             if identifier2 != None:
@@ -165,7 +165,7 @@ class DataBase():
         if identifier2 != None:
             for d, v in paramap.items():
                 try:
-                    if identfier2 != None:
+                    if identifier2 != None:
                         c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
                     else:
                         c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))

@@ -54,12 +54,12 @@ class NicTest(unittest.TestCase):
 
     # Case when we have a common network interface
     def ethdevice(self):
-        PASS
+        pass
         #TODO:
 
     # Case when we have a wireless network interface
     def wlandevice(self):
-        PASS
+        pass
         #TODO
 
 

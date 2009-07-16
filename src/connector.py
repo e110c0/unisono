@@ -78,46 +78,47 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
-#    for i in s.list_available_dataitems():
-#        print('my order:', {'orderid': str(orderid), 
-#                                                      'identifier1':'134.2.172.173',
-#                                                      'identifier2':'134.2.172.172',
-#                                                      'type':1,
-#                                                      'dataitem':i})
-#        print('commit order: ' ,s.commit_order(myID, {'orderid': str(orderid), 
-#                                                      'identifier1':'134.2.172.173',
-#                                                      'identifier2':'134.2.172.172',
-#                                                      'type':1,
-#                                                      'dataitem':i}))
-#        orderid = orderid+1
+    localip = '10.10.10.6'
+    remoteip = '134.2.172.173'
+    for i in s.list_available_dataitems():
+        print('my order:', {'orderid': str(next(orderid)), 
+                                                      'identifier1':localip,
+                                                      'identifier2':remoteip,
+                                                      'type':'oneshot',
+                                                      'dataitem':i})
+        print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
+                                                      'identifier1':localip,
+                                                      'identifier2':remoteip,
+                                                      'type':'oneshot',
+                                                      'dataitem':i}))
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-                                                      'identifier1':'193.196.31.38',
-                                                      'identifier2':'134.2.172.172',
+                                                      'identifier1':localip,
+                                                      'identifier2':remoteip,
                                                       'type':'periodic',
                                                       'interval': 10,
                                                       'dataitem':'SHARED_BANDWIDTH_RX'}))
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-                                                      'identifier1':'193.196.31.38',
-                                                      'identifier2':'134.2.172.172',
+                                                      'identifier1':localip,
+                                                      'identifier2':remoteip,
                                                       'type':'triggered',
                                                       'interval': 15,
-                                                      'dataitem':'SHARED_BANDWIDTH_RX'}))
+                                                      'dataitem':'INTERFACE_TYPE'}))
     sleep(3)
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                   'identifier1':'193.196.31.38',
-                                                  'identifier2':'134.2.172.172',
+                                                  'identifier2':remoteip,
                                                   'type':'oneshot',
                                                   'dataitem':'RTT_MIN'}))
     sleep(3)
 ## cache testing:
     print('check cache: ' , s.check_cache(myID, {
-                                              'identifier1':'193.196.31.38',
-                                              'identifier2':'134.2.172.172',
+                                              'identifier1':localip,
+                                              'identifier2':remoteip,
                                               'type':1,
                                               'dataitem':'RTT'}))
     print('check cache: ' , s.check_cache(myID, {
-                                              'identifier1':'193.196.31.38',
-                                              'identifier2':'134.2.172.172',
+                                              'identifier1':localip,
+                                              'identifier2':remoteip,
                                               'type':1,
                                               'dataitem':'RTT_MIN'}))
 
