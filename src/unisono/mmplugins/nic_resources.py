@@ -210,6 +210,8 @@ class NicReader(mmtemplates.MMTemplate):
         self.logger.debug('The result is: %s', self.request)
 
 class BandwidthUsage(mmtemplates.MMTemplate):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
     def __init__(self, *args):
         super().__init__(*args)
         self.dataitems = [
@@ -296,6 +298,8 @@ class BandwidthUsage(mmtemplates.MMTemplate):
         
 
 class WifiReader(mmtemplates.MMTemplate):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
     def __init__(self, *args):
         super().__init__(*args)
         self.dataitems = [
