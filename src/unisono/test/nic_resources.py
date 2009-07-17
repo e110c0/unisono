@@ -75,11 +75,8 @@ class NicTest(unittest.TestCase):
         wifireader.request = {'identifier1':'127.0.0.1'}
         wifireader.measure()
         assert wifireader.request['error'] == 530  
-        assert wifireader.request['errortext'] == 'This is not a Wireless Interface' 
+        assert wifireader.request['errortext'] == 'This is not a Wireless Interface'
         pass
-
-    
-    
     
     ### TESTING MODULES FOR CORRECT MEASUREMENTS
     
