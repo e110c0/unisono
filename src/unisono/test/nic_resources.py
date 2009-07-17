@@ -74,6 +74,8 @@ class NicTest(unittest.TestCase):
         wifireader = WifiReader(None, None)
         wifireader.request = {'identifier1':'127.0.0.1'}
         wifireader.measure()
+        assert wifireader.request['error'] == 530  
+        assert wifireader.request['errortext'] == 'This is not a Wireless Interface' 
         pass
 
     
@@ -95,9 +97,11 @@ class NicTest(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(NicTest("nonexistingnic"))
-    suite.addTest(NicTest("loopdevice"))
-    suite.addTest(NicTest("ethdevice"))
-    suite.addTest(NicTest("wlandevice"))
+    suite.addTest(NicTest("NoInterfaceNICReader"))
+    suite.addTest(NicTest("NoInterfaceBWReader"))
+    suite.addTest(NicTest("NoInterfaceWIFIReader"))
+    suite.addTest(NicTest("loInterfaceNICReader"))
+    suite.addTest(NicTest("loInterfaceBWReader"))
+    suite.addTest(NicTest("loInterfaceWIFIReader"))
 
     return suite
