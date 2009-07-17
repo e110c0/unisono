@@ -31,6 +31,7 @@ nic_resources.py
 import threading, logging, re, string, sys, fcntl, socket, time, math
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
+from binascii import hexlify
 from os import popen
 
 def get_interfaces_for_ip(ip):
@@ -44,7 +45,7 @@ def get_interfaces_for_ip(ip):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         for iface in iflist:
             try:
-                ifr = (iface + '\0'*32)[:32]
+                ifr = (iface + '\0' * 32)[:32]
                 ipinfo = fcntl.ioctl(s.fileno(), 0x8915, ifr)
                 ipadd = socket.inet_ntoa(ipinfo[20:24])
                 if ipadd in ip:
@@ -57,7 +58,7 @@ def get_interfaces_for_ip(ip):
     # Get IP address for Interface
 def get_ip_for_interface(iface):
     try:
-        ifr = iface + '\0'*(32-len(iface))
+        ifr = iface + '\0' * (32 - len(iface))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ipinfo = fcntl.ioctl(s.fileno(), 0x8915, ifr)
         ip = socket.inet_ntoa(ipinfo[20:24])
@@ -83,7 +84,7 @@ class NicReader(mmtemplates.MMTemplate):
         self.dataitems = [
                           'INTERFACE_TYPE',
                           'INTERFACE_CAPACITY_RX',
-                          'INTERFACE_CAPACITY_TX',    
+                          'INTERFACE_CAPACITY_TX',
                           'INTERFACE_MAC',
                           'INTERFACE_MTU',
                           ]
@@ -118,92 +119,52 @@ class NicReader(mmtemplates.MMTemplate):
         #--------------------NEW-------------------------
         
         # MAC Address: 
-        iface = interface + '\0'*(32-len(interface))
+        iface = interface + '\0' * (32 - len(interface))
         try:
             info = fcntl.ioctl(tsoc.fileno(), 0x8927, iface)
             mac = (':'.join(map(lambda n: "%02x" % n, info[18:24])))
+            self.request['INTERFACE_MAC'] = mac
         except IOError:
             self.request['error'] = 502
             self.request['errortext'] = 'could not get MAC address'
-        self.request['INTERFACE_MAC'] = mac
+        
         
         # Interface Type:
         try:
             type = interface
-            if ('eth' in type): self.request['INTERFACE_TYPE'] = "Ethernet interface"
-            else: 
-                if (('wla' or 'ath') in type): self.request['INTERFACE_TYPE'] = "Wireless interface"
-                else: 
-                    if ('ppp' in type): self.request['INTERFACE_TYPE'] = "Dial-up interface"
-                    else: 
-                        if ('tun' in type): self.request['INTERFACE_TYPE'] = "Routed IP tunnel"
-                        else: 
-                            if ('sit' in type): self.request['INTERFACE_TYPE'] = "IPv6 tunnel"
-                            else: 
-                                if ('tap' in type): self.request['INTERFACE_TYPE'] = "VPN tunnel"
-                                else: 
-                                    if ('lo' in type): self.request['INTERFACE_TYPE'] = "Loopback interface"
-                                    else:
-                                        self.request['INTERFACE_TYPE'] = "Unspecified interface"
+            if ('eth' in type): 
+                self.request['INTERFACE_TYPE'] = "Ethernet interface"
+            elif (('wla' or 'ath') in type): 
+                self.request['INTERFACE_TYPE'] = "Wireless interface"
+            elif ('ppp' in type): 
+                self.request['INTERFACE_TYPE'] = "Dial-up interface"
+            elif ('tun' in type): 
+                self.request['INTERFACE_TYPE'] = "Routed IP tunnel"
+            elif ('sit' in type): 
+                self.request['INTERFACE_TYPE'] = "IPv6 tunnel"
+            elif ('tap' in type): 
+                self.request['INTERFACE_TYPE'] = "VPN tunnel"
+            elif ('lo' in type): 
+                self.request['INTERFACE_TYPE'] = "Loopback interface"
+            else:
+                self.request['INTERFACE_TYPE'] = "Unspecified interface"
         except IOError:
             self.request['error'] = 503
             self.request['errortext'] = 'unknown interface type'
             IOError
 
-        
-        
-        
-        #--------------------OLD-------------------------
-        
-        
-        
-        # TODO: get rid of this popen! ONLY MTU is dependingself.request[' on this
-        intinfo = popen('ifconfig ' + interface).read()
-        
-        
-        ## Properties Information:
-        
-        # find information on Receive Rate Old:
-#        try:
-#            intcaprx = re.search("++++++:(.*)", intinfo)
-#            if intcaprx != None:
-#                intcaprx = intcaprx.group()
-#                self.request['INTERFACE_CAPACITY_RX'] = intcaprx
-#        except IOError:
-#            self.request['error'] = 999
-#            self.request['errortext'] = 'no IP for given Interface'
-#            pass
-#
-#
-#        # find information Transmission Rate Old:
-#        try:
-#            intcaptx = re.search("++++++:(.*)", intinfo)
-#            if intcaptx != None:
-#                intcaptx = intcaptx.group()
-#                self.request['INTERFACE_CAPACITY_TX'] = intcaptx
-#        except IOError:
-#            self.request['error'] = 999
-#            self.request['errortext'] = 'no IP for given Interface'
-#            pass
-
-
-        # MTU Old:
         try:
-            mtu = re.search("MTU:(.*)", intinfo)
-            if mtu != None:
-                mtu = mtu.group()
-                self.request['INTERFACE_MTU'] = mtu.split()[0].split(':')[1]
+            #define SIOCGIFMTU      0x8921          /* get MTU size */
+            info = fcntl.ioctl(tsoc.fileno(), 0x8921, iface)
+            # TODO: fix this into a real number!
+            self.request['INTERFACE_MTU'] = int(hexlify(info[17:18]), 16) * 256 + int(hexlify(info[16:17]), 16)
         except IOError:
             self.request['error'] = 504
-            self.request['errortext'] = 'could not measure MTU'
+            self.request['errortext'] = 'could not get MTU'
             pass
-
-
-
-
         
-        self.request["error"] = 0
-        if self.request['errortext'] == '':
+        if 'error' not in self.request.keys():
+            self.request["error"] = 0
             self.request['errortext'] = 'Measurement successful'
 
         #Interface Information for the debugger
@@ -256,9 +217,9 @@ class BandwidthUsage(mmtemplates.MMTemplate):
             if interface != None:        
                 keys_dyn_data = ["bytes_in", "packets_in", "bytes_out", "packets_out" ]
                 delim = "%s:" % (interface)
-                if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
+                if_numbers = [ l.strip().strip(delim) for l in lines if delim in l ][0]
                 iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
-                bw_in  = iface_data["bytes_in"]
+                bw_in = iface_data["bytes_in"]
                 bw_out = iface_data["bytes_out"]
 
                 time.sleep(1)
@@ -266,9 +227,9 @@ class BandwidthUsage(mmtemplates.MMTemplate):
                 proc_net_dev = open("/proc/net/dev")
                 lines = proc_net_dev.readlines()
             
-                if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
+                if_numbers = [ l.strip().strip(delim) for l in lines if delim in l ][0]
                 iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
-                bw_in2  = iface_data["bytes_in"]
+                bw_in2 = iface_data["bytes_in"]
                 bw_out2 = iface_data["bytes_out"]
                 
                 self.request["error"] = 0
@@ -308,7 +269,7 @@ class WifiReader(mmtemplates.MMTemplate):
                           'WLAN_AP_MAC',
                           'WLAN_LINK',
                           'WLAN_SIGNAL',
-                          'WLAN_NOISE',            
+                          'WLAN_NOISE',
                           'WLAN_SIGNOISE_RATIO',
                           'WLAN_CHANNEL',
                           'WLAN_FREQUENCY'
