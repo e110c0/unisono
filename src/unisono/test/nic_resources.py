@@ -8,6 +8,7 @@ nic_resources.py
  $LastChangedDate$
  $Revision$
  
+ 
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  
  This file is part of UNISONO Unified Information Service for Overlay 
@@ -29,29 +30,57 @@ nic_resources.py
 '''
 import unittest
 from unisono.mmplugins.nic_resources import NicReader
+from unisono.mmplugins.nic_resources import BandwidthUsage
+from unisono.mmplugins.nic_resources import WifiReader
+
+
 
 class NicTest(unittest.TestCase):                            
     
+    ### TESTING MODULES FOR RUN ERRORS
     # Case where the input IP doesn't match with any Interface.
-    def nonexistingnic(self):                           
-        nicreader = NicReader()
-        #identifier1 has to be an IP address                                          
-        nicreader.measure(self.request['identifier1' : "Nonsense"])
-        self.assertEqual(nicreader.dataitems['error'], "No interface with this IP")
+    def NoInterfaceNICReader(self):                           
+        nicreader = NicReader(None, None)
+        nicreader.request = {'identifier1':'Nonsense bla bla'}
+        nicreader.measure()
+        pass
 
-    # Case when we have a loopback Interface
-    def loopdevice(self):
-        nicreader = NicReader()
-        #identifier1 has to be 127.0.0.1
-        nicreader.measure(self.request['identifier1' : "Nonsense"])
-        # This is neither a common interface nor a wireless interface
-        # the difference from the common nic is that "lo" doesn't have
-        # MAC address so:
-        self.assertEqual(nicreader.dataitems['INTERFACE_MAC'], "Information not Available")
-        self.assertEqual(nicreader.dataitems['WLAN_ESSID'], "this is not a wireless interface")
-        self.assertEqual(nicreader.dataitems['WLAN_MODE'], "this is not a wireless interface")
-        self.assertEqual(nicreader.dataitems['WLAN_AP_MAC'], "this is not a wireless interface")
+    def NoInterfaceBWReader(self):                           
+        bwreader = BandwidthUsage(None, None)
+        bwreader.request = {'identifier1':'Nonsense bla bla'}
+        bwreader.measure()
+        pass
 
+    def NoInterfaceWIFIReader(self):                           
+        wifireader = WifiReader(None, None)
+        wifireader.request = {'identifier1':'Nonsense bla bla'}
+        wifireader.measure()
+        pass
+
+    # Case where the input IP matches with Loopback Interface.
+    def loInterfaceNICReader(self):                           
+        nicreader = NicReader(None, None)
+        nicreader.request = {'identifier1':'127.0.0.1'}
+        nicreader.measure()
+        pass
+
+    def loInterfaceBWReader(self):                           
+        bwreader = BandwidthUsage(None, None)
+        bwreader.request = {'identifier1':'127.0.0.1'}
+        bwreader.measure()
+        pass
+
+    def loInterfaceWIFIReader(self):                           
+        wifireader = WifiReader(None, None)
+        wifireader.request = {'identifier1':'127.0.0.1'}
+        wifireader.measure()
+        pass
+
+    
+    
+    
+    ### TESTING MODULES FOR CORRECT MEASUREMENTS
+    
     # Case when we have a common network interface
     def ethdevice(self):
         pass
