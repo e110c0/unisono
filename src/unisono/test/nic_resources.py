@@ -43,18 +43,37 @@ class NicTest(unittest.TestCase):
         nicreader = NicReader(None, None)
         nicreader.request = {'identifier1':'Nonsense bla bla'}
         nicreader.measure()
+
+        assert nicreader.request['error'] == 500
+        assert nicreader.request['errortext'] == 'could not find interface with IP, aborting measurement'
+        print(nicreader.request['error'] == 500)
+        print(nicreader.request['errortext'] == 'could not find interface with IP, aborting measurement')
+
         pass
+
 
     def NoInterfaceBWReader(self):                           
         bwreader = BandwidthUsage(None, None)
         bwreader.request = {'identifier1':'Nonsense bla bla'}
         bwreader.measure()
+
+        assert bwreader.request['error'] == 500
+        assert bwreader.request['errortext'] == 'could not find interface with IP, aborting measurement'
+        print(bwreader.request['error'] == 500)
+        print(bwreader.request['errortext'] == 'could not find interface with IP, aborting measurement')
+
         pass
 
     def NoInterfaceWIFIReader(self):                           
         wifireader = WifiReader(None, None)
         wifireader.request = {'identifier1':'Nonsense bla bla'}
         wifireader.measure()
+
+        assert wifireader.request['error'] == 500
+        assert wifireader.request['errortext'] == 'could not find interface with IP, aborting measurement'
+        print(wifireader.request['error'] == 500)
+        print(wifireader.request['errortext'] == 'could not find interface with IP, aborting measurement')
+
         pass
 
     # Case where the input IP matches with Loopback Interface.
@@ -62,12 +81,20 @@ class NicTest(unittest.TestCase):
         nicreader = NicReader(None, None)
         nicreader.request = {'identifier1':'127.0.0.1'}
         nicreader.measure()
+        assert nicreader.request['error'] == 0  
+        assert nicreader.request['errortext'] == 'Measurement successful'
+        
+        print(nicreader.request['error'] == 0)        
+        print(nicreader.request['errortext'] == 'Measurement successful')
+        
         pass
 
     def loInterfaceBWReader(self):                           
         bwreader = BandwidthUsage(None, None)
         bwreader.request = {'identifier1':'127.0.0.1'}
         bwreader.measure()
+        assert bwreader.request['error'] == 0  
+        assert bwreader.request['errortext'] == 'Measurement successful'
         pass
 
     def loInterfaceWIFIReader(self):                           
