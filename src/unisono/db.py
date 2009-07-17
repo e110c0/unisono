@@ -40,6 +40,10 @@ class NotInCacheError(Exception):
 class InvalidTableLayout(Exception):
     pass
 
+
+
+
+
 class DataBase():
     '''
     DataBase connector for unisono caching
@@ -257,21 +261,21 @@ class DataBase():
                 for line in c.iterdump():
                     f.write('%s\n', line)
 
-    def restore(self):
-        '''
-        restore db to in_memory database
-        '''
-        try:
-            storagemode = self.config.get('Cache', 'storagemode')
-        except:
-            storagemode = 'transient'
-        try:
-            persistentfile = self.config.get('Cache', 'persistentfile')
-        except:
-            persistentfile = ''
-        if storagemode == 'persistent':
-            self.logger.info('Persistent mode, restoring db from %s.', persistentfile)
-            c = self.dbcon.cursor()
+#    def restore(self):
+#        '''
+#        restore db to in_memory database
+#        '''
+#        try:
+#            storagemode = self.config.get('Cache', 'storagemode')
+#        except:
+#            storagemode = 'transient'
+#        try:
+#            persistentfile = self.config.get('Cache', 'persistentfile')
+#        except:
+#            persistentfile = ''
+#        if storagemode == 'persistent':
+#            self.logger.info('Persistent mode, restoring db from %s.', persistentfile)
+#            c = self.dbcon.cursor()
 
     def get_max_dataitem_age(self, dataitem):
         '''
@@ -282,3 +286,55 @@ class DataBase():
         @return: int maximum age in seconds
         '''
         return 30
+
+def restoreDataBase():
+    '''
+    restoreDataBase handles the first initialization of the cache database in UNISONO
+    It takes care of creating, restoring and initial cleanup of the database.
+    All instances of DataBase connect to this existing database. This works also 
+    for in-memory databases (the preferred db type for unisono)
+    '''
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    config = configuration.get_configparser()
+    db = DataBase()
+    dbcon = db.dbcon
+    c = dbcon.cursor()
+    
+    try:
+        dbfile = self.config.get('Cache', 'dbfile')
+        logger.info('Connecting to DB: %s', dbfile)
+    except:
+        logger.info('Connecting to DB at default location')
+        dbfile = ':memory:'
+    if dbfile == ':memory:':
+        try:
+            storagemode = self.config.get('Cache', 'storagemode')
+            logger.info('Storage mode: %s', storagemode)
+        except:
+            logger.info('No storage mode specified, working with transient cache')
+            return
+        if storagemode == 'persistent':
+            try:
+                persistentfile = self.config.get('Cache', 'persistentfile')
+                logger.info('Storage file: %s', persistentfile)
+            except:
+                logger.info('No storage file specified, working with transient cache')
+                return
+            try:
+                c.executescript(open(persistentfile, mode='r').read())
+                dbcon.commit()
+                c.close()
+            except IOError:
+                logger.error('Could not open file: %s', persistentfile)
+            except sqlite3.OperationalError:
+                logger.error('Corrupted dump file: %s', persistentfile)
+                dbcon.rollback()
+                c.close()
+                dbcon.close()
+        else:
+            logger.info('Working with transient database, no need for restore.')
+            return
+    else:
+        logger.info('Already working with persistent database, no need for restore.')
+        return

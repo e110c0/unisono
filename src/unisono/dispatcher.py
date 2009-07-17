@@ -30,7 +30,7 @@ dispatcher.py
 from heapq import heappush, heapreplace, heapify
 from queue import Queue, Empty
 from time import time as system_time
-from unisono.db import DataBase
+from unisono.db import DataBase, restoreDataBase
 from unisono.db import NotInCacheError
 
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
@@ -121,9 +121,9 @@ class Dispatcher:
         self.cache.save()
 
     def init_database(self):
+        restoreDataBase()
         self.cache = DataBase()
-        self.cache.restore()
-    
+
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is already running
         self.xsrv = XMLRPCServer(self.eventq, self)
