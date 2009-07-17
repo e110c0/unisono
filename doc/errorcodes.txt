@@ -39,3 +39,26 @@
 412 range for triggered order missing / invalid
 450 delay module: not enough packets received
 451 delay module: setsockopt IPV6_RECVHOPLIMIT failed
+
+# Module errors (all start with 5xx, 6xx)
+
+		# (500-550 reserved for nic_resources).
+500	could not find interface with IP, aborting measurement
+501 no Interface for given IP
+502	could not get MAC address
+503	unknown interface type
+504	could not measure MTU
+
+510	could not calculate current RT and TX
+
+520	could not get wireless mode
+521	could not get AP_MAC address
+522	could not get Link Quality
+523	could not get Signal Level
+524	could not get Noise Level
+525	could not get S/N Ratio
+526	could not get wireless channel
+527	could not get frequency
+
+
+
