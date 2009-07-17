@@ -149,6 +149,7 @@ class NicReader(mmtemplates.MMTemplate):
             self.request['error'] = 503
             self.request['errortext'] = 'unknown interface type'
             IOError
+
         
         
         
@@ -227,13 +228,19 @@ class BandwidthUsage(mmtemplates.MMTemplate):
         self.request["errortext"] = ''
         
         try:
-            iface = get_interfaces_for_ip(self.request['identifier1'])
+            interface = get_interfaces_for_ip(self.request['identifier1'])
+            if interface != None:
+                interface = interface.strip()
+            else:
+                self.request['error'] = 500
+                self.request['errortext'] = 'could not find interface with IP, aborting measurement'
+                return        
         except IOError:
+            self.request['error'] = 500
+            self.request['errortext'] = 'could not find interface with IP, aborting measurement'
             raise IOError
-            self.request["error"] = 500
-            self.request["errortext"] = 'could not find interface with IP, aborting measurement'
             return
-        
+            
         
         try:
             
@@ -244,9 +251,9 @@ class BandwidthUsage(mmtemplates.MMTemplate):
             lines = proc_net_dev.readlines()
             proc_net_dev.seek(0)
             
-            if iface != None:        
+            if interface != None:        
                 keys_dyn_data = ["bytes_in", "packets_in", "bytes_out", "packets_out" ]
-                delim = "%s:" % (iface)
+                delim = "%s:" % (interface)
                 if_numbers =  [ l.strip().strip(delim) for l in lines if delim in l ][0]
                 iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
                 bw_in  = iface_data["bytes_in"]
@@ -315,14 +322,21 @@ class WifiReader(mmtemplates.MMTemplate):
  
         try:
             interface = get_interfaces_for_ip(self.request['identifier1'])
+            if interface != None:
+                interface = interface.strip()
+            else:
+                self.request['error'] = 500
+                self.request['errortext'] = 'could not find interface with IP, aborting measurement'
+                return        
         except IOError:
-            self.request["error"] = 500
-            self.request["errortext"] = 'could not find interface with IP, aborting measurement'
+            self.request['error'] = 500
+            self.request['errortext'] = 'could not find interface with IP, aborting measurement'
             raise IOError
             return
 
             
         wlaninfo = ''
+
         if interface != None:
             wlaninfo = popen('iwconfig ' + interface).read()
         if len(wlaninfo) != 0:
@@ -419,11 +433,20 @@ class WifiReader(mmtemplates.MMTemplate):
                 self.request['error'] = 527
                 self.request['errortext'] = 'could not get frequency'
                 pass
+            
+            self.request['error'] = 0
+            if self.request['errortext'] == '':
+                self.request['errortext'] = 'Measurement successful'
+
+            
+            
+        else:
+            self.request['error'] = 530
+            self.request['errortext'] = 'This is not a Wireless Interface'
+
+            
 
             # Wireless information for the debugger
         self.logger.debug('The result is: %s', self.request)
 
-        self.request['error'] = 0
-        if self.request['errortext'] == '':
-            self.request['errortext'] = 'Measurement successful'
         
