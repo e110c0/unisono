@@ -5,9 +5,9 @@ svn-demo.py
  Created on: Jun 03, 2009
  Authors: dh
 
- $LastChangedBy: zxmoo46 $
- $LastChangedDate: 2009-05-28 21:37:23 +0200 (Thu, 28 May 2009) $
- $Revision: 1244 $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
 
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
 

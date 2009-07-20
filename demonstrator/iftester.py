@@ -5,9 +5,9 @@ iftester.py
  Created on: Jul 20, 2009
  Authors: dh
  
- $LastChangedBy: haage $
- $LastChangedDate: 2009-07-16 15:55:22 +0200 (Thu, 16 Jul 2009) $
- $Revision: 1525 $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
  
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  
