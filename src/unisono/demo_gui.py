@@ -28,9 +28,12 @@ demo_gui.py
  
 '''
 import logging
+import threading
+
 from unisono.utils import configuration
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from unisono.db import DataBase
+from os.path import expanduser
 
 class UnisonoStats:
     '''
@@ -54,15 +57,16 @@ class DemoGUI:
         self.stats = stats
         # init xmlrpcserver
         self.config = configuration.get_configparser()
-        port = self.config.get('Demo', 'xmlrpc-port')
+        port = self.config.getint('Demo', 'xmlrpc-port')
         # Create server
-        __server = SimpleXMLRPCServer((None, port),
+        __server = SimpleXMLRPCServer(('', port),
                                       requestHandler=SimpleXMLRPCRequestHandler)
         __server.register_introspection_functions()
 
         # Register the functions
         __server.register_function(self.getStats)
         __server.register_function(self.getDB)
+        __server.register_function(self.getLog)
         
         server_thread = threading.Thread(target=__server.serve_forever)
         # Exit the server thread when the main thread terminates
@@ -82,6 +86,14 @@ class DemoGUI:
         XMLRPC function to get the db.
         return string sqlite dump
         '''
-        dbcon = DataBase()
-        dump =  dbcon.iterdump()
+        dump = ""
+        for i in DataBase().dbcon.iterdump():
+            dump = dump + i + "\n"
         return dump
+
+    def getLog(self):
+        '''
+        XMLRPC function to get the db.
+        return string logfile
+        '''
+        return open(expanduser(self.config.get("Logging","logfile")), mode='r').read()

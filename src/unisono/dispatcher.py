@@ -130,7 +130,7 @@ class Dispatcher:
 
     def init_demo_interface(self):
         self.stats = UnisonoStats()
-        self.demogui = DemoGui(self.stats)
+        self.demogui = DemoGUI(self.stats)
 
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is already running
