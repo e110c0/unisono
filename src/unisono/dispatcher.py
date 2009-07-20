@@ -37,6 +37,7 @@ from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import MMTemplate
+from unisono.demo_gui import UnisonoStats, DemoGUI
 
 import logging, copy
 import threading
@@ -115,6 +116,9 @@ class Dispatcher:
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
         self.init_plugins()
+        
+        # used for the demonstrator only!
+        self.init_demo_interface()
     
     def __del__(self):
         self.logger.debug("Calling descructor for Dispatcher")
@@ -123,6 +127,10 @@ class Dispatcher:
     def init_database(self):
         restoreDataBase()
         self.cache = DataBase()
+
+    def init_demo_interface(self):
+        self.stats = UnisonoStats()
+        self.demogui = DemoGui(self.stats)
 
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is already running
