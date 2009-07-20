@@ -78,8 +78,8 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
-    localip = '10.10.10.6'
-    remoteip = '134.2.172.173'
+    localip = '134.2.172.173'
+    remoteip = '134.2.172.172'
     for i in s.list_available_dataitems():
         print('my order:', {'orderid': str(next(orderid)), 
                                                       'identifier1':localip,
