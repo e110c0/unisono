@@ -57,6 +57,7 @@ class UnisonoStats:
         update the process stats like mem usage, cpu usage etc.
         '''
         self.entries['memory'] = 1
+        self.entries['memory_max'] = 1
         # load stats
         ostimes = os_times()
         now = time()
