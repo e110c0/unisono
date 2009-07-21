@@ -34,6 +34,8 @@ from unisono.utils import configuration
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from unisono.db import DataBase
 from os.path import expanduser
+from os import times as os_times
+from time import time
 
 class UnisonoStats:
     '''
@@ -41,7 +43,40 @@ class UnisonoStats:
     used for the Demonstrator GUI only!
     '''
     def __init__(self):
-        pass
+        self.entries = {}
+        # get start time
+        self.entries['starttime'] = time()
+        # get initial load stats
+        self.entries['cputimestamp'] = self.entries['starttime']
+        ostimes = os_times()
+        self.entries['cpusys'] = ostimes[0]
+        self.entries['cpuuser'] = ostimes[1]
+
+    def update_process_stats(self):
+        '''
+        update the process stats like mem usage, cpu usage etc.
+        '''
+        self.entries['memory'] = 1
+        # load stats
+        ostimes = os_times()
+        now = time()
+        delta = now - self.entries['cputimestamp']
+        # current load stats
+        self.entries['cpusys_current'] = (ostimes[0] - self.entries['cpusys']) / delta * 100
+        self.entries['cpuuser_current'] = (ostimes[1] - self.entries['cpuuser']) / delta * 100
+        # global load stats
+        self.entries['cpusys'] = ostimes[0]
+        self.entries['cpuuser'] = ostimes[1]
+        self.entries['cputimestamp'] = time()
+        
+        self.entries['uptime'] = time() - self.entries['starttime']
+
+    def update_db_stats(self):
+        '''
+        update the db stats like size, entries etc.
+        '''
+        self.entries['dbsize'] = 3
+        self.entries['dbentrycount'] = 4
 
 class DemoGUI:
     '''
@@ -79,6 +114,9 @@ class DemoGUI:
         '''
         XMLRPC function to get the statistics
         '''
+        self.stats.update_process_stats()
+        self.stats.update_db_stats()
+
         return self.stats
 
     def getDB(self):

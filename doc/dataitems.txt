@@ -3,9 +3,9 @@
 # Created on: May 12, 2009
 # Authors: dh
 # 
-# $LastChangedBy$
-# $LastChangedDate$
-# $Revision$
+# $LastChangedBy: haage $
+# $LastChangedDate: 2009-06-17 12:01:33 +0200 (Wed, 17 Jun 2009) $
+# $Revision: 1365 $
 # 
 # (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
 # 

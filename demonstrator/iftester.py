@@ -47,18 +47,18 @@ if __name__ == '__main__':
     dump = s.getDB()
     print('Database: \n\n ' + dump + '\n\n')
 
-    print('-------------------------------------------------------')
-
-    print(s.system.methodHelp('getLog'))
-    log = s.getLog()
-    print('Log: \n\n ' + log + '\n\n')
-
-    print('-------------------------------------------------------')
+#    print('-------------------------------------------------------')
+#
+#    print(s.system.methodHelp('getLog'))
+#    log = s.getLog()
+#    print('Log: \n\n ' + log + '\n\n')
+#
+#    print('-------------------------------------------------------')
 
     print(s.system.methodHelp('getStats'))
     stats = s.getStats()
     print('Stats: \n\n ')
-    for i in stats.keys():
-        print(i + ':' + stats[i])
+    for i in stats['entries'].keys():
+        print(i + ':' + str(stats['entries'][i]))
 
     print('FINISHED!!!')
