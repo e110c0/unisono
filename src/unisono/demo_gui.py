@@ -36,13 +36,39 @@ from unisono.db import DataBase
 from os.path import expanduser
 from os import times as os_times
 from time import time
+import os
+from os import popen
+
+
+
+
+def memory(since=0.0):
+    '''Return memory usage in bytes.
+    '''
+    return _VmB('VmSize:') - since
+
+
+def resident(since=0.0):
+    '''Return resident memory usage in bytes.
+    '''
+    return _VmB('VmRSS:') - since
+
+
+def stacksize(since=0.0):
+    '''Return stack size in bytes.
+    '''
+    return _VmB('VmStk:') - since
+
 
 class UnisonoStats:
     '''
     class to hold the current statistics of UNISONO
     used for the Demonstrator GUI only!
     '''
-    def __init__(self):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    def __init__(self, conmap):
+        self.conmap = conmap
         self.entries = {}
         # get start time
         self.entries['starttime'] = time()
@@ -51,18 +77,24 @@ class UnisonoStats:
         ostimes = os_times()
         self.entries['cpusys'] = ostimes[0]
         self.entries['cpuuser'] = ostimes[1]
+        
+        self.entries['db_purge'] = self.entries['starttime']
 
     def update_process_stats(self):
         '''
         update the process stats like mem usage, cpu usage etc.
         '''
-        self.entries['memory'] = 1
-        self.entries['memory_max'] = 1
+        self.entries['memory_alloc'] = self._stat('VmSize') * 1024.0
+        self.entries['memory_alloc_max'] = self._stat('VmPeak') * 1024.0
+        self.entries['memory_rss'] = self._stat('VmRSS') * 1024.0
+        self.entries['memory_hwn'] = self._stat('VmHWM') * 1024.0
+        self.entries['threads'] = self._stat('Threads')
         # load stats
         ostimes = os_times()
         now = time()
         delta = now - self.entries['cputimestamp']
         # current load stats
+        # this gives the average usage since the last update.
         self.entries['cpusys_current'] = (ostimes[0] - self.entries['cpusys']) / delta * 100
         self.entries['cpuuser_current'] = (ostimes[1] - self.entries['cpuuser']) / delta * 100
         # global load stats
@@ -71,14 +103,66 @@ class UnisonoStats:
         self.entries['cputimestamp'] = time()
         
         self.entries['uptime'] = time() - self.entries['starttime']
+        
+        self.entries['identifiers'] = self._identifiers()
+        self.entries['connectors'] = self._connectors()
+        
+    def _identifiers(self):
+        identifiers = []
+        for i in popen('ip a').read().splitlines():
+            j = i.split()
+            if 'inet' in j[0]:
+                identifiers.append(j[1].split('/')[0])
+        return identifiers
+
+    def _connectors(self):
+        connectors =[]
+        for i in self.conmap.conmap.keys():
+            connectors.append(i)
+        return connectors
+
+    def _stat(self, key):
+        ''' private '''
+        # get pseudo file  /proc/<pid>/status
+        t = open('/proc/%d/status' % os.getpid())
+        v = t.read()
+        t.close()
+
+        # get VmKey line e.g. 'VmRSS:  9999  kB\n ...'
+        i = v.index(key)
+        v = v[i:].split(None, 3)  # whitespace
+        if len(v) < 3:
+            return 0.0  # invalid format?
+        # convert Vm value to bytes
+        return float(v[1])
 
     def update_db_stats(self):
         '''
         update the db stats like size, entries etc.
         '''
-        self.entries['dbsize'] = 3
-        self.entries['dbentrycount'] = 4
+        db = DataBase()
+        c = db.dbcon.cursor()
+        c.execute('''select name from sqlite_master where type = 'table';''')
+        self.entries['dbtables'] = 0
+        self.entries['dbentrycount'] = 0
+        for i in c.fetchall():
+            self.entries['dbtables'] = self.entries['dbtables'] + 1
+            c.execute('''select * from ''' + i[0] + ''' ;''')
+            rows = len(c.fetchall())
+            self.logger.info('table: %s: %i', i[0], rows)
+            self.entries['dbentrycount'] = self.entries['dbentrycount'] + rows
+            
+        c.execute('''pragma  page_count''')
+        pagecount = c.fetchone()[0]
+        c.execute('''pragma  freelist_count''')
+        freecount = c.fetchone()[0]
+        c.execute('''pragma  page_size''')
+        pagesize = c.fetchone()[0]
+        self.entries['dbsize'] = pagecount * pagesize
+        self.entries['dbsize_unused'] = freecount * pagesize
 
+        
+        
 class DemoGUI:
     '''
     classdocs
@@ -118,7 +202,7 @@ class DemoGUI:
         self.stats.update_process_stats()
         self.stats.update_db_stats()
 
-        return self.stats
+        return self.stats.entries
 
     def getDB(self):
         '''
@@ -135,4 +219,4 @@ class DemoGUI:
         XMLRPC function to get the db.
         return string logfile
         '''
-        return open(expanduser(self.config.get("Logging","logfile")), mode='r').read()
+        return open(expanduser(self.config.get("Logging", "logfile")), mode='r').read()

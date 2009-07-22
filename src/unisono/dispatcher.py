@@ -108,6 +108,7 @@ class Dispatcher:
         Constructor
         '''
         self.config = configuration.get_configparser()
+        
         self.pending_orders = {}
         self.eventq = Queue()
         # TODO: add bogus task to help signal handling / cache garbage collection
@@ -129,7 +130,7 @@ class Dispatcher:
         self.cache = DataBase()
 
     def init_demo_interface(self):
-        self.stats = UnisonoStats()
+        self.stats = UnisonoStats(self.xsrv.conmap)
         self.demogui = DemoGUI(self.stats)
 
     def start_xmlrpcserver(self):

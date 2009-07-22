@@ -41,11 +41,11 @@ myID = ""
 if __name__ == '__main__':
     s = xmlrpc.client.ServerProxy('http://localhost:45678')
     # Print list of available methods
-    print("we do some stuff")
-    print(s.system.listMethods())
-    print(s.system.methodHelp('getDB'))
-    dump = s.getDB()
-    print('Database: \n\n ' + dump + '\n\n')
+#    print("we do some stuff")
+#    print(s.system.listMethods())
+#    print(s.system.methodHelp('getDB'))
+#    dump = s.getDB()
+#    print('Database: \n\n ' + dump + '\n\n')
 
 #    print('-------------------------------------------------------')
 #
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     print(s.system.methodHelp('getStats'))
     stats = s.getStats()
     print('Stats: \n\n ')
-    for i in stats['entries'].keys():
-        print(i + ':' + str(stats['entries'][i]))
+    for i in stats.keys():
+        print(i + ':' + str(stats[i]))
 
     print('FINISHED!!!')
