@@ -250,6 +250,8 @@ class Dispatcher:
 
     def process_order(self, order):
         # sanity checks
+        self.stats.increase_stats('orders_global',1)
+        self.stats.increase_stats('orders',1)
         if order['type'] in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
             order['subid'] = 0
@@ -272,6 +274,8 @@ class Dispatcher:
 #            self.logger.debug('updated order: %s', order)
             order['error'] = 0
             order['errortext'] = 'Everything went fine'
+            self.stats.increase_stats('fromcache_global',1)
+            self.stats.decrease_stats('orders',1)
             self.replyq.put(Event('DELIVER', order))
             return True
         except NotInCacheError:
@@ -288,6 +292,8 @@ class Dispatcher:
                     id2 is not None and id2 != paramap.get("identifier2", None):
                     return False
                 self.logger.info('aggregated the order with already queued order')
+                self.stats.increase_stats('aggregations_global',1)
+                self.stats.increase_stats('aggregations',1)
                 waitinglist.append(order)
                 return True
         return False
@@ -303,6 +309,7 @@ class Dispatcher:
         mmq.put(req)
 
     def queue_order(self, order):
+        self.stats.increase_stats('queued_orders',1)
         id = order['conid'], order['orderid']
         mmlist = copy.copy(self.dataitems[order["dataitem"]])
         curmm = mmlist.pop(0)[1]
@@ -342,6 +349,9 @@ class Dispatcher:
                 paramap['error'] = r['error']
                 paramap['errortext'] = r['errortext']
                 self.replyq.put(Event('DELIVER', paramap))
+                self.stats.decrease_stats('aggregations',1)
+                self.stats.decrease_stats('orders',1)
+                self.stats.decrease_stats('queue',1)
         else:
             self.logger.debug('Everything fine, delivering results now')
             # cache results
@@ -349,5 +359,10 @@ class Dispatcher:
             # deliver results
             for o in waitinglist:
                 self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
+                self.stats.decrease_stats('aggregations',1)
+                self.stats.decrease_stats('orders',1)
             self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
+            self.stats.decrease_stats('aggregations',1)
+            self.stats.decrease_stats('orders',1)
+            self.stats.decrease_stats('queued_orders',1)
             del self.pending_orders[id]

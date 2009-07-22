@@ -80,6 +80,14 @@ class UnisonoStats:
         
         self.entries['db_purge'] = self.entries['starttime']
 
+        self.entries['orders_global'] = 0
+        self.entries['aggregations_global'] = 0
+        self.entries['fromcache_global'] = 0
+
+        self.entries['orders'] = 0
+        self.entries['aggregations'] = 0
+        self.entries['queued_orders'] = 0
+
     def update_process_stats(self):
         '''
         update the process stats like mem usage, cpu usage etc.
@@ -161,8 +169,33 @@ class UnisonoStats:
         self.entries['dbsize'] = pagecount * pagesize
         self.entries['dbsize_unused'] = freecount * pagesize
 
-        
-        
+    def increase_stats(self, key, count):
+        '''
+        increase a value by count
+        '''
+        try:
+            self.entries[key] = self.entries[key] + count
+        except:
+            self.logger.debug('unknown key')
+
+    def decrease_stats(self, key, count):
+        '''
+        decrease a value by count
+        '''
+        try:
+            self.entries[key] = self.entries[key] - count
+        except:
+            self.logger.debug('unknown key')
+
+    def update_stats(self, key, value):
+        '''
+        update a value with value
+        '''
+        try:
+            self.entries[key] = value
+        except:
+            self.logger.debug('unknown key')
+
 class DemoGUI:
     '''
     classdocs
