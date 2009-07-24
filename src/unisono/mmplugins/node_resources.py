@@ -65,7 +65,7 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'CPU_LOAD_IDLE',
                           'HOST_UPTIME',
                           'HOST_UPTIME_IDLE',
-                          'SYTEM_LOAD_AVG_NOW',
+                          'SYSTEM_LOAD_AVG_NOW',
                           'SYSTEM_LOAD_AVG_5MIN',
                           'SYSTEM_LOAD_AVG_15MIN',
                           'PERSISTENT_MEMORY',
@@ -121,7 +121,7 @@ class ResourceReader(mmtemplates.MMTemplate):
         self.request['CPU_LOAD_WIO'] = tmpdata.split()[15]
         
         tmpdata = popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip()
-        self.request['SYTEM_LOAD_AVG_NOW'] =  tmpdata.split(", ")[0]
+        self.request['SYSTEM_LOAD_AVG_NOW'] =  tmpdata.split(", ")[0]
         self.request['SYSTEM_LOAD_AVG_5MIN'] = tmpdata.split(", ")[1]
         self.request['SYSTEM_LOAD_AVG_15MIN'] =  tmpdata.split(", ")[2]
         
