@@ -115,12 +115,10 @@ if __name__ == '__main__':
     print('check cache: ' , s.check_cache(myID, {
                                               'identifier1':localip,
                                               'identifier2':remoteip,
-                                              'type':1,
                                               'dataitem':'RTT'}))
     print('check cache: ' , s.check_cache(myID, {
                                               'identifier1':localip,
                                               'identifier2':remoteip,
-                                              'type':1,
                                               'dataitem':'RTT_MIN'}))
 
 

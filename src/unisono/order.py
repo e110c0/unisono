@@ -31,38 +31,55 @@ class Order(dict):
          dataitem (str): a valid dataitem 
          orderid (str): the unique orderid 
     periodic or triggered:
-             interval (int)
+             interval (str) in seconds
+             lifetime (str) in seconds
     triggered:
-            low, high: trigger watermarks
+            lower_threshold, upper_threshold: trigger watermarks (str)
+            
+    Additional fields are a number of identifiers:
+        identifierN with N in (1,2) (str) identifier of the target
+                                          (e.g. IP address)
+    
+    For network measurements the first identifier is always the source of the
+    measurement, the second is the target.
     '''
 
     def __init__(self, *args, **kwargs):
-        # TODO: this still has to migrate to the new calling convention
         super().__init__(*args, **kwargs)
         for key in ('orderid', 'type', 'dataitem'):
             if key not in self:
                 raise OrderKeyMissing(400, "%s needed and not given"%key)
             if not isinstance(self[key], str):
                 raise OrderKeyInvalid(400, 'Invalid value type for key %s: %s'%(key, type(self[key])))
-        if self.type not in ('oneshot', 'periodic', 'triggered'):
+        if self.type.lower() not in ('oneshot', 'periodic', 'triggered'):
             raise OrderKeyInvalid(400, 'Order type %r unkown'%self.type)
         if self.isrepeated():
-            try:
-                self.interval = int(self['parameters']["interval"])
-            except (KeyError, ValueError, TypeError) as e:
-                raise OrderKeyInvalid(411, "Interval paramater invalid") from e
+            if 'parameters' not in self:
+                raise OrderKeyMissing(400, "%s needed and not given"%key)
             for key in ('lifetime','interval'):
                 if key not in self['parameters']:
                     raise OrderKeyMissing(412, "%s needed for repeated orders and not given"%key)
-            if self.type == "triggered":  
-                for key in ('low', 'high'):
+                    try:
+                        self['parameters'][key] = int(self['parameters'][key])
+                    except (ValueError) as e:
+                        raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
+            if self.type == "triggered":
+                for key in ('lower_threshold', 'upper_threshold'):
                     if key not in self['parameters']:
                         raise OrderKeyMissing(412, "%s needed for triggered orders and not given"%key)
+                        try:
+                            self['parameters'][key] = int(self['parameters'][key])
+                        except (ValueError) as e:
+                            raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
+
         # NOTE: we don't check dataitem here b/c we don't have the list of valid dataitems at hand
 
     def isrepeated(self):
         """ Is this Order a spawn point for multiple oneshot orders? """
-        return self['type'] in ('periodic', 'triggered')
+        return self['type'].lower() in ('periodic', 'triggered')
+
+    def parameters(self):
+        return self['parameters']
 
     @property
     def type(self):
@@ -75,6 +92,26 @@ class Order(dict):
     @property
     def orderid(self):
         return self["orderid"]
+
+    @property
+    def identifier(self):
+        ids = {}
+        for k,v in self.items():
+            if 'identifier' in self[k]:
+                ids[k] = v
+        return ids
+
+    @property
+    def identifier_count(self):
+        return len(self.identifier())
+    
+    @property
+    def results(self):
+        results = {}
+        for k,v in self.items():
+            if k in dataitems:
+                result[k] = v
+        return results
 
     def __repr__(self):
         return "Order(%s)"%(super().__repr__(),)
