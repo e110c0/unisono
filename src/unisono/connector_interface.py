@@ -191,19 +191,22 @@ class ConnectorFunctions:
             if i not in paramap.keys():
                 self.logger.error('Order is incomplete (missing %s), discarding'%i)
                 status = 400
-        if paramap['type'].lower() not in ('oneshot', 'periodic', 'triggered'):
+        paramap['type'] = paramap['type'].lower()
+        if paramap['type'] not in ('oneshot', 'periodic', 'triggered'):
             self.logger.error('Order type %r unkown, discarding'%paramap['type'])
             status = 400
-        if paramap['type'].lower() in ('periodic', 'triggered') \
+        if paramap['type'] in ('periodic', 'triggered') \
                 and ('interval' not in paramap['parameters'] ):
             self.logger.error('Repeated order without interval')
             status = 411
+        # TODO: get rid of this, use the order objects! and handle errors!
+        if 'parameters' in paramap.keys() and 'interval' in paramap['parameters'].keys():
+            paramap['parameters']['interval'] = int(paramap['parameters']['interval'])
         if paramap['dataitem'].upper() not in self.dispatcher.dataitems:
             self.logger.error('Order requests unknown data item %r, discarding.'%paramap['dataitem'])
             status = 404
         if status != 0: return status
-        # TODO: get rid of this, use the order objects! and handle errors!
-        paramap['parameters']['interval'] = int(paramap['parameters']['interval'])
+
         # TODO: check for orderid clashes here??
         # check registration
         self.logger.debug('conmap %s', self.conmap.conmap)
