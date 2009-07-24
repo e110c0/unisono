@@ -155,7 +155,7 @@ class DataBase():
         # delete what we do not need
         for i in ('dataitem','id','error','errortext','type','subid','parameters'):
             try:
-                del paramap['dataitem']
+                del paramap[i]
             except KeyError as e:
                 self.logger.debug('couldn\'t delete items: %s', e)
         # process data items
