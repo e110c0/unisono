@@ -195,13 +195,15 @@ class ConnectorFunctions:
             self.logger.error('Order type %r unkown, discarding'%paramap['type'])
             status = 400
         if paramap['type'] in ('periodic', 'triggered') \
-                and ('interval' not in paramap or not isinstance(paramap["interval"], int)):
-            self.logger.error('Repeated order without integer interval')
+                and ('interval' not in paramap['parameters'] ):
+            self.logger.error('Repeated order without interval')
             status = 411
         if paramap['dataitem'] not in self.dispatcher.dataitems:
             self.logger.error('Order requests unknown data item %r, discarding.'%paramap['dataitem'])
             status = 404
         if status != 0: return status
+        # TODO: get rid of this, use the order objects! and handle errors!
+        paramap['parameters']['interval'] = int(paramap['parameters']['interval'])
         # TODO: check for orderid clashes here??
         # check registration
         self.logger.debug('conmap %s', self.conmap.conmap)
