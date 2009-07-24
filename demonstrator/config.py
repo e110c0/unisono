@@ -32,5 +32,4 @@ svn-demo.py
 
 # directory path for dataitems.txt
 DATAITEMS_PATH = '../doc/dataitems.txt'
-
-
+RPC_URL = 'http://localhost:46000'

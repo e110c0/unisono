@@ -211,9 +211,10 @@ class ClioLoadApp:
 
 		# connect to RPC server
 		try:		
-			self.rpc_server = xmlrpclib.ServerProxy('http://localhost:46000')
+			self.rpc_server = xmlrpclib.ServerProxy(config.RPC_URL)
+			print 'Successfully connected to RPC-server ' + config.RPC_URL
 		except StandardError, e:
-			print "Error: ", e
+			print "Error on connecting to RPC-server: ", e
 
 	def __send_request(self):
 		'''Build the order-string (a dictionary) and submit it to the RPC-Server'''		
@@ -262,7 +263,13 @@ class ClioLoadApp:
 		self.window.show()
 		gtk.main()
 
+
+def print_info():
+	text = '''Welcome to CLIO LoadApp GUI'''
+	print text
+
 if __name__ == "__main__":
+	print_info()
 	editor = ClioLoadApp()
 	editor.main()
 
