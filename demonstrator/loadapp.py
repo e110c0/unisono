@@ -1,3 +1,32 @@
+'''
+svn-demo.py
+
+ Created on: Jul 21, 2009
+ Authors: korscheck
+
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
+
+ (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
+
+ This file is part of UNISONO Unified Information Service for Overlay
+ Network Optimization.
+
+ UNISONO is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 2 of the License, or
+ (at your option) any later version.
+
+ UNISONO is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
 import sys
 import gtk
 import xmlrpclib
@@ -8,20 +37,24 @@ import config
 from gobject import TYPE_STRING
 from ctypes import *
 
+# some types required to modify sensitivity of widgets
 single_name_types = ['n', 'i']
 multi_name_types  = ['l']
 time_types  = ['PERIODIC', 'TRIGGER']
 threshold_types = ['TRIGGER']
 
+# host-names
 class Names(Structure):
 	_fields_ = [('marty', c_char_p),
 				('biff', c_char_p)]
 
+# order-types
 class Types(Structure):
 	_fields_ = [('ONESHOT', c_int),
 				('PERIODIC', c_int),
 				('TRIGGER', c_int)]
 
+# helper class, an element in DataItems list
 class DataItem:
 	key = ''
 	ctype = None
@@ -34,6 +67,9 @@ class DataItem:
 		self.keytype = keytype
 		self.explanation = explanation
 
+# list with DataItems. Note: this class doesn't have only the fields, but also
+# additional data that is required for output in the GUI or other modifications
+# for the widgets (like setting sensitive)
 class DataItems:
 	_fields_ = []
 	_types_ = []
@@ -49,8 +85,9 @@ class DataItems404Error(Exception):
 	'''Used if config file can't be read'''
 	pass
 
+
 class DataItemsLoader:
-	
+	'''Reads data-items from file and parses the format'''	
 	def __init__(self):
 		self.config_file = config.DATAITEMS_PATH
 		self.raw = ''
@@ -85,8 +122,9 @@ class DataItemsLoader:
 	def get_data_items(self):
 		return self.data_items
 
+# main class
 class ClioLoadApp:
-
+	'''Class for GUI and order-submit'''
 	def on_window_destroy(self, widget, data=None):
 		gtk.main_quit()
      
@@ -97,6 +135,7 @@ class ClioLoadApp:
 		pass
 
 	def on_box_type_changed(self, widget, data=None):
+		'''Handles sensitivity of spin buttons'''		
 		# enable/disable interval/lifetime buttons		
 		if self.box_type.get_active_text() in time_types:
 			self.sbtn_interval.set_sensitive(True)
@@ -113,7 +152,7 @@ class ClioLoadApp:
 			self.sbtn_lower_threshold.set_sensitive(False)
 
 	def on_box_dataitem_changed(self, widget, data=None):
-		'''Update status bar with operation in plain text and enable/disable second name box'''
+		'''Updates status bar with operation in plain text and enable/disable second name box'''
 		# index of selected dataitem
 		index = self.box_dataitem.get_active()
 		status = "Operation: " + self.dataitems._explanations_[index]
@@ -128,7 +167,7 @@ class ClioLoadApp:
 			self.box_name2.set_sensitive(True)
 
 	def __init__(self):
-		'''Prepare Data for GUI and Tests'''		
+		'''Prepares Data for GUI and order-commit'''		
 		builder = gtk.Builder()
 		builder.add_from_file("loadapp.xml") 
 
@@ -170,12 +209,14 @@ class ClioLoadApp:
 		self.box_dataitem.set_active(16)
 		self.box_type.set_active(0)
 
+		# connect to RPC server
 		try:		
 			self.rpc_server = xmlrpclib.ServerProxy('http://localhost:46000')
 		except StandardError, e:
 			print "Error: ", e
 
 	def __send_request(self):
+		'''Build the order-string (a dictionary) and submit it to the RPC-Server'''		
 		order = {}
 		# name 1
 		order['name1'] = str(self.box_name1.get_active_text())
@@ -225,5 +266,4 @@ if __name__ == "__main__":
 	editor = ClioLoadApp()
 	editor.main()
 
-# marty biff
-# localhost:46000 -> 
+
