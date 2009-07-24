@@ -70,7 +70,7 @@ class Scheduler:
 
     def schedule_order(self, order):
         """ Add an order to the task list. """
-        t = Scheduler.Task(int(self.now() + order["interval"]), order)
+        t = Scheduler.Task(int(self.now() + order['parameters']["interval"]), order)
         heappush(self.tasks, t)
         
     def cancel_order(self, conid, orderid):
@@ -89,7 +89,7 @@ class Scheduler:
             ev = self.queue.get(timeout=wait)
         except Empty:
             ev = Event("SCHED", nextt.data)
-            nextt.at = self.now() + ev.payload["interval"]
+            nextt.at = self.now() + ev.payload['parameters']["interval"]
             heapreplace(self.tasks, nextt)
         return ev
 

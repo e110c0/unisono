@@ -48,12 +48,15 @@ class Order(dict):
             raise OrderKeyInvalid(400, 'Order type %r unkown'%self.type)
         if self.isrepeated():
             try:
-                self.interval = int(self["interval"])
+                self.interval = int(self['parameters']["interval"])
             except (KeyError, ValueError, TypeError) as e:
                 raise OrderKeyInvalid(411, "Interval paramater invalid") from e
+            for key in ('lifetime','interval'):
+                if key not in self['parameters']:
+                    raise OrderKeyMissing(412, "%s needed for repeated orders and not given"%key)
             if self.type == "triggered":  
                 for key in ('low', 'high'):
-                    if key not in self:
+                    if key not in self['parameters']:
                         raise OrderKeyMissing(412, "%s needed for triggered orders and not given"%key)
         # NOTE: we don't check dataitem here b/c we don't have the list of valid dataitems at hand
 
