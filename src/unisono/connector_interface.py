@@ -191,14 +191,14 @@ class ConnectorFunctions:
             if i not in paramap.keys():
                 self.logger.error('Order is incomplete (missing %s), discarding'%i)
                 status = 400
-        if paramap['type'] not in ('oneshot', 'periodic', 'triggered'):
+        if paramap['type'].lower() not in ('oneshot', 'periodic', 'triggered'):
             self.logger.error('Order type %r unkown, discarding'%paramap['type'])
             status = 400
-        if paramap['type'] in ('periodic', 'triggered') \
+        if paramap['type'].lower() in ('periodic', 'triggered') \
                 and ('interval' not in paramap['parameters'] ):
             self.logger.error('Repeated order without interval')
             status = 411
-        if paramap['dataitem'] not in self.dispatcher.dataitems:
+        if paramap['dataitem'].upper() not in self.dispatcher.dataitems:
             self.logger.error('Order requests unknown data item %r, discarding.'%paramap['dataitem'])
             status = 404
         if status != 0: return status
