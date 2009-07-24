@@ -91,17 +91,18 @@ if __name__ == '__main__':
                                                       'identifier2':remoteip,
                                                       'type':'oneshot',
                                                       'dataitem':i}))
+
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                       'identifier1':localip,
                                                       'identifier2':remoteip,
                                                       'type':'periodic',
-                                                      'interval': 10,
+                                                      'parameters' : {'interval': '10', 'lifetime':'30'},
                                                       'dataitem':'SHARED_BANDWIDTH_RX'}))
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                       'identifier1':localip,
                                                       'identifier2':remoteip,
+                                                      'parameters' : {'interval': '15', 'lifetime':'30', 'upper_threshold' : '', 'lower_threshold' : ''},
                                                       'type':'triggered',
-                                                      'interval': 15,
                                                       'dataitem':'INTERFACE_TYPE'}))
     sleep(3)
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
