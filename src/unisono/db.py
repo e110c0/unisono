@@ -159,7 +159,6 @@ class DataBase():
             del paramap['error']
             del paramap['errortext']
             del paramap['type']
-            del paramap['interval']
             del paramap['subid']
             del paramap['parameters']
         except KeyError:
