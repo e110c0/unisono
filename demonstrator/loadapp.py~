@@ -8,6 +8,11 @@ import config
 from gobject import TYPE_STRING
 from ctypes import *
 
+single_name_types = ['n', 'i']
+multi_name_types  = ['l']
+time_types  = ['PERIODIC', 'TRIGGER']
+threshold_types = ['TRIGGER']
+
 class Names(Structure):
 	_fields_ = [('marty', c_char_p),
 				('biff', c_char_p)]
@@ -86,19 +91,26 @@ class ClioLoadApp:
 		gtk.main_quit()
      
 	def on_btn_go_clicked(self, widget, data=None):
-		order = {}
-		order['name1'] = str(self.box_name1.get_active_text())
-		order['name2'] = str(self.box_name2.get_active_text())
-		order['dataitem'] = str(self.box_dataitem.get_active_text())
-		order['type'] = str(self.box_type.get_active_text()).lower()
-		#print 'TEST: ' + str(self.box_name2.get_active_text())
-		print self.box_name2.sensitive
-		print order
-		print self.rpc_server.commit_load_order(order)		
 		self.__send_request()
 
 	def on_btn_clear_clicked(self, widget, data=None):
 		pass
+
+	def on_box_type_changed(self, widget, data=None):
+		# enable/disable interval/lifetime buttons		
+		if self.box_type.get_active_text() in time_types:
+			self.sbtn_interval.set_sensitive(True)
+			self.sbtn_lifetime.set_sensitive(True)
+		else:
+			self.sbtn_interval.set_sensitive(False)
+			self.sbtn_lifetime.set_sensitive(False)
+		# enable/disable threshold buttons		
+		if self.box_type.get_active_text() in threshold_types:
+			self.sbtn_upper_threshold.set_sensitive(True)
+			self.sbtn_lower_threshold.set_sensitive(True)
+		else:
+			self.sbtn_upper_threshold.set_sensitive(False)
+			self.sbtn_lower_threshold.set_sensitive(False)
 
 	def on_box_dataitem_changed(self, widget, data=None):
 		'''Update status bar with operation in plain text and enable/disable second name box'''
@@ -109,8 +121,6 @@ class ClioLoadApp:
 		self.statusbar.pop(self.statusbar_cid)
 		self.statusbar.push(self.statusbar_cid, status)
 		# check whether the dataitem is a node/interface-request or a link-request
-		single_name_types = ['n', 'i']
-		multi_name_types  = ['l']
 		# note/interface-requests are only for one host. disable second name field
 		if self.dataitems._types_[index] in single_name_types:
 			self.box_name2.set_sensitive(False)
@@ -122,14 +132,23 @@ class ClioLoadApp:
 		builder = gtk.Builder()
 		builder.add_from_file("loadapp.xml") 
 
+		# general widgets
 		self.window = builder.get_object("window")
+		self.statusbar = builder.get_object("statusbar")
+		# comboboxes
 		self.box_name1 = builder.get_object("box_name1")
 		self.box_name2 = builder.get_object("box_name2")
 		self.box_dataitem = builder.get_object("box_dataitem")
 		self.box_type = builder.get_object("box_type")
+		# buttons
 		self.btn_clear = builder.get_object("btn_clear")
 		self.btn_go = builder.get_object("btn_go")
-		self.statusbar = builder.get_object("statusbar")
+		# spin buttons
+		self.sbtn_interval = builder.get_object("sbtn_interval")
+		self.sbtn_lifetime = builder.get_object("sbtn_lifetime")
+		self.sbtn_upper_threshold = builder.get_object("sbtn_upper_threshold")
+		self.sbtn_lower_threshold = builder.get_object("sbtn_lower_threshold")
+
 		builder.connect_signals(self)   
 
 		self.statusbar_cid = self.statusbar.get_context_id("CLIO LoadApp")
@@ -146,22 +165,46 @@ class ClioLoadApp:
 		self.__update_box(self.box_name1, names._fields_)
 		self.__update_box(self.box_name2, names._fields_)
 		self.__update_box(self.box_type, types._fields_)
+		# select default values
+		self.box_name1.set_active(0)
+		self.box_dataitem.set_active(16)
+		self.box_type.set_active(0)
 
 		try:		
 			self.rpc_server = xmlrpclib.ServerProxy('http://localhost:46000')
-			print self.rpc_server.system.listMethods()
 		except StandardError, e:
 			print "Error: ", e
 
 	def __send_request(self):
 		order = {}
+		# name 1
 		order['name1'] = str(self.box_name1.get_active_text())
-		order['name2'] = str(self.box_name2.get_active_text())
+		# name 2 (not required for all dataitems)
+		index = self.box_dataitem.get_active()
+		if self.dataitems._types_[index] in multi_name_types:
+			order['name2'] = str(self.box_name2.get_active_text())
+		# dataitem
 		order['dataitem'] = str(self.box_dataitem.get_active_text())
-		order['type'] = str(self.box_type.get_active_text()).lower()
-		#print 'TEST: ' + str(self.box_name2.get_active_text())
-		print order
-		print self.rpc_server.commit_load_order(order)
+		# type
+		order['type'] = str(self.box_type.get_active_text())
+		# check if any required data is empty
+		if 'None' in (order.values()):
+			print 'Invalid order. Skip.'
+			return
+		# prepare additional parameters for TRIGGER/PERIODIC
+		parameters = {}
+		if self.box_type.get_active_text() in time_types:
+			parameters['interval'] = str(self.sbtn_interval.get_value())
+			parameters['lifetime'] = str(self.sbtn_lifetime.get_value())
+		if self.box_type.get_active_text() in threshold_types:
+			parameters['upper_threshold'] = str(self.sbtn_upper_threshold.get_value())
+			parameters['lower_threshold'] = str(self.sbtn_lower_threshold.get_value())
+
+		order['parameters'] = parameters		
+
+		# order seems to be okay, submit
+		print 'Comitting order: ' + repr(order)
+		print 'RPC-Response: ' + self.rpc_server.commit_load_order(order)		
 
 	def __update_box(self, box, dic):
 		'''Loads a dictionary into the given combo-box'''		
