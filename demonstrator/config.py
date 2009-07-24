@@ -4,9 +4,9 @@ svn-demo.py
  Created on: Jul 21, 2009
  Authors: korscheck
 
- $LastChangedBy: haage $
- $LastChangedDate: 2009-07-20 16:56:16 +0200 (Mon, 20 Jul 2009) $
- $Revision: 1552 $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
 
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
 
