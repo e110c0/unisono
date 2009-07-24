@@ -153,28 +153,19 @@ class DataBase():
         else:
             identifier2 = None
         # delete what we do not need
-        try:
-            del paramap['dataitem']
-            del paramap['id']
-            del paramap['error']
-            del paramap['errortext']
-            del paramap['type']
-            del paramap['subid']
-            del paramap['parameters']
-        except KeyError:
-            self.logger.debug('couldn\'t delete all items, bad luck...')
+        for i in ('dataitem','id','error','errortext','type','subid','parameters'):
+            try:
+                del paramap['dataitem']
+            except KeyError as e:
+                self.logger.debug('couldn\'t delete items: %s', e)
         # process data items
         self.logger.debug('storing dataitems: %s', paramap)
         c = self.dbcon.cursor()
         if identifier2 != None:
             for d, v in paramap.items():
                 try:
-                    if identifier2 != None:
-                        c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
-                    else:
-                        c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
+                    c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
                 except sqlite3.OperationalError:
-                    
                     if type(v) == str:
                         t = 'TEXT'
                     elif type(v) == int:
