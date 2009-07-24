@@ -127,7 +127,7 @@ class DataBase():
             row = c.fetchone()
             if row != None:
                 self.logger.debug('our cached result: %s', row)
-                result[table] = row[3]
+                result[table] = row[-1]
                 return result
             else:
                 raise NotInCacheError
@@ -161,6 +161,7 @@ class DataBase():
             del paramap['type']
             del paramap['interval']
             del paramap['subid']
+            del paramap['parameters']
         except KeyError:
             self.logger.debug('couldn\'t delete all items, bad luck...')
         # process data items
