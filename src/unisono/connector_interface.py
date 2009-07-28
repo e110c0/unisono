@@ -180,7 +180,9 @@ class ConnectorFunctions:
              dataitem (str): see list_available_dataitems for valid dataitems 
              orderid (str): the tupel (conid, orderid) has to be unique 
         if type is periodic or triggered:
-             interval (int)
+             interval (int or str)
+             lifetime (int or str)
+        (see unisono.order.Order for full documentation)
         
         returns int the status of the request
         '''
