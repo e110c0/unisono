@@ -102,10 +102,10 @@ class Order(dict):
         return self["orderid"]
 
     @property
-    def identifier(self):
+    def identifierlist(self):
         ids = {}
         for k,v in self.items():
-            if 'identifier' in self[k]:
+            if 'identifier' in k:
                 ids[k] = v
         return ids
 

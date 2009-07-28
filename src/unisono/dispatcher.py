@@ -301,9 +301,7 @@ class Dispatcher:
 
     def put_in_mmq(self, mmq, id, order):
         # create request for MM
-        req = copy.copy(order)
-        del req['conid']
-        del req['orderid']
+        req = order.identifierlist
         req['id'] = id
         #self.logger.debug['stripped request: %s', req]
         # queue request
