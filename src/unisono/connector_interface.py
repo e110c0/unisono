@@ -37,6 +37,7 @@ from queue import Queue
 from unisono.event import Event
 from unisono.db import NotInCacheError
 from unisono.db import DataBase
+from unisono.order import Order
 
 class InterfaceError(Exception):
     pass
@@ -186,35 +187,20 @@ class ConnectorFunctions:
         self.logger.debug('RPC function \'commit_order\'.')
         self.logger.debug('Order: %s', paramap)
         status = 0
-        # sanity checks
-        for i in ['orderid', 'type', 'dataitem']:
-            if i not in paramap.keys():
-                self.logger.error('Order is incomplete (missing %s), discarding'%i)
-                status = 400
-        paramap['type'] = paramap['type'].lower()
-        if paramap['type'] not in ('oneshot', 'periodic', 'triggered'):
-            self.logger.error('Order type %r unkown, discarding'%paramap['type'])
-            status = 400
-        if paramap['type'] in ('periodic', 'triggered') \
-                and ('interval' not in paramap['parameters'] ):
-            self.logger.error('Repeated order without interval')
-            status = 411
-        # TODO: get rid of this, use the order objects! and handle errors!
-        if 'parameters' in paramap.keys() and 'interval' in paramap['parameters'].keys():
-            paramap['parameters']['interval'] = int(paramap['parameters']['interval'])
-        if paramap['dataitem'].upper() not in self.dispatcher.dataitems:
-            self.logger.error('Order requests unknown data item %r, discarding.'%paramap['dataitem'])
-            status = 404
-        if status != 0: return status
-
+        try:
+            order = Order(paramap)
+        except ValueError as e:
+            self.logger.error(e)
+            status = e.status
+            pass
         # TODO: check for orderid clashes here??
         # check registration
-        self.logger.debug('conmap %s', self.conmap.conmap)
+#        self.logger.debug('conmap %s', self.conmap.conmap)
         if conid in self.conmap.conmap.keys():
             self.logger.debug('connector is known, putting order in the queue')
             # create event and put it in the eventq
-            paramap['conid'] = conid
-            self.eventq.put(Event('ORDER', paramap))
+            order['conid'] = conid
+            self.eventq.put(Event('ORDER', order))
         else:
             self.logger.error('Connector %s is unknown, discarding order!', conid)
             status = 401
@@ -370,6 +356,7 @@ class XMLRPCReplyHandler:
 
     def find_requester(self,conid):
         uri = 'http://' + self.conmap.conmap[conid][0] + ':' + str(self.conmap.conmap[conid][1]) + "/RPC2"
+        self.logger.debug(uri)
         connector = ServerProxy(uri)
         return connector
 
@@ -405,12 +392,14 @@ class XMLRPCReplyHandler:
             self.logger.debug('got event %s',event.type)
             if event.type == 'DELIVER':
                 # payload is the result
-                result = event.payload
+                result = event.payload.results
                 self.logger.debug('Our result is: %s', result)
                 # we have a strict policy for XMLRPC: everything is a string!
                 if "result" in result.keys() and type(result["result"]) is not 'string':
                     result["result"] = str(result["result"])
                 # find requester
+                self.logger.debug("conid in order: %s", result['conid'])
+                self.logger.debug("conmap: %s", self.conmap.conmap)
                 try:
                     connector = self.find_requester(result['conid'])
                 except KeyError:

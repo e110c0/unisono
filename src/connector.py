@@ -80,17 +80,17 @@ if __name__ == '__main__':
     print(s.list_available_dataitems())
     localip = '134.2.172.173'
     remoteip = '134.2.172.172'
-    for i in s.list_available_dataitems():
-        print('my order:', {'orderid': str(next(orderid)), 
-                                                      'identifier1':localip,
-                                                      'identifier2':remoteip,
-                                                      'type':'oneshot',
-                                                      'dataitem':i})
-        print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-                                                      'identifier1':localip,
-                                                      'identifier2':remoteip,
-                                                      'type':'oneshot',
-                                                      'dataitem':i}))
+#    for i in s.list_available_dataitems():
+#        print('my order:', {'orderid': str(next(orderid)), 
+#                                                      'identifier1':localip,
+#                                                      'identifier2':remoteip,
+#                                                      'type':'oneshot',
+#                                                      'dataitem':i})
+#        print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
+#                                                      'identifier1':localip,
+#                                                      'identifier2':remoteip,
+#                                                      'type':'oneshot',
+#                                                      'dataitem':i}))
 
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                       'identifier1':localip,
@@ -104,22 +104,22 @@ if __name__ == '__main__':
                                                       'parameters' : {'interval': '15', 'lifetime':'30', 'upper_threshold' : '', 'lower_threshold' : ''},
                                                       'type':'triggered',
                                                       'dataitem':'INTERFACE_TYPE'}))
-    sleep(3)
-    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-                                                  'identifier1':'193.196.31.38',
-                                                  'identifier2':remoteip,
-                                                  'type':'oneshot',
-                                                  'dataitem':'RTT_MIN'}))
-    sleep(3)
-## cache testing:
-    print('check cache: ' , s.check_cache(myID, {
-                                              'identifier1':localip,
-                                              'identifier2':remoteip,
-                                              'dataitem':'RTT'}))
-    print('check cache: ' , s.check_cache(myID, {
-                                              'identifier1':localip,
-                                              'identifier2':remoteip,
-                                              'dataitem':'RTT_MIN'}))
+#    sleep(3)
+#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
+#                                                  'identifier1':'193.196.31.38',
+#                                                  'identifier2':remoteip,
+#                                                  'type':'oneshot',
+#                                                  'dataitem':'RTT_MIN'}))
+#    sleep(3)
+### cache testing:
+#    print('check cache: ' , s.check_cache(myID, {
+#                                              'identifier1':localip,
+#                                              'identifier2':remoteip,
+#                                              'dataitem':'RTT'}))
+#    print('check cache: ' , s.check_cache(myID, {
+#                                              'identifier1':localip,
+#                                              'identifier2':remoteip,
+#                                              'dataitem':'RTT_MIN'}))
 
 
     ch = stdin.read(1)

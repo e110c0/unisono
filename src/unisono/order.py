@@ -59,6 +59,7 @@ class Order(dict):
             for key in ('lifetime','interval'):
                 if key not in self['parameters']:
                     raise OrderKeyMissing(412, "%s needed for repeated orders and not given"%key)
+                else:
                     try:
                         self['parameters'][key] = int(self['parameters'][key])
                     except (ValueError) as e:
@@ -107,12 +108,13 @@ class Order(dict):
     
     @property
     def results(self):
+        unneeded = ('type','parameters','dataitem')
         results = {}
         for k,v in self.items():
-            if k in dataitems:
-                result[k] = v
+            if k not in unneeded:
+                results[k] = v
         return results
-
+    
     def __repr__(self):
         return "Order(%s)"%(super().__repr__(),)
     
