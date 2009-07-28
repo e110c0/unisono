@@ -79,6 +79,13 @@ class Order(dict):
         """ Is this Order a spawn point for multiple oneshot orders? """
         return self['type'].lower() in ('periodic', 'triggered')
 
+    def append_item(self,key, value):
+        '''
+        Append a new item to the order
+        '''
+        self[key] = value
+        
+    @property
     def parameters(self):
         return self['parameters']
 
