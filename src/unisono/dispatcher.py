@@ -254,8 +254,9 @@ class Dispatcher:
         self.stats.increase_stats('orders',1)
         if order['type'] in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
-            order['subid'] = 0
+            order['subid'] = -1
             self.scheduler.schedule_order(order)
+            self.process_sched_order(order)
             return
         if self.satisfy_from_cache(order):
             return
