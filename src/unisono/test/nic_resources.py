@@ -46,10 +46,8 @@ class NicTest(unittest.TestCase):
 
         assert nicreader.request['error'] == 500
         assert nicreader.request['errortext'] == 'could not find interface with IP, aborting measurement'
-        print(nicreader.request['error'] == 500)
-        print(nicreader.request['errortext'] == 'could not find interface with IP, aborting measurement')
-
-        pass
+#        print(nicreader.request['error'] == 500)
+#        print(nicreader.request['errortext'] == 'could not find interface with IP, aborting measurement')
 
 
     def NoInterfaceBWReader(self):                           
@@ -59,10 +57,8 @@ class NicTest(unittest.TestCase):
 
         assert bwreader.request['error'] == 500
         assert bwreader.request['errortext'] == 'could not find interface with IP, aborting measurement'
-        print(bwreader.request['error'] == 500)
-        print(bwreader.request['errortext'] == 'could not find interface with IP, aborting measurement')
-
-        pass
+#        print(bwreader.request['error'] == 500)
+#        print(bwreader.request['errortext'] == 'could not find interface with IP, aborting measurement')
 
     def NoInterfaceWIFIReader(self):                           
         wifireader = WifiReader(None, None)
@@ -71,10 +67,9 @@ class NicTest(unittest.TestCase):
 
         assert wifireader.request['error'] == 500
         assert wifireader.request['errortext'] == 'could not find interface with IP, aborting measurement'
-        print(wifireader.request['error'] == 500)
-        print(wifireader.request['errortext'] == 'could not find interface with IP, aborting measurement')
+#        print(wifireader.request['error'] == 500)
+#        print(wifireader.request['errortext'] == 'could not find interface with IP, aborting measurement')
 
-        pass
 
     # Case where the input IP matches with Loopback Interface.
     def loInterfaceNICReader(self):                           
@@ -84,10 +79,8 @@ class NicTest(unittest.TestCase):
         assert nicreader.request['error'] == 0  
         assert nicreader.request['errortext'] == 'Measurement successful'
         
-        print(nicreader.request['error'] == 0)        
-        print(nicreader.request['errortext'] == 'Measurement successful')
-        
-        pass
+#        print(nicreader.request['error'] == 0)        
+#        print(nicreader.request['errortext'] == 'Measurement successful')
 
     def loInterfaceBWReader(self):                           
         bwreader = BandwidthUsage(None, None)
@@ -95,7 +88,6 @@ class NicTest(unittest.TestCase):
         bwreader.measure()
         assert bwreader.request['error'] == 0  
         assert bwreader.request['errortext'] == 'Measurement successful'
-        pass
 
     def loInterfaceWIFIReader(self):                           
         wifireader = WifiReader(None, None)
@@ -103,7 +95,6 @@ class NicTest(unittest.TestCase):
         wifireader.measure()
         assert wifireader.request['error'] == 530  
         assert wifireader.request['errortext'] == 'This is not a Wireless Interface'
-        pass
     
     ### TESTING MODULES FOR CORRECT MEASUREMENTS
     

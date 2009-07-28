@@ -1,9 +1,7 @@
-#!/usr/bin/env python3.0
-# encoding: utf-8
 '''
-unisono_test.py
+order.py
 
- Created on: May 11, 2009
+ Created on: Jul 28, 2009
  Authors: dh
  
  $LastChangedBy$
@@ -30,28 +28,22 @@ unisono_test.py
  
 '''
 
-
-# python lib imports
 import unittest
-# unisono imports
-import unisono.test.connector_interface
-import unisono.test.nic_resources
-import unisono.test.order
+from unisono import order
 
-# init testsuites
-connector_interface_testsuite = unisono.test.connector_interface.suite()
-order_testsuite = unisono.test.order.suite()
-nic_resources_testsuite = unisono.test.nic_resources.suite()
 
-# join testsuites
-alltests = unittest.TestSuite((
-        connector_interface_testsuite,
-        order_testsuite,
-        nic_resources_testsuite
-        ))
+class TestOrder(unittest.TestCase):
 
-# init testrunner as textbased runner
-runner = unittest.TextTestRunner()
 
-# run tests
-runner.run(alltests)
+    def testName(self):
+        pass
+
+
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestOrder("testName"))
+    return suite
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()
