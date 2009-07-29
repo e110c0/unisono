@@ -107,7 +107,7 @@ class ConnectorMap:
 
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     '''
     functions available for connectors
     most of the functions reply with a status number. Results are received via
@@ -225,7 +225,7 @@ class ConnectorFunctions:
     def forward_received_packet(self, packet):
         '''
         forward packets received for the unisono daemon
-        this wil be used by the daemon to communicate between different hosts
+        this will be used by the daemon to communicate between different hosts
 
         returns int the status of the request
         '''
@@ -342,7 +342,7 @@ class XMLRPCServer:
 ################################################################################
 class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap
@@ -352,11 +352,10 @@ class XMLRPCReplyHandler:
         # Exit the server thread when the main thread terminates
         reply_thread.setDaemon(True)
         reply_thread.start()
-        print("XMLRPC reply handler loop running in thread:", reply_thread.name)
+        self.logger.info("XMLRPC reply handler loop running in thread:", reply_thread.name)
 
     def find_requester(self,conid):
         uri = 'http://' + self.conmap.conmap[conid][0] + ':' + str(self.conmap.conmap[conid][1]) + "/RPC2"
-        self.logger.debug(uri)
         connector = ServerProxy(uri)
         return connector
 
@@ -399,7 +398,6 @@ class XMLRPCReplyHandler:
                     result["result"] = str(result["result"])
                 # find requester
                 self.logger.debug("conid in order: %s", result['conid'])
-                self.logger.debug("conmap: %s", self.conmap.conmap)
                 try:
                     connector = self.find_requester(result['conid'])
                 except KeyError:

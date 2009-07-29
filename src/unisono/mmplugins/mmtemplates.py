@@ -39,7 +39,7 @@ class MMTemplate:
     generic template for all M&Ms
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, inq, outq):
         '''
@@ -100,7 +100,7 @@ class MMcTemplate(MMTemplate):
     The c binding is fully encapsulated in this class.
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     def __init__(self, *args):
         super().__init__(*args)
         self.libfile = ''

@@ -84,7 +84,13 @@ class Order(dict):
         Append a new item to the order
         '''
         self[key] = value
-        
+
+    def get_item(self,key):
+        '''
+        get the value of key
+        '''
+        return self[key]
+
     @property
     def parameters(self):
         return self['parameters']

@@ -33,7 +33,7 @@ from unisono.utils import configuration
 
 class cValues(mmtemplates.MMTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     '''
     This class provides user-definde (==configured) values for the applications
     each value will be found in the cvalue section of unisono.cfg
@@ -52,13 +52,13 @@ class cValues(mmtemplates.MMTemplate):
         config = configuration.get_configparser()
         options = config.options('cValues')
         self.logger.debug('cValues options: %s', options)
-        try:
-            di = self.request['dataitem']
-            self.request[di] = config.get('cValues', di)
-            self.logger.debug('the values are: %s', self.request)
-            self.request['error'] = 0
-            self.request['errortext'] = 'Measurement successful'
-        except:
-            self.request['error'] = 312
-            self.request['errortext'] = 'No value configured'
+        for di in self.dataitems:
+            try:
+                self.request[di] = config.get('cValues', di)
+                self.request['error'] = 0
+                self.request['errortext'] = 'Measurement successful'
+            except:
+                self.request['error'] = 312
+                self.request['errortext'] = 'No value configured'
+        self.logger.debug('the values are: %s', self.request)
 

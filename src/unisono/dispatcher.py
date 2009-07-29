@@ -89,7 +89,7 @@ class Scheduler:
             ev = self.queue.get(timeout=wait)
         except Empty:
             ev = Event("SCHED", nextt.data)
-            nextt.at = self.now() + ev.payload['parameters']["interval"]
+            nextt.at = self.now() + ev.payload.parameters["interval"]
             heapreplace(self.tasks, nextt)
         return ev
 
@@ -174,6 +174,7 @@ class Dispatcher:
                     mm_thread = threading.Thread(target=mm.run)
                     # Exit the server thread when the main thread terminates
                     mm_thread.setDaemon(True)
+                    mm_thread.setName(mm.__class__.__name__)
                     mm_thread.start()
                     self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
         self.logger.debug('plugin list: %r' % self.plugins)
@@ -292,10 +293,12 @@ class Dispatcher:
                 if id1 is not None and id1 != paramap.get("identifier1", None) or \
                     id2 is not None and id2 != paramap.get("identifier2", None):
                     return False
+                waitinglist.append(order)
                 self.logger.info('aggregated the order with already queued order')
+
                 self.stats.increase_stats('aggregations_global', 1)
                 self.stats.increase_stats('aggregations', 1)
-                waitinglist.append(order)
+
                 return True
         return False
 
@@ -312,16 +315,17 @@ class Dispatcher:
         id = order['conid'], order['orderid']
         mmlist = copy.copy(self.dataitems[order["dataitem"]])
         curmm = mmlist.pop(0)[1]
-        self.put_in_mmq(self.plugins[curmm].inq, id, order)
         self.pending_orders[id] = (curmm, mmlist, order, [])
+        self.put_in_mmq(self.plugins[curmm].inq, id, order)
         return
 
     def fill_order(self, order, result):
+        self.logger.debug('order: %s result: %s',type(order),type(result))
         try:
-            di = order['dataitem']
-            order[di] = result[di]
+            di = order.dataitem
+            order.append_item(di,result[di])
             # for at least the ariba connector (deprecated)
-            order['result'] = result[di]
+            order.append_item('result',result[di])
         except KeyError:
             order['error'] = 666
             order['errortext'] = 'dataitem not in result'
@@ -332,7 +336,8 @@ class Dispatcher:
         r = result[1]
         id = r['id']
         try:
-            curmm, mmlist, paramap, waitinglist = self.pending_orders[id]
+            # get the orders and get them out of the pending list
+            curmm, mmlist, paramap, waitinglist = self.pending_orders.pop(id)
         except KeyError:
             # order has been canceled
             self.logger.debug("Dropping connector %r order %r result" % id)
@@ -342,6 +347,7 @@ class Dispatcher:
             self.logger.debug('The result included an error')
             try:
                 curmm = mmlist.pop(0)[1]
+                self.pending_orders[id] = (curmm, mmlist, paramap, waitinglist)
                 self.put_in_mmq(self.plugins[curmm].inq, id, paramap)
             except IndexError:
                 self.logger.debug('No more modules to try, passing error to connector.')
@@ -357,11 +363,12 @@ class Dispatcher:
             self.cache.store(copy.copy(r))
             # deliver results
             for o in waitinglist:
-                self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
                 self.stats.decrease_stats('aggregations', 1)
                 self.stats.decrease_stats('orders', 1)
-            self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
+                self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
+
             self.stats.decrease_stats('aggregations', 1)
             self.stats.decrease_stats('orders', 1)
             self.stats.decrease_stats('queued_orders', 1)
-            del self.pending_orders[id]
+            self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
+
