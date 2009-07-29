@@ -49,16 +49,17 @@ class Scheduler:
     '''
     
     class Task:
-        def __init__(self, at, data):
+        def __init__(self, at, finish, data):
             self.at = at
+            self.finish = finish
             self.data = data
         
         def __lt__(self, other):
             return self.at < other.at
     
         def __repr__(self):
-            return "Task(at=%r, data=%r)" % (self.at, self.data)
-    
+            return "Task(at=%r, finish=%r, data=%r)" % (self.at, self.finish, self.data)
+
     def __init__(self, parent):
         """ The parent object is a dispatcher. """
         self.parent = parent
@@ -70,13 +71,14 @@ class Scheduler:
 
     def schedule_order(self, order):
         """ Add an order to the task list. """
-        t = Scheduler.Task(int(self.now() + order['parameters']["interval"]), order)
+        t = Scheduler.Task(int(self.now() + order.parameters["interval"]), int(self.now() + order.parameters["lifetime"]), order)
         heappush(self.tasks, t)
         
     def cancel_order(self, conid, orderid):
         self.tasks = [t for t in self.tasks if "orderid" not in t.data or not (t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid))]
         heapify(self.tasks)
 
+        
     def get(self):
         """ Get event, either from schedule or from outside world """
         # On empty scheduler, just wait for event
@@ -90,7 +92,8 @@ class Scheduler:
         except Empty:
             ev = Event("SCHED", nextt.data)
             nextt.at = self.now() + ev.payload.parameters["interval"]
-            heapreplace(self.tasks, nextt)
+            if nextt.at <= nextt.finish:
+                heapreplace(self.tasks, nextt)
         return ev
 
 class Dispatcher:
