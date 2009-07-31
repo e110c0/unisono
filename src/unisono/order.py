@@ -130,10 +130,3 @@ class Order(dict):
     
     def __repr__(self):
         return "Order(%s)"%(super().__repr__(),)
-    
-if __name__ == '__main__':
-    o = Order(type="oneshot", orderid="GoodOrder", dataitem="CINDERELLA_DWARF_COUNT", foo="bar")
-    print("Good:", o)
-    print("Bad:")
-    o = Order(type="periodic", interval="too cool for int", orderid="BadOrder", dataitem="EVIL_BIT_COUNT")
-    

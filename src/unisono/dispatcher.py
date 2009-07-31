@@ -32,7 +32,7 @@ from queue import Queue, Empty
 from time import time as system_time
 from unisono.db import DataBase, restoreDataBase
 from unisono.db import NotInCacheError
-
+from unisono.order import Order
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
@@ -265,7 +265,7 @@ class Dispatcher:
         # sanity checks
         self.stats.increase_stats('orders_global', 1)
         self.stats.increase_stats('orders', 1)
-        if order['type'] in ("periodic", "triggered"):
+        if order.type in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
             order.append_item('subid', - 1)
             self.scheduler.schedule_order(order)
@@ -283,7 +283,7 @@ class Dispatcher:
             result = self.cache.check_for(order)
             order.update(result)
             # for at least the ariba connector (deprecated)
-            order['result'] = order[order['dataitem']]
+            order.append_item('result',order[order.dataitem])
 #            self.logger.debug('result from cache: %s', result)
 #            self.logger.debug('updated order: %s', order)
             order['error'] = 0
@@ -296,12 +296,11 @@ class Dispatcher:
             return False
 
     def aggregate_order(self, order):
-        di = order["dataitem"]
+        di = order.dataitem
         compat_mms = set(i[1] for i in self.dataitems[di])
         for curmm, mmlist, paramap, waitinglist in self.pending_orders.values():
             if curmm in compat_mms:
-                id1 = order.get("identifier1", None)
-                id2 = order.get("identifier2", None)
+                id1, id2  = order.identifierlist()
                 if id1 is not None and id1 != paramap.get("identifier1", None) or \
                     id2 is not None and id2 != paramap.get("identifier2", None):
                     return False
@@ -324,8 +323,8 @@ class Dispatcher:
 
     def queue_order(self, order):
         self.stats.increase_stats('queued_orders', 1)
-        id = order['conid'], order['orderid']
-        mmlist = copy.copy(self.dataitems[order["dataitem"]])
+        id = order['conid'], order.orderid
+        mmlist = copy.copy(self.dataitems[order.dataitem])
         curmm = mmlist.pop(0)[1]
         self.pending_orders[id] = (curmm, mmlist, order, [])
         self.put_in_mmq(self.plugins[curmm].inq, id, order)
