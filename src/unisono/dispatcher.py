@@ -99,6 +99,7 @@ class Scheduler:
             else:
                 self.logger.debug('we should delete this task now! %s', nextt)
                 heappop(self.tasks)
+                ev = Event("FINISHED", nextt.data)
         return ev
 
 class Dispatcher:
@@ -240,6 +241,9 @@ class Dispatcher:
             elif event.type == 'RESULT':
                 self.logger.debug('result. %s', event.payload)
                 self.process_result(event.payload)
+            elif event.type == 'FINISHED':
+                self.logger.debug('finished %s', event.payload)
+                self.replyq.put(event)
             else:
                 self.logger.debug('Got an unknown event %r, discarding.' % (event.type,))
 

@@ -51,7 +51,7 @@ class DataBase():
     This class provides a generic interface for all caching purposes.
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     def __init__(self):
         '''
         The first instance of DataBase creates a mysqlite database at the 

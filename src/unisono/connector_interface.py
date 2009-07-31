@@ -342,7 +342,7 @@ class XMLRPCServer:
 ################################################################################
 class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap
@@ -428,7 +428,7 @@ class XMLRPCReplyHandler:
                     self.logger.error('Connector %s unreachable!', event.payload['conid'])
                     self.conmap.deregister_connector(event.payload['conid'])
             elif event.type == 'FINISHED':
-                self.logger.debug('Finished: %s', paramap)
+                self.logger.debug('Finished: %s', event.payload)
                 # find requester
                 try:
                     connector = self.find_requester(event.payload['conid'])

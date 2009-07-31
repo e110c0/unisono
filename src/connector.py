@@ -55,6 +55,10 @@ def on_result(result):
 def on_discard(result):
     print("Something happened: %s", result)
     return True
+
+def on_finished(result):
+    print("Order finished: %s", result)
+    return True
         
 if __name__ == '__main__':
     orderid = count()
@@ -65,6 +69,7 @@ if __name__ == '__main__':
     server.register_multicall_functions()
     server.register_function(on_result, 'on_result')
     server.register_function(on_discard, 'on_discard')
+    server.register_function(on_finished, 'on_finished')
     thread = threading.Thread(target=server.serve_forever)
     # Exit the server thread when the main thread terminates
     thread.setDaemon(True)
@@ -78,7 +83,7 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
-    localip = '134.2.172.173'
+    localip = '127.0.0.1'
     remoteip = '134.2.172.172'
 #    for i in s.list_available_dataitems():
 #        print('my order:', {'orderid': str(next(orderid)), 
@@ -96,14 +101,14 @@ if __name__ == '__main__':
                                                       'identifier1':localip,
                                                       'identifier2':remoteip,
                                                       'type':'periodic',
-                                                      'parameters' : {'interval': '10', 'lifetime':'30'},
+                                                      'parameters' : {'interval': '5', 'lifetime':'10'},
                                                       'dataitem':'SHARED_BANDWIDTH_RX'}))
-    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-                                                      'identifier1':localip,
-                                                      'identifier2':remoteip,
-                                                      'parameters' : {'interval': '15', 'lifetime':'30', 'upper_threshold' : '', 'lower_threshold' : ''},
-                                                      'type':'triggered',
-                                                      'dataitem':'INTERFACE_TYPE'}))
+#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
+#                                                      'identifier1':localip,
+#                                                      'identifier2':remoteip,
+#                                                      'parameters' : {'interval': '10', 'lifetime':'30', 'upper_threshold' : '', 'lower_threshold' : ''},
+#                                                      'type':'triggered',
+#                                                      'dataitem':'INTERFACE_TYPE'}))
 #    sleep(3)
 #    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
 #                                                  'identifier1':'193.196.31.38',
@@ -115,7 +120,7 @@ if __name__ == '__main__':
 #    print('check cache: ' , s.check_cache(myID, {
 #                                              'identifier1':localip,
 #                                              'identifier2':remoteip,
-#                                              'dataitem':'RTT'}))
+#                                              'dataitem':'INTERFACE_MAC'}))
 #    print('check cache: ' , s.check_cache(myID, {
 #                                              'identifier1':localip,
 #                                              'identifier2':remoteip,
