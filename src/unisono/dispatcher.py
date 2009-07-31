@@ -27,7 +27,7 @@ dispatcher.py
  along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  
 '''
-from heapq import heappush, heapreplace, heapify
+from heapq import heappush, heapreplace, heapify, heappop
 from queue import Queue, Empty
 from time import time as system_time
 from unisono.db import DataBase, restoreDataBase
@@ -47,7 +47,8 @@ class Scheduler:
     '''
     Schedules periodic/triggerd measurements and cleanup tasks. Think of this as a glorified heapq.
     '''
-    
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
     class Task:
         def __init__(self, at, finish, data):
             self.at = at
@@ -92,8 +93,12 @@ class Scheduler:
         except Empty:
             ev = Event("SCHED", nextt.data)
             nextt.at = self.now() + ev.payload.parameters["interval"]
+            self.logger.debug('The next task: %s', nextt)
             if nextt.at <= nextt.finish:
                 heapreplace(self.tasks, nextt)
+            else:
+                self.logger.debug('we should delete this task now! %s', nextt)
+                heappop(self.tasks)
         return ev
 
 class Dispatcher:
