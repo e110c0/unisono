@@ -128,6 +128,7 @@ class DataBase():
             if row != None:
                 self.logger.debug('our cached result: %s', row)
                 result[table] = row[-1]
+                result['result'] = row[-1]
                 return result
             else:
                 raise NotInCacheError

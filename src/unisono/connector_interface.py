@@ -281,9 +281,8 @@ class ConnectorFunctions:
             paramap['error'] = 404
             paramap['errortext'] = 'Data item not found in cache'
         # we have a strict policy for XMLRPC: everything is a string!
-        for k,v in paramap.items():
-            if type(v) is not 'string':
-                paramap[k]= str(paramap[k])
+        if "result" in paramap.keys() and type(result["result"]) is not 'string':
+            paramap["result"] = str(paramap["result"])
         return paramap
 
 # Threaded XMPRPC server
