@@ -201,7 +201,6 @@ class BandwidthUsage(mmtemplates.MMTemplate):
         except IOError:
             self.request['error'] = 500
             self.request['errortext'] = 'could not find interface with IP, aborting measurement'
-            raise IOError
             return
             
         
@@ -214,49 +213,38 @@ class BandwidthUsage(mmtemplates.MMTemplate):
             lines = proc_net_dev.readlines()
             proc_net_dev.seek(0)
             
-            if interface != None:        
-                keys_dyn_data = ["bytes_in", "packets_in", "bytes_out", "packets_out" ]
-                delim = "%s:" % (interface)
-                if_numbers = [ l.strip().strip(delim) for l in lines if delim in l ][0]
-                iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
-                bw_in = iface_data["bytes_in"]
-                bw_out = iface_data["bytes_out"]
+            keys_dyn_data = ["bytes_in", "packets_in", "bytes_out", "packets_out" ]
+            delim = "%s:" % (interface)
+            if_numbers = [ l.strip().strip(delim) for l in lines if delim in l ][0]
+            iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
+            bw_in = iface_data["bytes_in"]
+            bw_out = iface_data["bytes_out"]
 
-                time.sleep(1)
-                
-                proc_net_dev = open("/proc/net/dev")
-                lines = proc_net_dev.readlines()
+            time.sleep(1)
             
-                if_numbers = [ l.strip().strip(delim) for l in lines if delim in l ][0]
-                iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
-                bw_in2 = iface_data["bytes_in"]
-                bw_out2 = iface_data["bytes_out"]
-                
-                self.request["error"] = 0
-                if self.request['errortext'] == '':
-                    self.request['errortext'] = 'Measurement successful'
-                
-                try:
-                    self.request['USED_BANDWIDTH_RX'] = bw_in2 - bw_in
-                    self.request['USED_BANDWIDTH_TX'] = bw_out2 - bw_out
-                except UnboundLocalError:
-                    self.request['error'] = 510
-                    self.request['errortext'] = 'could not calculate current RT and TX'
-                    raise UnboundLocalError
-                    return            
+            proc_net_dev = open("/proc/net/dev")
+            lines = proc_net_dev.readlines()
+        
+            if_numbers = [ l.strip().strip(delim) for l in lines if delim in l ][0]
+            iface_data = dict(zip(keys_dyn_data, [ int(if_numbers.split()[index]) for index in (0, 1, 8, 9)]))
+            bw_in2 = iface_data["bytes_in"]
+            bw_out2 = iface_data["bytes_out"]
+            
+            self.request["error"] = 0
+            if self.request['errortext'] == '':
+                self.request['errortext'] = 'Measurement successful'
+            
+            try:
+                self.request['USED_BANDWIDTH_RX'] = bw_in2 - bw_in
+                self.request['USED_BANDWIDTH_TX'] = bw_out2 - bw_out
+            except UnboundLocalError:
+                self.request['error'] = 510
+                self.request['errortext'] = 'could not calculate current RT and TX'
+                return            
 
         except IOError:
             self.request['error'] = 510
             self.request['errortext'] = 'could not calculate current RT and TX'
-            raise UnboundLocalError            
-            pass
-        # Debugger
-
-        self.logger.debug('Current RX is: %s', bw_in)
-        self.logger.debug('Current TX is: %s', bw_out)
-
-        self.logger.debug('The result is: %s', self.request)
-        
 
 class WifiReader(mmtemplates.MMTemplate):
     logger = logging.getLogger(__name__)
@@ -284,7 +272,6 @@ class WifiReader(mmtemplates.MMTemplate):
     def measure(self):
  
         self.request['errortext'] = ''
- 
         try:
             interface = get_interfaces_for_ip(self.request['identifier1'])
             if interface != None:
@@ -387,7 +374,6 @@ class WifiReader(mmtemplates.MMTemplate):
                 self.request['errortext'] = 'could not get wireless channel'
                 pass
 
-
             # Wireless Frequency:
             try:
                 freq = re.search('Frequency=([^ ]+)', wlaninfo)
@@ -409,9 +395,5 @@ class WifiReader(mmtemplates.MMTemplate):
             self.request['error'] = 530
             self.request['errortext'] = 'This is not a Wireless Interface'
 
-            
-
             # Wireless information for the debugger
         self.logger.debug('The result is: %s', self.request)
-
-        
