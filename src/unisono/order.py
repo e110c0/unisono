@@ -72,7 +72,7 @@ class Order(dict):
                             self['parameters'][key] = int(self['parameters'][key])
                         except (ValueError) as e:
                             raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
-            self['finished']= 'false'
+        self['finished']= False
 
         # NOTE: we don't check dataitem here b/c we don't have the list of valid dataitems at hand
 
