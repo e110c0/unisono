@@ -38,6 +38,7 @@ from unisono.event import Event
 from unisono.db import NotInCacheError
 from unisono.db import DataBase
 from unisono.order import Order
+from time import time
 
 class InterfaceError(Exception):
     pass
@@ -248,6 +249,9 @@ class ConnectorFunctions:
         #  TODO: create event and put it in the eventq
         #self.eventq.put(Event('CACHE', result))
         cache = DataBase()
+        result['time'] = time()
+        result[result['dataitem']] = result['result']
+        del(result['result'])
         status = cache.store(result)
         return status
 
