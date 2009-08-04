@@ -100,7 +100,7 @@ class Scheduler:
             else:
                 self.logger.debug('we should delete this task now! %s', nextt)
                 heappop(self.tasks)
-                ev = Event("FINISHED", nextt.data)
+                nextt.data['finished']='true'
         return ev
 
 class Dispatcher:
@@ -243,9 +243,9 @@ class Dispatcher:
             elif event.type == 'RESULT':
                 self.logger.debug('result. %s', event.payload)
                 self.process_result(event.payload)
-            elif event.type == 'FINISHED':
-                self.logger.debug('finished %s', event.payload)
-                self.replyq.put(event)
+#            elif event.type == 'FINISHED':
+#                self.logger.debug('finished %s', event.payload)
+#                self.replyq.put(event)
             else:
                 self.logger.debug('Got an unknown event %r, discarding.' % (event.type,))
 
@@ -293,6 +293,8 @@ class Dispatcher:
             self.stats.increase_stats('fromcache_global', 1)
             self.stats.decrease_stats('orders', 1)
             self.replyq.put(Event('DELIVER', order))
+            if order['finished'] ==  'true':
+                self.replyq.put(Event('FINISHED', order))
             return True
         except NotInCacheError:
             return False
@@ -377,6 +379,8 @@ class Dispatcher:
                 paramap['error'] = r['error']
                 paramap['errortext'] = r['errortext']
                 self.replyq.put(Event('DELIVER', paramap))
+                if o['finished'] ==  'true':
+                    self.replyq.put(Event('FINISHED', o))
                 self.stats.decrease_stats('aggregations', 1)
                 self.stats.decrease_stats('orders', 1)
                 self.stats.decrease_stats('queue', 1)
@@ -391,11 +395,14 @@ class Dispatcher:
                 # check trigger
                 if (o.type != 'triggered') or (o.type == 'triggered' and self.trigger_match(o,r)):
                     self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
-
+                    if o['finished'] ==  'true':
+                        self.replyq.put(Event('FINISHED', o))
             self.stats.decrease_stats('aggregations', 1)
             self.stats.decrease_stats('orders', 1)
             self.stats.decrease_stats('queued_orders', 1)
             # check trigger
             if (paramap.type != 'triggered') or (paramap.type == 'triggered' and self.trigger_match(paramap,r)):
                 self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
+                if o['finished'] ==  'true':
+                    self.replyq.put(Event('FINISHED', o))
 

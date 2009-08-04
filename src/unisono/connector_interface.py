@@ -345,7 +345,7 @@ class XMLRPCServer:
 ################################################################################
 class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap

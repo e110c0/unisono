@@ -72,6 +72,7 @@ class Order(dict):
                             self['parameters'][key] = int(self['parameters'][key])
                         except (ValueError) as e:
                             raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
+            self['finished']= 'false'
 
         # NOTE: we don't check dataitem here b/c we don't have the list of valid dataitems at hand
 
@@ -121,7 +122,7 @@ class Order(dict):
     
     @property
     def results(self):
-        unneeded = ('type','parameters','dataitem')
+        unneeded = ('type','parameters','dataitem','finished')
         results = {}
         for k,v in self.items():
             if k not in unneeded:
