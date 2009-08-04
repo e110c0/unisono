@@ -379,8 +379,8 @@ class Dispatcher:
                 paramap['error'] = r['error']
                 paramap['errortext'] = r['errortext']
                 self.replyq.put(Event('DELIVER', paramap))
-                if o['finished'] ==  'true':
-                    self.replyq.put(Event('FINISHED', o))
+                if paramap['finished'] ==  'true':
+                    self.replyq.put(Event('FINISHED', paramap))
                 self.stats.decrease_stats('aggregations', 1)
                 self.stats.decrease_stats('orders', 1)
                 self.stats.decrease_stats('queue', 1)
