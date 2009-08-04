@@ -307,6 +307,8 @@ class Dispatcher:
                 id1 = idlist['identifier1']
                 if c > 1:
                     id2 = idlist['identifier2']
+                else:
+                    id2 = None
                 if id1 is not None and id1 != paramap.get("identifier1", None) or \
                     id2 is not None and id2 != paramap.get("identifier2", None):
                     return False
