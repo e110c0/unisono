@@ -157,7 +157,7 @@ class UnisonoStats:
             self.entries['dbtables'] = self.entries['dbtables'] + 1
             c.execute('''select * from ''' + i[0] + ''' ;''')
             rows = len(c.fetchall())
-            self.logger.info('table: %s: %i', i[0], rows)
+            self.logger.debug('table: %s: %i', i[0], rows)
             self.entries['dbentrycount'] = self.entries['dbentrycount'] + rows
             
         c.execute('''pragma  page_count''')
