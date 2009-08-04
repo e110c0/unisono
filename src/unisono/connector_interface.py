@@ -197,6 +197,7 @@ class ConnectorFunctions:
             except ValueError as e:
                 self.logger.error(e)
                 status = e.status
+                return status
             # TODO: check for orderid clashes here??
             # check registration
             # create event and put it in the eventq
