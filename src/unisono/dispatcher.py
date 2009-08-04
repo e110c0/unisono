@@ -403,6 +403,6 @@ class Dispatcher:
             # check trigger
             if (paramap.type != 'triggered') or (paramap.type == 'triggered' and self.trigger_match(paramap,r)):
                 self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
-                if o['finished'] ==  'true':
-                    self.replyq.put(Event('FINISHED', o))
+                if paramap['finished'] ==  'true':
+                    self.replyq.put(Event('FINISHED', paramap))
 
