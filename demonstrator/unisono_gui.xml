@@ -26,6 +26,7 @@
                 <child>
                   <object class="GtkAlignment" id="alignment2">
                     <property name="visible">True</property>
+                    <property name="bottom_padding">10</property>
                     <property name="left_padding">10</property>
                     <property name="right_padding">10</property>
                     <child>
@@ -615,7 +616,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkLabel" id="lbl_memory_hwn">
+                                          <object class="GtkLabel" id="lbl_memory_rss">
                                             <property name="visible">True</property>
                                             <property name="label" translatable="yes">n/a</property>
                                           </object>
@@ -627,7 +628,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkLabel" id="lbl_memory_rss">
+                                          <object class="GtkLabel" id="lbl_memory_hwn">
                                             <property name="visible">True</property>
                                             <property name="label" translatable="yes">n/a</property>
                                           </object>
@@ -691,6 +692,7 @@
                               <object class="GtkNotebook" id="notebook2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <property name="border_width">5</property>
                                 <child>
                                   <object class="GtkLabel" id="label24">
                                     <property name="visible">True</property>

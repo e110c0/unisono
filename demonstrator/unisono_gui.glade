@@ -631,7 +631,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="lbl_memory_hwn">
+                                          <widget class="GtkLabel" id="lbl_memory_rss">
                                             <property name="visible">True</property>
                                             <property name="label" translatable="yes">n/a</property>
                                           </widget>
@@ -643,7 +643,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="lbl_memory_rss">
+                                          <widget class="GtkLabel" id="lbl_memory_hwn">
                                             <property name="visible">True</property>
                                             <property name="label" translatable="yes">n/a</property>
                                           </widget>

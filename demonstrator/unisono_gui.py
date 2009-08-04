@@ -122,7 +122,10 @@ class UnisonoGUI:
 		# ignore these fields, because they have no GUI representation or are
 		# handled somewhere else already
 		ignore_fields = ['identifiers', 'connectors', 'cputimestamp']
-
+		# data arrives in bytes. we want megabytes
+		megabyte_fields = ['memory_hwn', 'memory_rss', 'memory_alloc', 'memory_alloc_max']
+		# data arrives as float with many digits after point, round a bit
+		float_fields = ['cpuuser_current', 'cpusys_current']
 		# assign all fields to the according labels in GUI
 		for field in stats.keys():
 			if field in ignore_fields:
@@ -131,6 +134,10 @@ class UnisonoGUI:
 				val = str(datetime.fromtimestamp(int(stats[field])))
 			elif field == 'uptime':
 				val = str(timedelta(0, int(stats[field])))
+			elif field in megabyte_fields:
+				val = str("%.2f" % (stats[field] / (1024 * 1024))) + ' MB'
+			elif field in float_fields:
+				val = str("%.2f" % stats[field]) + ' %'
 			else:
 				val = str(stats[field])
 			# labels in gui are named lbl_fieldname
