@@ -117,7 +117,7 @@ class Order(dict):
 
     @property
     def identifier_count(self):
-        return len(self.identifier())
+        return len(self.identifierlist)
     
     @property
     def results(self):

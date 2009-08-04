@@ -47,8 +47,7 @@ class Scheduler:
     '''
     Schedules periodic/triggerd measurements and cleanup tasks. Think of this as a glorified heapq.
     '''
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+
     class Task:
         def __init__(self, at, finish, data):
             self.at = at
@@ -63,6 +62,8 @@ class Scheduler:
 
     def __init__(self, parent):
         """ The parent object is a dispatcher. """
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(logging.INFO)
         self.parent = parent
         self.queue = parent.eventq
         self.tasks = []
@@ -109,13 +110,14 @@ class Dispatcher:
     It will listen on the input queue for events and dispatch them to
     it's subsystems as appropriate.
     '''
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
 
     def __init__(self):
         '''
         Constructor
         '''
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(logging.DEBUG)
+
         self.config = configuration.get_configparser()
         
         self.pending_orders = {}
@@ -300,7 +302,11 @@ class Dispatcher:
         compat_mms = set(i[1] for i in self.dataitems[di])
         for curmm, mmlist, paramap, waitinglist in self.pending_orders.values():
             if curmm in compat_mms:
-                id1, id2  = order.identifierlist()
+                c = order.identifier_count
+                idlist  = order.identifierlist
+                id1 = idlist['identifier1']
+                if c > 1:
+                    id2 = idlist['identifier2']
                 if id1 is not None and id1 != paramap.get("identifier1", None) or \
                     id2 is not None and id2 != paramap.get("identifier2", None):
                     return False
@@ -342,6 +348,10 @@ class Dispatcher:
             order['errortext'] = 'dataitem not in result'
         return order
 
+    def trigger_match(self,order,result):
+        self.logger.debug('checking trigger now')
+        return true
+
     def process_result(self, result):
         mm = result[0]
         r = result[1]
@@ -353,7 +363,7 @@ class Dispatcher:
             # order has been canceled
             self.logger.debug("Dropping connector %r order %r result" % id)
             return
-        
+
         if r['error'] != 0:
             self.logger.debug('The result included an error')
             try:
@@ -376,10 +386,14 @@ class Dispatcher:
             for o in waitinglist:
                 self.stats.decrease_stats('aggregations', 1)
                 self.stats.decrease_stats('orders', 1)
-                self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
+                # check trigger
+                if (o.type != 'triggered') or (o.type == 'triggered' and self.trigger_match(o,r)):
+                    self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
 
             self.stats.decrease_stats('aggregations', 1)
             self.stats.decrease_stats('orders', 1)
             self.stats.decrease_stats('queued_orders', 1)
-            self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
+            # check trigger
+            if (paramap.type != 'triggered') or (paramap.type == 'triggered' and self.trigger_match(paramap,r)):
+                self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
 
