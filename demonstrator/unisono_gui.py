@@ -39,11 +39,29 @@ from datetime import timedelta
 '''
 TODO:
 - fill "VIEW"-Notebook with data (all three pages)
-- make adding several nodes possible. currently, the GUI connects only
-  to localhost and fills the GUI with data.
-  -> notebook-frame must be deepcopied
-  -> list of pages must distinguish between different XML-RPC-hosts
+- observe behavior if target host is unreachable
+- auto-scroll to end in log file
 '''
+
+class Node:
+
+	def __init__(self, host, node_number):
+		self.builder = gtk.Builder()
+		self.host = host
+		self.node_number = node_number
+		self.rpc_server = xmlrpclib.ServerProxy(host)
+		self.connected = False
+		self.frame = None
+		self.last_refresh = 0
+
+	def load_frame(self):
+		self.builder.add_from_file("unisono_gui.xml")
+		frame = self.builder.get_object("notebook_frame")
+		nb = self.builder.get_object("notebook")
+		nb.set_tab_detachable(frame, True)
+		nb.remove(frame)
+		self.builder.get_object("lbl_host").set_text("UNISONO @ " + self.host);
+		return frame
 
 # main class
 class UnisonoGUI:
@@ -51,71 +69,93 @@ class UnisonoGUI:
 
 	def __init__(self):
 		'''Prepares Data for GUI and order-commit'''		
-		self.builder = gtk.Builder()
-		self.builder.add_from_file("unisono_gui.xml") 
+		self.nodes = []
+
+		self.main_builder = gtk.Builder()
+		self.main_builder.add_from_file("unisono_gui.xml")
 
 		# general widgets
-		self.window = self.builder.get_object("window")
-		self.notebook = self.builder.get_object("notebook")
-		self.notebook_frame = self.builder.get_object("notebook_frame")
-		self.statusbar = self.builder.get_object("statusbar")
+		self.window = self.main_builder.get_object("window")
+		self.notebook = self.main_builder.get_object("notebook")
+		self.statusbar = self.main_builder.get_object("statusbar")
 		self.statusbar_cid = self.statusbar.get_context_id("UNISONO GUI")
 		# buttons
-		self.btn_connect = self.builder.get_object("btn_connect")
-		self.btn_refresh = self.builder.get_object("btn_refresh")
-		# text views
-		self.builder.connect_signals(self)   
+		self.btn_connect = self.main_builder.get_object("btn_connect")
+		self.btn_refresh = self.main_builder.get_object("btn_refresh")
+		# misc
+		self.txt_host = self.main_builder.get_object("txt_host")
 
-		self.rpc_server = None
+		self.main_builder.connect_signals(self)   
+
+		main_frame = self.main_builder.get_object("notebook_frame")
+
+		self.notebook.set_tab_detachable(main_frame, True)
+		self.notebook.remove(main_frame)
+
 		self.node_count = 0
-		self.connected = False
 
 	def on_window_destroy(self, widget, data=None):
 		gtk.main_quit()
 
 	def on_btn_refresh_clicked(self, widget, data=None):
-		self.__load_node_data()
+		self.__load_node_data(self.notebook.get_current_page())
+
+	def on_notebook_switch_page(self, notebook, page, page_num):
+		index = page_num
+		# update statusbar when page is changed
+		if len(self.nodes) > index:
+			self.__update_status_bar('Last Refresh of Node ' + str(self.nodes[index].node_number) +': ' + self.nodes[index].last_refresh)
 
 	def on_btn_connect_clicked(self, widget, data=None):
-		self.__connect_node('http://localhost:45678')
+#		self.__connect_node('http://localhost:45678')
+#		self.__connect_node('http://134.2.172.173:45678')
+		host = self.txt_host.get_text()
+		num = self.__node_exists(host)
+		if num > -1:
+			self.__update_status_bar("I'm already connected to " + host + " (check Node " + str(num) + ")")
+			return
+		self.__connect_node(host)
 		# after connect, load data from host
-		if self.connected == True:
-			self.__load_node_data()
+		self.__load_node_data(self.notebook.get_current_page())
 
 	def __connect_node(self, url):
-		'''Connects to UNISONO XML-RPC'''
-		try:		
-			self.rpc_server = xmlrpclib.ServerProxy(url)
-			self.connected = True
-			self.__update_status_bar('Successfully connected to RPC-server ('+ url +')')
-			self.node_count += 1
-		except StandardError, e:
-			self.__update_status_bar("Error on connecting to RPC-server: " + repr(e))
+		'''Setup connection to UNISONO XML-RPC'''
+		self.node_count += 1		
+		node = Node(url, self.node_count)
+		node.connected = True
+		frame = node.load_frame()
+		self.notebook.append_page(frame, gtk.Label("Node %d" % (self.node_count)))
+		self.nodes.append(node)
+		self.notebook.set_current_page(self.node_count - 1)
 		
-	def __load_node_data(self):
+	def __load_node_data(self, index):
 		'''Load data from UNISONO host'''
-		if self.connected == False:
+		if self.nodes[index].connected == False:
 			self.__update_status_bar("Can't load data, not connected to server!")
 			return
 		
-		stats = self.rpc_server.getStats()
-		self.__refresh_stats(stats)
-		log = self.rpc_server.getLog()
-		self.__refresh_log(log)
+		try:
+			rpc_server = self.nodes[index].rpc_server
+			stats = rpc_server.getStats()
+			self.__refresh_stats(stats, index)
+			log = rpc_server.getLog()
+			self.__refresh_log(log, index)
+			db = rpc_server.getDB()
+			print 'DB:'
+			print db
+			print('-------------------------------------------------------')
+		except StandardError, e:
+			self.__update_status_bar("Error on loading data from RPC-server: " + str(e))
 
-		db = self.rpc_server.getDB()
-		print 'DB:'
-		print db
-		print('-------------------------------------------------------')
 		
-	def __refresh_stats(self, stats):
+	def __refresh_stats(self, stats, index):
 		'''Fills GUI elements with stats received from UNISONO'''		
 		# identifier
 		buf = "\n".join(stats['identifiers'])
-		self.__update_textbox(self.builder.get_object("txt_identifier"), buf)
+		self.__update_textbox(self.nodes[index].builder.get_object("txt_identifier"), buf)
 		# connectors
 		buf = "\n".join(stats['connectors'])
-		self.__update_textbox(self.builder.get_object("txt_connectors"), buf)
+		self.__update_textbox(self.nodes[index].builder.get_object("txt_connectors"), buf)
 
 		# print these fields in date-format, not directly as strings
 		date_fields = ['starttime', 'db_purge']
@@ -141,7 +181,7 @@ class UnisonoGUI:
 			else:
 				val = str(stats[field])
 			# labels in gui are named lbl_fieldname
-			obj = self.builder.get_object("lbl_" + field)
+			obj = self.nodes[index].builder.get_object("lbl_" + field)
 			# check whether we can find this label or not. this comes in handy, if
 			# UNISONO stats are extended such that more fields are returned by
 			# the XML-RPC, but the GUI isn't adjusted yet
@@ -149,12 +189,12 @@ class UnisonoGUI:
 				obj.set_text(val)
 			else:
 				print "Stats for '"+ field +"' can't be displayed. No label in GUI."
+		self.nodes[index].last_refresh = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		self.__update_status_bar('Last Refresh of Node ' + str(self.nodes[index].node_number) +': ' + self.nodes[index].last_refresh)
 
-		self.__update_status_bar('Last Refresh: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-	def __refresh_log(self, log):
+	def __refresh_log(self, log, index):
 		'''Fills GUI element with log file data'''
-		self.__update_textbox(self.builder.get_object("txt_log"), log)
+		self.__update_textbox(self.nodes[index].builder.get_object("txt_log"), log)
 
 	def __update_textbox(self, obj, text):
 		'''Helper to disable text field, update text and re-enable'''		
@@ -168,6 +208,12 @@ class UnisonoGUI:
 		'''Helper to update status bar'''
 		self.statusbar.pop(self.statusbar_cid)
 		self.statusbar.push(self.statusbar_cid, status)
+
+	def __node_exists(self, host):
+		for node in self.nodes:
+			if node.host == host:
+				return node.node_number
+		return -1
 
 	def main(self):
 		'''Init GUI-Window'''
