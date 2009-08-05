@@ -99,11 +99,15 @@ class ConnectorMap:
         self.logger.debug('Trying to deregister connector %s', conid)
         self.logger.debug('currently registered: %s', self.conmap)
         with self.lock:
-            # Trigger cancel event for this connector id
-            self.eventq.put(Event('CANCEL', (conid, None)))
-            # delete connector entry from the map
-            del self.conmap[conid]
-            self.logger.debug('now: %s', self.conmap)
+            try:
+                # delete connector entry from the map
+                del self.conmap[conid]
+                # Trigger cancel event for this connector id
+                self.eventq.put(Event('CANCEL', (conid, None)))
+                self.logger.debug('now: %s', self.conmap)
+            except KeyError:
+                self.logger.error('Connector %s is unknown, discarding deregistration request', conid)
+                return 401
         return 0
 
 class ConnectorFunctions:
