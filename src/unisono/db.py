@@ -41,9 +41,6 @@ class InvalidTableLayout(Exception):
     pass
 
 
-
-
-
 class DataBase():
     '''
     DataBase connector for unisono caching
@@ -62,9 +59,9 @@ class DataBase():
         self.config = configuration.get_configparser()
         try:
             dbfile = self.config.get('Cache', 'dbfile')
-            self.logger.info('Connecting to DB: %s', dbfile)
+            self.logger.debug('Connecting to DB: %s', dbfile)
         except:
-            self.logger.info('Connecting to DB at default location')
+            self.logger.debug('Connecting to DB at default location')
             dbfile = ':memory:'
         self.dbcon = sqlite3.connect(dbfile)
 
@@ -96,7 +93,7 @@ class DataBase():
             self.dbcon.commit()
             self.logger.debug("table %s created ! ", name)
         except sqlite3.OperationalError:
-            self.logger.info("table %s exists, skipping", name)
+            self.logger.debug("table %s exists, skipping", name)
 
         
     def check_for(self, paramap):
@@ -287,7 +284,7 @@ def restoreDataBase():
     for in-memory databases (the preferred db type for unisono)
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     config = configuration.get_configparser()
     db = DataBase()
     dbcon = db.dbcon

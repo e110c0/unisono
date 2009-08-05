@@ -42,7 +42,7 @@ logger.setLevel(logging.INFO) <-- set the loglevel:
                                   DEBUG, INFO, WARNING, ERROR, CRITICAL
                                   global level might ommit messages!
 '''
-def init_logging():
+def init_logging(daemon=False):
     config = configuration.get_configparser()
     # configure the root logger
     logger = logging.getLogger()
@@ -78,7 +78,9 @@ def init_logging():
         fh.setFormatter(logformat)
         logger.addHandler(fh)
     # create logging handler for console
-    if not(config.getboolean('Logging','daemonmodelogging')):
+
+    if not(config.getboolean('Logging','daemonmodelogging') or daemon):
+        print('we enable console logging')
         ch = logging.StreamHandler()
         # create console handler for debugging
         if (config.getboolean('General','debug')):
@@ -89,6 +91,7 @@ def init_logging():
             ch.setFormatter(logformat)
         # add the handlers to logger
         logger.addHandler(ch)
-
+    else:
+        print('we disable console logging')
     logger = logging.getLogger(__name__)
     logger.info('UNISONO logging started')

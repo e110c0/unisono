@@ -213,7 +213,8 @@ class DemoGUI:
         port = self.config.getint('Demo', 'xmlrpc-port')
         # Create server
         __server = SimpleXMLRPCServer(('', port),
-                                      requestHandler=SimpleXMLRPCRequestHandler)
+                                      requestHandler=SimpleXMLRPCRequestHandler,
+                                      logRequests=False)
         __server.register_introspection_functions()
 
         # Register the functions

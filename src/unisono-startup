@@ -48,7 +48,7 @@ def main():
     if args:
         parser.error("too many arguments")
 
-    unilog.init_logging()
+    unilog.init_logging(daemon = options.daemon)
     logger = logging.getLogger(__name__)
 
     if options.daemon:

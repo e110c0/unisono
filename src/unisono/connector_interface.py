@@ -320,7 +320,8 @@ class XMLRPCServer:
         self.dispatcher = dispatcher
         # Create server
         __server = ThreadedXMLRPCserver(("localhost", 45312),
-                                        requestHandler=RequestHandler)
+                                        requestHandler=RequestHandler,
+                                        logRequests=False)
         __server.register_introspection_functions()
 
         # Register an instance; all the methods of the instance are
@@ -346,7 +347,7 @@ class XMLRPCServer:
 ################################################################################
 class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap
