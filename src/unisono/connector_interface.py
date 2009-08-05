@@ -361,7 +361,8 @@ class XMLRPCReplyHandler:
         # Exit the server thread when the main thread terminates
         reply_thread.setDaemon(True)
         reply_thread.start()
-        self.logger.info("XMLRPC reply handler loop running in thread:", reply_thread.name)
+        reply_thread.setName(self.__class__.__name__)
+        self.logger.info("XMLRPC reply handler loop running in thread: %s", reply_thread.name)
 
     def find_requester(self,conid):
         uri = 'http://' + self.conmap.conmap[conid][0] + ':' + str(self.conmap.conmap[conid][1]) + "/RPC2"

@@ -63,6 +63,7 @@ class Scheduler:
     def __init__(self, parent):
         """ The parent object is a dispatcher. """
         self.logger = logging.getLogger(self.__class__.__name__)
+        #self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         self.parent = parent
         self.queue = parent.eventq
@@ -133,7 +134,7 @@ class Dispatcher:
         self.init_demo_interface()
     
     def __del__(self):
-        self.logger.debug("Calling descructor for Dispatcher")
+        self.logger.debug("Calling destructor for Dispatcher")
         self.cache.save()
 
     def init_database(self):
