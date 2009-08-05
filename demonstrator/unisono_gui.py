@@ -41,7 +41,10 @@ TODO:
 - fill "VIEW"-Notebook with data (all three pages)
 - observe behavior if target host is unreachable
 - auto-scroll to end in log file
+- manage list with "last hosts" for ComboBoxEntry
 '''
+
+default_hosts = ['http://localhost:45678', 'http://134.2.172.173:45678']
 
 class Node:
 
@@ -83,8 +86,22 @@ class UnisonoGUI:
 		self.btn_connect = self.main_builder.get_object("btn_connect")
 		self.btn_refresh = self.main_builder.get_object("btn_refresh")
 		# misc
-		self.txt_host = self.main_builder.get_object("txt_host")
 
+		# workaround: somehow the comboboxentry created with glade seems to be buggy.
+		# for that reason, the glade-file doesn't contain any childs for the connector-frame in
+		# the lower left corner. a child is added dynamically here.
+		self.box_hosts = gtk.combo_box_entry_new_text()
+		self.main_builder.get_object("frame_connect").add(self.box_hosts)
+		self.box_hosts.set_name("box_hosts")
+		for hn in default_hosts:
+			self.box_hosts.append_text(hn)
+		self.box_hosts.set_active(0)
+		self.box_hosts.show()
+#		self.box_hosts = self.main_builder.get_object("box_hosts")
+#		self.box_hosts.remove_text(0)		
+#		self.box_hosts.append_text('http://localhost:45678')
+#		self.box_hosts.append_text('http://134.2.172.173:45678')
+#		self.box_hosts.set_active(0)
 		self.main_builder.connect_signals(self)   
 
 		main_frame = self.main_builder.get_object("notebook_frame")
@@ -107,9 +124,7 @@ class UnisonoGUI:
 			self.__update_status_bar('Last Refresh of Node ' + str(self.nodes[index].node_number) +': ' + self.nodes[index].last_refresh)
 
 	def on_btn_connect_clicked(self, widget, data=None):
-#		self.__connect_node('http://localhost:45678')
-#		self.__connect_node('http://134.2.172.173:45678')
-		host = self.txt_host.get_text()
+		host = self.box_hosts.get_active_text()
 		num = self.__node_exists(host)
 		if num > -1:
 			self.__update_status_bar("I'm already connected to " + host + " (check Node " + str(num) + ")")
@@ -199,9 +214,11 @@ class UnisonoGUI:
 	def __update_textbox(self, obj, text):
 		'''Helper to disable text field, update text and re-enable'''		
 		obj.set_sensitive(False)		
-		buff = obj.get_buffer()
-		buff.set_text(text)
-		buff.set_modified(False)        
+		buf = obj.get_buffer()
+		buf.set_text(text)
+		buf.set_modified(False)
+		itr = buf.get_end_iter()
+		obj.scroll_to_iter(itr, 0.0, False, 0, 0)
 		obj.set_sensitive(True)
 	
 	def __update_status_bar(self, status):
