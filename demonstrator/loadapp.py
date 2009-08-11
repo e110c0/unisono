@@ -2,7 +2,7 @@
 svn-demo.py
 
  Created on: Jul 21, 2009
- Authors: korscheck
+ Authors: korscheck (zxmmi77)
 
  $LastChangedBy$
  $LastChangedDate$
@@ -31,11 +31,11 @@ import sys
 import gtk
 import xmlrpclib
 import re
+import time
 
-import config
+import loadapp_config
 
-from gobject import TYPE_STRING
-from ctypes import *
+config = loadapp_config
 
 # some types required to modify sensitivity of widgets
 single_name_types = ['n', 'i']
@@ -44,26 +44,21 @@ time_types  = ['PERIODIC', 'TRIGGER']
 threshold_types = ['TRIGGER']
 
 # host-names
-class Names(Structure):
-	_fields_ = [('marty', c_char_p),
-				('biff', c_char_p)]
+class Names:
+	_fields_ = ['marty', 'biff']
 
 # order-types
-class Types(Structure):
-	_fields_ = [('ONESHOT', c_int),
-				('PERIODIC', c_int),
-				('TRIGGER', c_int)]
+class Types:
+	_fields_ = ['ONESHOT', 'PERIODIC', 'TRIGGER']
 
 # helper class, an element in DataItems list
 class DataItem:
 	key = ''
-	ctype = None
 	keytype = ''
 	explanation = ''	
 	
-	def __init__(self, key, keytype, explanation, ctype = c_int):
+	def __init__(self, key, keytype, explanation):
 		self.key = key
-		self.ctype = ctype
 		self.keytype = keytype
 		self.explanation = explanation
 
@@ -77,7 +72,7 @@ class DataItems:
 
 	def __init__(self, data_items):
 		for item in data_items:
-			self._fields_.append((item.key, item.ctype))
+			self._fields_.append(item.key)
 			self._types_.append(item.keytype)
 			self._explanations_.append(item.explanation)
 
@@ -129,10 +124,40 @@ class ClioLoadApp:
 		gtk.main_quit()
      
 	def on_btn_go_clicked(self, widget, data=None):
-		self.__send_request()
+		scenario = self.box_batch.get_active_text()
+		# if a scenario is selected, submit the batch-orders
+		if config.SCENARIOS.has_key(scenario):		
+			self.__send_batch_requests(scenario)
+		# otherwise send a regular request composed with selected elements
+		else:
+			self.__send_request()
 
-	def on_btn_clear_clicked(self, widget, data=None):
-		pass
+	def on_btn_ordertostr_clicked(self, widget, data=None):
+		'''Helper to output current order to generate batch-orders'''
+		n1 = str(self.box_name1.get_active_text())
+		n2 = str(self.box_name2.get_active_text())
+		if n2 == 'None': n2 = ''
+		di = str(self.box_dataitem.get_active_text())
+		ty = str(self.box_type.get_active_text())
+		if self.box_type.get_active_text() in time_types:
+			iv = str(self.sbtn_interval.get_value_as_int())
+			li = str(self.sbtn_lifetime.get_value_as_int())
+		else:
+			iv,li = '0','0'
+		if self.box_type.get_active_text() in threshold_types:
+			ut = str(self.sbtn_upper_threshold.get_value_as_int())
+			lt = str(self.sbtn_lower_threshold.get_value_as_int())
+		else:
+			ut,lt = '0','0'
+		print "[0, '"+n1+"', '"+n2+"', '"+di+"', '"+ty+"', "+iv+", "+li+", "+ut+", "+lt+"]"
+
+	def on_box_batch_changed(self, widget, data=None):
+		scenario = self.box_batch.get_active_text()
+		if config.SCENARIOS.has_key(scenario):
+			count = len(config.SCENARIOS[scenario])
+			self.lbl_order_count.set_text(str(count))
+		else:
+			self.lbl_order_count.set_text('n/a')
 
 	def on_box_type_changed(self, widget, data=None):
 		'''Handles sensitivity of spin buttons'''		
@@ -174,14 +199,13 @@ class ClioLoadApp:
 		# general widgets
 		self.window = builder.get_object("window")
 		self.statusbar = builder.get_object("statusbar")
+		self.lbl_order_count = builder.get_object("lbl_order_count")
 		# comboboxes
 		self.box_name1 = builder.get_object("box_name1")
 		self.box_name2 = builder.get_object("box_name2")
 		self.box_dataitem = builder.get_object("box_dataitem")
 		self.box_type = builder.get_object("box_type")
-		# buttons
-		self.btn_clear = builder.get_object("btn_clear")
-		self.btn_go = builder.get_object("btn_go")
+		self.box_batch = builder.get_object("box_batch")
 		# spin buttons
 		self.sbtn_interval = builder.get_object("sbtn_interval")
 		self.sbtn_lifetime = builder.get_object("sbtn_lifetime")
@@ -197,13 +221,17 @@ class ClioLoadApp:
 		# let DataItems() class prepare its own data (by passing a list of
 		# DataItem() objects
 		self.dataitems 	= DataItems(dil.get_data_items())
-		types		= Types()
-		names		= Names()
+		types = Types()
+		names = Names()
 		# fill all comboboxes with data
 		self.__update_box(self.box_dataitem, self.dataitems._fields_)
 		self.__update_box(self.box_name1, names._fields_)
 		self.__update_box(self.box_name2, names._fields_)
 		self.__update_box(self.box_type, types._fields_)
+		# fill scenario combobox with data from config file and add empty selection
+		scenarios = config.SCENARIOS.keys()
+		scenarios.insert(0, '')
+		self.__update_box(self.box_batch, scenarios)
 		# select default values
 		self.box_name1.set_active(0)
 		self.box_dataitem.set_active(16)
@@ -212,9 +240,39 @@ class ClioLoadApp:
 		# connect to RPC server
 		try:		
 			self.rpc_server = xmlrpclib.ServerProxy(config.RPC_URL)
-			print 'Successfully connected to RPC-server ' + config.RPC_URL
 		except StandardError, e:
-			print "Error on connecting to RPC-server: ", e
+			print "Error on loading RPC-server: ", e
+
+	def __send_batch_requests(self, scenario_key):
+		orders = config.SCENARIOS[scenario_key]
+		compose_order = {}
+		time_elapsed = 0
+
+		print "Executing "+str(len(orders))+" batch-orders from scenario '"+str(scenario_key)+"':"
+		for order in orders:
+			compose_order['name1'] 		= order[1]
+			compose_order['name2']		= order[2]
+			compose_order['dataitem'] 	= order[3]
+			compose_order['type'] 		= order[4]
+			parameters = {}
+			if compose_order['type'] in time_types:
+				parameters['interval'] = str(order[5])
+				parameters['lifetime'] = str(order[6])
+			if compose_order['type'] in threshold_types:
+				parameters['upper_threshold'] = str(order[7])
+				parameters['lower_threshold'] = str(order[8])
+			compose_order['parameters'] = parameters
+			# now try to submit order after a waiting period
+			# execution times are relative to starting time and to each other
+			wait = (order[0] - time_elapsed) / 1000.0
+			# elapsed time is apparently the exec_timestamp of this order
+			time_elapsed = order[0]
+			print 'Comitting order: ' + repr(order) + ' in ' + str(wait) + ' seconds'
+			time.sleep(wait)
+			try:
+				print 'RPC-Response: ' + self.rpc_server.commit_load_order(compose_order)
+			except StandardError, e:
+				print "Error on committing order: ", e
 
 	def __send_request(self):
 		'''Build the order-string (a dictionary) and submit it to the RPC-Server'''		
@@ -246,17 +304,16 @@ class ClioLoadApp:
 
 		# order seems to be okay, submit
 		print 'Comitting order: ' + repr(order)
-		print 'RPC-Response: ' + self.rpc_server.commit_load_order(order)		
+		try:
+			print 'RPC-Response: ' + self.rpc_server.commit_load_order(compose_order)
+		except StandardError, e:
+			print "Error on committing order: ", e
 
 	def __update_box(self, box, dic):
 		'''Loads a dictionary into the given combo-box'''		
-		#l = gtk.ListStore(TYPE_STRING)
 		box.remove_text(0)
-		for key,item in dic:
+		for key in dic:
 			box.append_text(str(key))
-			#iter = l.append()
-			#l.set(iter, 0, str(key))
-		#box.set_model(l)
 
 	def main(self):
 		'''Init GUI-Window'''
