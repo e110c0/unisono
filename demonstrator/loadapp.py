@@ -1,5 +1,5 @@
 '''
-svn-demo.py
+loadapp.py
 
  Created on: Jul 21, 2009
  Authors: korscheck (zxmmi77)
@@ -32,6 +32,7 @@ import gtk
 import xmlrpclib
 import re
 import time
+from gobject import TYPE_STRING
 
 import loadapp_config
 
@@ -151,6 +152,18 @@ class ClioLoadApp:
 			ut,lt = '0','0'
 		print "[0, '"+n1+"', '"+n2+"', '"+di+"', '"+ty+"', "+iv+", "+li+", "+ut+", "+lt+"]"
 
+	def on_btn_cancel_order_clicked(self, widget, data=None):
+		treeselection = self.treeview_orders.get_selection()
+		(model, iter) = treeselection.get_selected()
+		if iter != None:
+			index = model.get_path(iter)[0]
+			orderid = self.orderlist[index]
+			try:
+				self.rpc_server.cancel_order(orderid)
+				print 'Cancelled order ' + orderid
+			except StandardError, e:
+				print "Couldn't cancel order "+ orderid + ": ", e
+
 	def on_box_batch_changed(self, widget, data=None):
 		scenario = self.box_batch.get_active_text()
 		if config.SCENARIOS.has_key(scenario):
@@ -196,6 +209,7 @@ class ClioLoadApp:
 		builder = gtk.Builder()
 		builder.add_from_file("loadapp.xml") 
 
+		self.orderlist = []
 		# general widgets
 		self.window = builder.get_object("window")
 		self.statusbar = builder.get_object("statusbar")
@@ -237,6 +251,21 @@ class ClioLoadApp:
 		self.box_dataitem.set_active(16)
 		self.box_type.set_active(0)
 
+		# create a ListBox (not supported in libglade, so we have to do it manually)
+		self.orderlist_widget = gtk.ListStore(TYPE_STRING)
+		self.treeview_orders = gtk.TreeView()
+		self.treeview_orders.set_model(self.orderlist_widget)
+
+		column = gtk.TreeViewColumn()
+		cell = gtk.CellRendererText()
+		column.pack_start(cell)
+		column.add_attribute(cell, 'text', 0)
+		self.treeview_orders.append_column(column)
+		self.treeview_orders.get_selection().set_mode(gtk.SELECTION_SINGLE)
+		builder.get_object("content_orderlist").add(self.treeview_orders)
+		self.treeview_orders.set_headers_visible(False)
+		self.treeview_orders.show()
+
 		# connect to RPC server
 		try:		
 			self.rpc_server = xmlrpclib.ServerProxy(config.RPC_URL)
@@ -245,11 +274,10 @@ class ClioLoadApp:
 
 	def __send_batch_requests(self, scenario_key):
 		orders = config.SCENARIOS[scenario_key]
-		compose_order = {}
 		time_elapsed = 0
-
 		print "Executing "+str(len(orders))+" batch-orders from scenario '"+str(scenario_key)+"':"
 		for order in orders:
+			compose_order = {}
 			compose_order['name1'] 		= order[1]
 			compose_order['name2']		= order[2]
 			compose_order['dataitem'] 	= order[3]
@@ -269,10 +297,7 @@ class ClioLoadApp:
 			time_elapsed = order[0]
 			print 'Comitting order: ' + repr(order) + ' in ' + str(wait) + ' seconds'
 			time.sleep(wait)
-			try:
-				print 'RPC-Response: ' + self.rpc_server.commit_load_order(compose_order)
-			except StandardError, e:
-				print "Error on committing order: ", e
+			self.__deploy_order(compose_order)
 
 	def __send_request(self):
 		'''Build the order-string (a dictionary) and submit it to the RPC-Server'''		
@@ -302,12 +327,17 @@ class ClioLoadApp:
 
 		order['parameters'] = parameters		
 
-		# order seems to be okay, submit
-		print 'Comitting order: ' + repr(order)
+		print 'Comitting order: ' + str(order)
+		self.__deploy_order(order)
+
+	def __deploy_order(self, order):
 		try:
-			print 'RPC-Response: ' + self.rpc_server.commit_load_order(compose_order)
+			orderid = self.rpc_server.commit_load_order(order)
+			print 'RPC-Response: ' + orderid
 		except StandardError, e:
 			print "Error on committing order: ", e
+		self.orderlist_widget.append((orderid,))
+		self.orderlist.append(orderid)
 
 	def __update_box(self, box, dic):
 		'''Loads a dictionary into the given combo-box'''		
