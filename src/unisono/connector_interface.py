@@ -193,24 +193,24 @@ class ConnectorFunctions:
         '''
         self.logger.debug('RPC function \'commit_order\'.')
         self.logger.debug('Order: %s', paramap)
-        status = 0
+        # check registration
         if conid in self.conmap.conmap.keys():
             self.logger.debug('connector is known, processing order')
             try:
                 order = Order(paramap)
             except ValueError as e:
                 self.logger.error(e)
-                status = e.status
-                return status
-            # TODO: check for orderid clashes here??
-            # check registration
-            # create event and put it in the eventq
-            order.append_item('conid',conid)
-            self.eventq.put(Event('ORDER', order))
+                return e.status
+            if order.dataitem in self.dispatcher.dataitems.keys():
+                # create event and put it in the eventq
+                order.append_item('conid',conid)
+                self.eventq.put(Event('ORDER', order))
+            else:
+                return 404
         else:
             self.logger.error('Connector %s is unknown, discarding order!', conid)
             status = 401
-        return status
+        return 0
 
     def cancel_order(self, callerid, orderid):
         '''
