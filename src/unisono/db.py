@@ -274,7 +274,7 @@ class DataBase():
         @param dataitem: name of the dataitem
         @return: int maximum age in seconds
         '''
-        return 0
+        return 10
 
 def restoreDataBase():
     '''
