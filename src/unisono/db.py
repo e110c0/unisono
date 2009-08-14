@@ -114,7 +114,7 @@ class DataBase():
             identifier2 = paramap['identifier2']
         else:
             identifier2 = None
-        age = self.get_max_dataitem_age(table)
+        age = time.time() - self.get_max_dataitem_age(table)
         c = self.dbcon.cursor()
         try:
             if identifier2 != None:
@@ -274,7 +274,7 @@ class DataBase():
         @param dataitem: name of the dataitem
         @return: int maximum age in seconds
         '''
-        return 30
+        return 0
 
 def restoreDataBase():
     '''
