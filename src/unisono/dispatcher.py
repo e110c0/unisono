@@ -166,7 +166,6 @@ class Dispatcher:
         except:
             self.logger.info('No plugins configured, loading defaults.')
             active_plugins = 'cvalues'
-            pass
         for p in active_plugins.split(','):
             try:
                 p = p.strip()
@@ -282,6 +281,7 @@ class Dispatcher:
             self.queue_order(order)
 
     def satisfy_from_cache(self, order):
+        self.logger.debug('trying cache')
         try:
             result = self.cache.check_for(order)
             order.update(result)
@@ -296,15 +296,17 @@ class Dispatcher:
             self.replyq.put(Event('DELIVER', order))
             if order['finished']:
                 self.replyq.put(Event('FINISHED', order))
+            self.logger.debug('cache hit')
             return True
         except NotInCacheError:
             return False
 
     def aggregate_order(self, order):
+        self.logger.debug('trying aggregation')
         di = order.dataitem
-        compat_mms = set(i[1] for i in self.dataitems[di])
+        order['mmlist'] = [i[1] for i in self.dataitems[di]]
         for curmm, mmlist, paramap, waitinglist in self.pending_orders.values():
-            if curmm in compat_mms:
+            if curmm in order['mmlist']:
                 c = order.identifier_count
                 idlist  = order.identifierlist
                 id1 = idlist['identifier1']
@@ -315,9 +317,10 @@ class Dispatcher:
                 if id1 is not None and id1 != paramap.get("identifier1", None) or \
                     id2 is not None and id2 != paramap.get("identifier2", None):
                     return False
+                # delete the curmm from the mmlist for this aggregated order
+                order['mmlist'].remove(curmm)
                 waitinglist.append(order)
                 self.logger.info('aggregated the order with already queued order')
-
                 self.stats.increase_stats('aggregations_global', 1)
                 self.stats.increase_stats('aggregations', 1)
 
@@ -333,11 +336,11 @@ class Dispatcher:
         mmq.put(req)
 
     def queue_order(self, order):
+        self.logger.debug('trying queue')
         self.stats.increase_stats('queued_orders', 1)
         id = order['conid'], order.orderid
-        mmlist = copy.copy(self.dataitems[order.dataitem])
-        curmm = mmlist.pop(0)[1]
-        self.pending_orders[id] = (curmm, mmlist, order, [])
+        curmm = order['mmlist'].pop()
+        self.pending_orders[id] = (curmm, order['mmlist'], order, [])
         self.put_in_mmq(self.plugins[curmm].inq, id, order)
         return
 
@@ -351,6 +354,10 @@ class Dispatcher:
         except KeyError:
             order['error'] = 666
             order['errortext'] = 'dataitem not in result'
+        try:
+            del(order['mmlist'])
+        except KeyError:
+            pass
         return order
 
     def trigger_match(self,order,result):
@@ -358,6 +365,7 @@ class Dispatcher:
         return true
 
     def process_result(self, result):
+        self.logger.debug('trying result processing')
         mm = result[0]
         r = result[1]
         id = r['id']
@@ -372,7 +380,7 @@ class Dispatcher:
         if r['error'] != 0:
             self.logger.debug('The result included an error')
             try:
-                curmm = mmlist.pop(0)[1]
+                curmm = mmlist.pop()
                 self.pending_orders[id] = (curmm, mmlist, paramap, waitinglist)
                 self.put_in_mmq(self.plugins[curmm].inq, id, paramap)
             except IndexError:
@@ -386,7 +394,7 @@ class Dispatcher:
                 self.stats.decrease_stats('orders', 1)
                 self.stats.decrease_stats('queue', 1)
         else:
-            self.logger.debug('Everything fine, delivering results now')
+            self.logger.debug('Everything\'s fine, delivering results now')
             # cache results
             self.cache.store(copy.copy(r))
             # deliver results
@@ -406,4 +414,3 @@ class Dispatcher:
                 self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
                 if paramap['finished']:
                     self.replyq.put(Event('FINISHED', paramap))
-

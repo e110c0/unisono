@@ -122,7 +122,7 @@ class Order(dict):
     
     @property
     def results(self):
-        unneeded = ('type','parameters','dataitem','finished')
+        unneeded = ('type','parameters','dataitem','finished','mmlist')
         results = {}
         for k,v in self.items():
             if k not in unneeded:

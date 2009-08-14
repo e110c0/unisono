@@ -365,6 +365,7 @@ class XMLRPCReplyHandler:
         self.logger.info("XMLRPC reply handler loop running in thread: %s", reply_thread.name)
 
     def find_requester(self,conid):
+        self.logger.debug(self.conmap.conmap)
         uri = 'http://' + self.conmap.conmap[conid][0] + ':' + str(self.conmap.conmap[conid][1]) + "/RPC2"
         connector = ServerProxy(uri)
         return connector
@@ -401,6 +402,7 @@ class XMLRPCReplyHandler:
             self.logger.debug('got event %s',event.type)
             if event.type == 'DELIVER':
                 # payload is the result
+                self.logger.debug(event.payload)
                 result = event.payload.results
                 self.logger.debug('Our result is: %s', result)
                 # we have a strict policy for XMLRPC: everything is a string!
@@ -428,8 +430,9 @@ class XMLRPCReplyHandler:
                 # find requester
                 try:
                     connector = self.find_requester(event.payload['conid'])
-                except KeyError:
+                except KeyError as e:
                     self.logger.error('Unknown connector %s, discarding order', event.payload['conid'])
+                    self.logger.error(e)
                     self.eventq.put(Event('CANCEL', (event.payload['conid'], event.payload['orderid'])))
                     continue
                 try:
