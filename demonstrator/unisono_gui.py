@@ -35,12 +35,12 @@ import gtk
 import copy
 from datetime import datetime
 from datetime import timedelta
+from time import strftime
 
 '''
 TODO:
 - fill "VIEW"-Notebook with data (all three pages)
 - observe behavior if target host is unreachable
-- auto-scroll to end in log file
 - manage list with "last hosts" for ComboBoxEntry
 '''
 

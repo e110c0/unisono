@@ -31,7 +31,8 @@ import sys
 import gtk
 import xmlrpclib
 import re
-import time
+from datetime import datetime
+from time import localtime, strftime, sleep
 from gobject import TYPE_STRING
 
 import loadapp_config
@@ -41,8 +42,8 @@ config = loadapp_config
 # some types required to modify sensitivity of widgets
 single_name_types = ['n', 'i']
 multi_name_types  = ['l']
-time_types  = ['PERIODIC', 'TRIGGER']
-threshold_types = ['TRIGGER']
+time_types  = ['PERIODIC', 'TRIGGERED']
+threshold_types = ['TRIGGERED']
 
 # host-names
 class Names:
@@ -50,7 +51,7 @@ class Names:
 
 # order-types
 class Types:
-	_fields_ = ['ONESHOT', 'PERIODIC', 'TRIGGER']
+	_fields_ = ['ONESHOT', 'PERIODIC', 'TRIGGERED']
 
 # helper class, an element in DataItems list
 class DataItem:
@@ -118,6 +119,59 @@ class DataItemsLoader:
 	def get_data_items(self):
 		return self.data_items
 
+class ConnectorLogLoader:
+	'''Reads a logfile and parses the data'''
+
+	def __init__(self):
+		self.logfile = '/tmp/clioloadapp-log-' + datetime.now().strftime("%d-%m-%y")
+		print "Using Logfile '" + self.logfile + "' to get results"
+
+	def __load_data(self):
+		self.order_results = {}	
+		try:
+			fh = open(self.logfile)
+			self.raw = fh.read().strip()
+		except IOError, e:
+			print 'Error on reading logfile: ' + e
+
+		self.lines = self.raw.split("\n")
+		for line in self.lines:
+			dataitems = line.split(';')
+			# check if we have at least 3 data items (timestamp, result_type, orderid)
+			if len(dataitems) < 3:
+				print 'Corrupt line in logfile? ' + line
+				continue
+
+			if dataitems[1] == 'RESULT':
+				data = {				
+					'timestamp' : dataitems[0],
+					'result' : dataitems[3],
+					'errno' : dataitems[4],
+					'errmsg' : dataitems[5]
+				}
+
+				if not self.order_results.has_key(dataitems[2]):
+					self.order_results[dataitems[2]] = []
+				self.order_results[dataitems[2]].append(data)					
+
+
+	def get_order_results(self, orderid):
+		'''Returns string representation of results for an order'''
+		# update data from text file
+		self.__load_data()
+		if not self.order_results.has_key(orderid):
+			return 'No data for this order'
+		order_data = self.order_results[orderid]
+		s = ''
+		for d in order_data:
+			s += strftime("%d-%m-%Y %H:%m:%S", localtime(int(d['timestamp'])))
+			if d['errno'] != '0':
+				s += ' ERROR (' + str(d['errno']) + '): ' + str(d['errmsg'])
+			else:
+				s += ' RESULT: ' + str(d['result'])
+			s += "\n"
+		return s
+
 # main class
 class ClioLoadApp:
 	'''Class for GUI and order-submit'''
@@ -125,13 +179,13 @@ class ClioLoadApp:
 		gtk.main_quit()
      
 	def on_btn_go_clicked(self, widget, data=None):
-		scenario = self.box_batch.get_active_text()
-		# if a scenario is selected, submit the batch-orders
-		if config.SCENARIOS.has_key(scenario):		
-			self.__send_batch_requests(scenario)
-		# otherwise send a regular request composed with selected elements
-		else:
+		# notebook page = single order
+		if self.notebook.get_current_page() == 0:
 			self.__send_request()
+		# notebook page = batch order
+		elif self.notebook.get_current_page() == 1:
+			scenario = self.box_batch.get_active_text()
+			self.__send_batch_requests(scenario)
 
 	def on_btn_ordertostr_clicked(self, widget, data=None):
 		'''Helper to output current order to generate batch-orders'''
@@ -204,16 +258,28 @@ class ClioLoadApp:
 		else:
 			self.box_name2.set_sensitive(True)
 
+	def on_treeview_selection_changed(self, treeselection):
+		'''Note: This method is linked manually in this file, not in the glade- or xml-file'''
+		(model, iter) = treeselection.get_selected()
+		if iter != None:
+			index = model.get_path(iter)[0]
+			orderid = self.orderlist[index]
+			self.__update_results(orderid)
+
 	def __init__(self):
 		'''Prepares Data for GUI and order-commit'''		
 		builder = gtk.Builder()
 		builder.add_from_file("loadapp.xml") 
 
 		self.orderlist = []
+		self.logloader = ConnectorLogLoader()
 		# general widgets
 		self.window = builder.get_object("window")
 		self.statusbar = builder.get_object("statusbar")
 		self.lbl_order_count = builder.get_object("lbl_order_count")
+		self.notebook = builder.get_object("notebook")
+		self.txt_results = builder.get_object("txt_results")
+		self.txt_results.set_sensitive(False)
 		# comboboxes
 		self.box_name1 = builder.get_object("box_name1")
 		self.box_name2 = builder.get_object("box_name2")
@@ -244,12 +310,12 @@ class ClioLoadApp:
 		self.__update_box(self.box_type, types._fields_)
 		# fill scenario combobox with data from config file and add empty selection
 		scenarios = config.SCENARIOS.keys()
-		scenarios.insert(0, '')
 		self.__update_box(self.box_batch, scenarios)
 		# select default values
 		self.box_name1.set_active(0)
 		self.box_dataitem.set_active(16)
 		self.box_type.set_active(0)
+		self.box_batch.set_active(0)
 
 		# create a ListBox (not supported in libglade, so we have to do it manually)
 		self.orderlist_widget = gtk.ListStore(TYPE_STRING)
@@ -265,6 +331,7 @@ class ClioLoadApp:
 		builder.get_object("content_orderlist").add(self.treeview_orders)
 		self.treeview_orders.set_headers_visible(False)
 		self.treeview_orders.show()
+		self.treeview_orders.get_selection().connect('changed', lambda s: self.on_treeview_selection_changed(s))
 
 		# connect to RPC server
 		try:		
@@ -279,7 +346,9 @@ class ClioLoadApp:
 		for order in orders:
 			compose_order = {}
 			compose_order['name1'] 		= order[1]
-			compose_order['name2']		= order[2]
+			# if name2 is empty, don't submit it with the order (17.08.09: UNISONO would crash)
+			if order[2] != '':
+				compose_order['name2'] = order[2]
 			compose_order['dataitem'] 	= order[3]
 			compose_order['type'] 		= order[4]
 			parameters = {}
@@ -296,7 +365,7 @@ class ClioLoadApp:
 			# elapsed time is apparently the exec_timestamp of this order
 			time_elapsed = order[0]
 			print 'Comitting order: ' + repr(order) + ' in ' + str(wait) + ' seconds'
-			time.sleep(wait)
+			sleep(wait)
 			self.__deploy_order(compose_order)
 
 	def __send_request(self):
@@ -344,6 +413,14 @@ class ClioLoadApp:
 		box.remove_text(0)
 		for key in dic:
 			box.append_text(str(key))
+
+	def __update_results(self, orderid):
+		self.txt_results.set_sensitive(False)
+		buf = self.txt_results.get_buffer()
+		data = self.logloader.get_order_results(orderid)
+		buf.set_text(data)
+		buf.set_modified(False)
+		self.txt_results.set_sensitive(True)
 
 	def main(self):
 		'''Init GUI-Window'''
