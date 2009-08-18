@@ -34,6 +34,7 @@ import re
 from datetime import datetime
 from time import localtime, strftime, sleep
 from gobject import TYPE_STRING
+from threading import Timer
 
 import loadapp_config
 
@@ -78,11 +79,6 @@ class DataItems:
 			self._types_.append(item.keytype)
 			self._explanations_.append(item.explanation)
 
-class DataItems404Error(Exception):
-	'''Used if config file can't be read'''
-	pass
-
-
 class DataItemsLoader:
 	'''Reads data-items from file and parses the format'''	
 	def __init__(self):
@@ -93,8 +89,10 @@ class DataItemsLoader:
 		try:
 			config_file = open(self.config_file)
 			self.raw = config_file.read().strip()
+			config_file.close()
 		except IOError, e:
-			raise DataItems404Error('Error on opening config file: ' + config.DATAITEMS_PATH)
+			print 'Error on opening UNISONO config file: ' + config.DATAITEMS_PATH
+			return
 
 		self.lines = self.raw.split("\n")
 		for line in self.lines:
@@ -131,8 +129,10 @@ class ConnectorLogLoader:
 		try:
 			fh = open(self.logfile)
 			self.raw = fh.read().strip()
+			fh.close()
 		except IOError, e:
 			print 'Error on reading logfile: ' + e
+			return
 
 		self.lines = self.raw.split("\n")
 		for line in self.lines:
@@ -247,7 +247,7 @@ class ClioLoadApp:
 		'''Updates status bar with operation in plain text and enable/disable second name box'''
 		# index of selected dataitem
 		index = self.box_dataitem.get_active()
-		status = "Operation: " + self.dataitems._explanations_[index]
+		status = "Selected Single-Order: " + self.dataitems._explanations_[index]
 		# remove old stuff from statusbar and add new status
 		self.statusbar.pop(self.statusbar_cid)
 		self.statusbar.push(self.statusbar_cid, status)
@@ -341,7 +341,6 @@ class ClioLoadApp:
 
 	def __send_batch_requests(self, scenario_key):
 		orders = config.SCENARIOS[scenario_key]
-		time_elapsed = 0
 		print "Executing "+str(len(orders))+" batch-orders from scenario '"+str(scenario_key)+"':"
 		for order in orders:
 			compose_order = {}
@@ -360,13 +359,12 @@ class ClioLoadApp:
 				parameters['lower_threshold'] = str(order[8])
 			compose_order['parameters'] = parameters
 			# now try to submit order after a waiting period
-			# execution times are relative to starting time and to each other
-			wait = (order[0] - time_elapsed) / 1000.0
-			# elapsed time is apparently the exec_timestamp of this order
-			time_elapsed = order[0]
+			wait = order[0] / 1000.0
 			print 'Comitting order: ' + repr(order) + ' in ' + str(wait) + ' seconds'
-			sleep(wait)
-			self.__deploy_order(compose_order)
+			Timer(wait, self.__deploy_order, [compose_order]).start()
+
+	def hello(self):
+		print "HELLO WORLD!"
 
 	def __send_request(self):
 		'''Build the order-string (a dictionary) and submit it to the RPC-Server'''		
@@ -424,6 +422,7 @@ class ClioLoadApp:
 
 	def main(self):
 		'''Init GUI-Window'''
+		gtk.gdk.threads_init()
 		self.window.show()
 		gtk.main()
 
