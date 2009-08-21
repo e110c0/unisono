@@ -100,8 +100,8 @@ if __name__ == '__main__':
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                       'identifier1':localip,
                                                       'identifier2':remoteip,
-                                                      'type':'periodic',
-                                                      'parameters' : {'interval': '5', 'lifetime':'10'},
+                                                      'type':'triggered',
+                                                      'parameters' : {'interval': '8', 'lifetime': '30','lower_threshold': 100, 'upper_threshold':200},
                                                       'dataitem':'SHARED_BANDWIDTH_RX'}))
 #    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
 #                                                      'identifier1':localip,
@@ -126,7 +126,11 @@ if __name__ == '__main__':
 #                                              'identifier2':remoteip,
 #                                              'dataitem':'RTT_MIN'}))
 
-
+#    print('cache result:', s.cache_result({
+#                                              'identifier1':localip,
+#                                              'identifier2':remoteip,
+#                                              'result':'123456',
+#                                              'dataitem':'SWAP'}))
     ch = stdin.read(1)
     print('shutting down.')
     print(s.unregister_connector(myID))

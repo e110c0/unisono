@@ -286,7 +286,6 @@ class WifiReader(mmtemplates.MMTemplate):
             raise IOError
             return
 
-            
         wlaninfo = ''
 
         if interface != None:
