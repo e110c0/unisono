@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 dispatcher.py
 
@@ -37,7 +38,6 @@ from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import MMTemplate
-from unisono.demo_gui import UnisonoStats, DemoGUI
 
 import logging, copy
 import threading
@@ -130,9 +130,6 @@ class Dispatcher:
         self.start_xmlrpcreplyhandler()
         self.init_plugins()
         
-        # used for the demonstrator only!
-        self.init_demo_interface()
-    
     def __del__(self):
         self.logger.debug("Calling destructor for Dispatcher")
         self.cache.save()
@@ -140,10 +137,6 @@ class Dispatcher:
     def init_database(self):
         restoreDataBase()
         self.cache = DataBase()
-
-    def init_demo_interface(self):
-        self.stats = UnisonoStats(self.xsrv.conmap)
-        self.demogui = DemoGUI(self.stats)
 
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is already running
@@ -265,8 +258,6 @@ class Dispatcher:
 
     def process_order(self, order):
         # sanity checks
-        self.stats.increase_stats('orders_global', 1)
-        self.stats.increase_stats('orders', 1)
         if order.type in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
             order.append_item('subid', - 1)
@@ -291,8 +282,6 @@ class Dispatcher:
 #            self.logger.debug('updated order: %s', order)
             order['error'] = 0
             order['errortext'] = 'Everything went fine'
-            self.stats.increase_stats('fromcache_global', 1)
-            self.stats.decrease_stats('orders', 1)
             self.replyq.put(Event('DELIVER', order))
             if order['finished']:
                 self.replyq.put(Event('FINISHED', order))
@@ -321,9 +310,6 @@ class Dispatcher:
                 order['mmlist'].remove(curmm)
                 waitinglist.append(order)
                 self.logger.info('aggregated the order with already queued order')
-                self.stats.increase_stats('aggregations_global', 1)
-                self.stats.increase_stats('aggregations', 1)
-
                 return True
         return False
 
@@ -337,7 +323,6 @@ class Dispatcher:
 
     def queue_order(self, order):
         self.logger.debug('trying queue')
-        self.stats.increase_stats('queued_orders', 1)
         id = order['conid'], order.orderid
         curmm = order['mmlist'].pop()
         self.pending_orders[id] = (curmm, order['mmlist'], order, [])
@@ -390,9 +375,6 @@ class Dispatcher:
                 self.replyq.put(Event('DELIVER', paramap))
                 if paramap['finished']:
                     self.replyq.put(Event('FINISHED', paramap))
-                self.stats.decrease_stats('aggregations', 1)
-                self.stats.decrease_stats('orders', 1)
-                self.stats.decrease_stats('queue', 1)
         else:
             self.logger.debug('Everything\'s fine, delivering results now')
             # cache results
@@ -406,9 +388,6 @@ class Dispatcher:
                     self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
                     if o['finished']:
                         self.replyq.put(Event('FINISHED', o))
-            self.stats.decrease_stats('aggregations', 1)
-            self.stats.decrease_stats('orders', 1)
-            self.stats.decrease_stats('queued_orders', 1)
             # check trigger
             if (paramap.type != 'triggered') or (paramap.type == 'triggered' and self.trigger_match(paramap,r)):
                 self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
