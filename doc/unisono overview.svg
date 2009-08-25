@@ -91,7 +91,7 @@
      inkscape:cx="526.18109"
      inkscape:cy="372.04724"
      inkscape:document-units="px"
-     inkscape:current-layer="g4905"
+     inkscape:current-layer="layer1"
      showgrid="true"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -467,14 +467,15 @@
        id="path4783"
        sodipodi:nodetypes="cc" />
     <g
-       id="g4893">
+       id="g4893"
+       transform="translate(-1.1183445,22.735891)">
       <rect
          y="12.697174"
          x="988.61652"
          height="421.35794"
          width="51.443848"
          id="rect3308"
-         style="opacity:1;color:#000000;fill:url(#radialGradient4889);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.50000000000000000;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+         style="opacity:1;color:#000000;fill:url(#radialGradient4889);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
       <text
          transform="matrix(0,-1,1,0,0,0)"
          id="text4779"
@@ -487,7 +488,7 @@
            x="-376.88919"
            sodipodi:role="line">Object</tspan><tspan
            id="tspan4795"
-           y="1026.7159"
+           y="1026.7161"
            x="-376.88919"
            sodipodi:role="line">Thread</tspan></text>
       <rect
