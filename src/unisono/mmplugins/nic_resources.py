@@ -65,10 +65,7 @@ def get_ip_for_interface(iface):
         ip = socket.inet_ntoa(ipinfo[20:24])
         return ip
     except IOError:
-        self.request['error'] = 501
-        self.request['errortext'] = 'no Interface for given IP'
-        pass
-
+        return ""
 
 class NicReader(mmtemplates.MMTemplate):
     '''
@@ -257,11 +254,12 @@ class WifiReader(mmtemplates.MMTemplate):
                           'WLAN_MODE',
                           'WLAN_AP_MAC',
                           'WLAN_LINK',
-                          'WLAN_SIGNAL',
-                          'WLAN_NOISE',
-                          'WLAN_SIGNOISE_RATIO',
+#                          'WLAN_SIGNAL',
+#                          'WLAN_NOISE',
+#                          'WLAN_SIGNOISE_RATIO',
                           'WLAN_CHANNEL',
-                          'WLAN_FREQUENCY'
+                          'WLAN_FREQUENCY',
+                          'WLAN_PROTOCOL'
                           ]
         self.cost = 500
 
@@ -271,8 +269,6 @@ class WifiReader(mmtemplates.MMTemplate):
 
 
     def measure(self):
- 
-        self.request['errortext'] = ''
         try:
             interface = get_interfaces_for_ip(self.request['identifier1'])
             if interface != None:
@@ -293,7 +289,7 @@ class WifiReader(mmtemplates.MMTemplate):
             self.request['errortext'] = error
             return
         # check for wireless interface. if protocol is empty, it's not wifi!
-        if wi["protocol"] != None:
+        if wi["protocol"] != '':
             self.request['WLAN_ESSID'] = wi["essid"]
             # Wireless Mode:
             self.request['WLAN_MODE'] = wi["mode"]
@@ -337,10 +333,13 @@ class WifiReader(mmtemplates.MMTemplate):
             # Wireless Frequency:
             self.request['WLAN_FREQUENCY'] = wi["frequency"]
 
+            # Protocol:
+            self.request['WLAN_PROTOCOL'] = wi["protocol"]
+
             self.request['error'] = 0
             self.request['errortext'] = ''
         else:
-            self.request['error'] = 530
+            self.request['error'] = 501
             self.request['errortext'] = 'This is not a Wireless Interface'
 
             # Wireless information for the debugger
