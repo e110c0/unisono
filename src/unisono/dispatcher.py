@@ -381,8 +381,6 @@ class Dispatcher:
             self.cache.store(copy.copy(r))
             # deliver results
             for o in waitinglist:
-                self.stats.decrease_stats('aggregations', 1)
-                self.stats.decrease_stats('orders', 1)
                 # check trigger
                 if (o.type != 'triggered') or (o.type == 'triggered' and self.trigger_match(o,r)):
                     self.replyq.put(Event('DELIVER', self.fill_order(o, r)))

@@ -33,6 +33,7 @@ from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from binascii import hexlify
 from os import popen
+import unisono.mmplugins.pyiw
 
 def get_interfaces_for_ip(ip):
     
@@ -283,113 +284,61 @@ class WifiReader(mmtemplates.MMTemplate):
         except IOError:
             self.request['error'] = 500
             self.request['errortext'] = 'could not find interface with IP, aborting measurement'
-            raise IOError
             return
 
-        wlaninfo = ''
-
-        if interface != None:
-            wlaninfo = popen('iwconfig ' + interface).read()
-        if len(wlaninfo) != 0:
-            
-            essid = re.search('ESSID:([^ ]+)', wlaninfo)
-            if essid != None:
-                essid = essid.group()
-                self.request['WLAN_ESSID'] = essid.split(":")[1]
-
+        try:
+            wi = unisono.mmplugins.pyiw.WirelessInterface(interface)
+        except pyiw.error as error:
+            self.request['error'] = 500
+            self.request['errortext'] = error
+            return
+        # check for wireless interface. if protocol is empty, it's not wifi!
+        if wi["protocol"] != None:
+            self.request['WLAN_ESSID'] = wi["essid"]
             # Wireless Mode:
-            try: 
-                mode = re.search('Mode:([^ ]+)', wlaninfo)
-                if mode != None:
-                    mode = mode.group()
-                    self.request['WLAN_MODE'] = mode.split(':')[1]
-            except IOError:
-                self.request['error'] = 520
-                self.request['errortext'] = 'could not get wireless mode'
-                pass
-                    
+            self.request['WLAN_MODE'] = wi["mode"]
             # Access Point MAC Address:
-            try:
-                apmac = re.search('Access Point: ([^ ]+)', wlaninfo)
-                if apmac != None:
-                    apmac = apmac.group()
-                    self.request['WLAN_AP_MAC'] = apmac.split()[2]
-            except IOError:
-                self.request['error'] = 521
-                self.request['errortext'] = 'could not get AP_MAC address'
-                pass        
-            
-
+            self.request['WLAN_AP_MAC'] = wi["ap_mac"]
             # Link quality:
-            try:
-                link = re.search('Link Quality=([^ ]+)', wlaninfo)
-                if link != None:
-                    link = link.group()
-                    self.request['WLAN_LINK'] = link.split()[1].split("=")[1]
-            except IOError:
-                self.request['error'] = 522
-                self.request['errortext'] = 'Could not get Link Quality'
-                pass
-
+            self.request['WLAN_LINK'] = wi["quality"]
             # Signal Level:
-            try:
-                signal = re.search('Signal level:([^ ]+)', wlaninfo)
-                if signal != None:
-                    signal = signal.group()
-                    self.request['WLAN_SIGNAL'] = signal.split(':')[1]
-            except IOError:
-                self.request['error'] = 523
-                self.request['errortext'] = 'could not get Signal Level'
-                pass
+#            try:
+#                signal = re.search('Signal level:([^ ]+)', wlaninfo)
+#                if signal != None:
+#                    signal = signal.group()
+#                    self.request['WLAN_SIGNAL'] = signal.split(':')[1]
+#            except IOError:
+#                self.request['error'] = 523
+#                self.request['errortext'] = 'could not get Signal Level'
+#                pass
 
-            # Noise Level:
-            try:
-                noise = re.search('Noise level=([^ ]+)', wlaninfo)
-                if noise != None:
-                    noise = noise.group()
-                    self.request['WLAN_NOISE'] = noise.split('=')[1]
-            except IOError:
-                self.request['error'] = 524
-                self.request['errortext'] = 'could not get Noise Level'
-                pass
+#            # Noise Level:
+#            try:
+#                noise = re.search('Noise level=([^ ]+)', wlaninfo)
+#                if noise != None:
+#                    noise = noise.group()
+#                    self.request['WLAN_NOISE'] = noise.split('=')[1]
+#            except IOError:
+#                self.request['error'] = 524
+#                self.request['errortext'] = 'could not get Noise Level'
+#                pass
 
-            # given in dB by Ratio = 10*lg(Signal/Noise)
-            try:
-                self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
-            except IOError:
-                self.request['error'] = 525
-                self.request['errortext'] = 'could not get S/N Ratio'
-                pass
+#            # given in dB by Ratio = 10*lg(Signal/Noise)
+#            try:
+#                self.request['WLAN_SIGNOISE_RATIO'] = 10 * math.log10((int(self.request['WLAN_SIGNAL']) / int(self.request['WLAN_NOISE'])))         
+#            except IOError:
+#                self.request['error'] = 525
+#                self.request['errortext'] = 'could not get S/N Ratio'
+#                pass
             
             # Used Wireless Channel:
-            try:
-                chaninfo = popen("iwlist " + interface + " channel").read()
-                channel = re.search('Current Frequency=', chaninfo)
-                if channel != None:
-                    channel = channel.group()
-                    self.request['WLAN_CHANNEL'] = channel.split()[1]
-            except IOError:
-                self.request['error'] = 526
-                self.request['errortext'] = 'could not get wireless channel'
-                pass
+            self.request['WLAN_CHANNEL'] = wi["channel"]
 
             # Wireless Frequency:
-            try:
-                freq = re.search('Frequency=([^ ]+)', wlaninfo)
-                if freq != None:
-                    freq = freq.group()
-                    self.request['WLAN_FREQUENCY'] = freq.split('=')[1]
-            except IOError:
-                self.request['error'] = 527
-                self.request['errortext'] = 'could not get frequency'
-                pass
-            
-            self.request['error'] = 0
-            if self.request['errortext'] == '':
-                self.request['errortext'] = 'Measurement successful'
+            self.request['WLAN_FREQUENCY'] = wi["frequency"]
 
-            
-            
+            self.request['error'] = 0
+            self.request['errortext'] = ''
         else:
             self.request['error'] = 530
             self.request['errortext'] = 'This is not a Wireless Interface'
