@@ -257,6 +257,8 @@ class Dispatcher:
         self.process_order(neword)
 
     def process_order(self, order):
+        # get all possible m&m's
+        order['mmlist'] = [i[1] for i in self.dataitems[order.dataitem]]
         # sanity checks
         if order.type in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
@@ -292,8 +294,6 @@ class Dispatcher:
 
     def aggregate_order(self, order):
         self.logger.debug('trying aggregation')
-        di = order.dataitem
-        order['mmlist'] = [i[1] for i in self.dataitems[di]]
         for curmm, mmlist, paramap, waitinglist in self.pending_orders.values():
             if curmm in order['mmlist']:
                 c = order.identifier_count
@@ -357,6 +357,8 @@ class Dispatcher:
         try:
             # get the orders and get them out of the pending list
             curmm, mmlist, paramap, waitinglist = self.pending_orders.pop(id)
+            self.logger.debug("aggregations: %s %s %s %s",
+                              curmm, mmlist, paramap, waitinglist)
         except KeyError:
             # order has been canceled
             self.logger.debug("Dropping connector %r order %r result" % id)
@@ -364,11 +366,23 @@ class Dispatcher:
 
         if r['error'] != 0:
             self.logger.debug('The result included an error')
-            try:
-                curmm = mmlist.pop()
-                self.pending_orders[id] = (curmm, mmlist, paramap, waitinglist)
-                self.put_in_mmq(self.plugins[curmm].inq, id, paramap)
-            except IndexError:
+            for o in waitinglist:
+                if len(o["mmlist"]) > 0:
+                    if not self.aggregate_order(o):
+                        self.queue_order(o)
+                else:
+                    self.logger.debug('No more modules to try, passing error to connector.')
+                    o['error'] = r['error']
+                    o['errortext'] = r['errortext']
+                    self.replyq.put(Event('DELIVER', o))
+                    if paramap['finished']:
+                        self.replyq.put(Event('FINISHED', o))
+                waitinglist.remove(o)
+                
+            if len(mmlist) > 0:
+                if not self.aggregate_order(paramap):
+                    self.queue_order(paramap)
+            else:
                 self.logger.debug('No more modules to try, passing error to connector.')
                 paramap['error'] = r['error']
                 paramap['errortext'] = r['errortext']
