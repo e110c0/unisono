@@ -94,9 +94,6 @@ class NicReader(mmtemplates.MMTemplate):
 
 
     def measure(self):
-        
-        self.request['errortext'] = ''
-        
         try:
             interface = get_interfaces_for_ip(self.request['identifier1'])
             if interface != None:
@@ -123,6 +120,7 @@ class NicReader(mmtemplates.MMTemplate):
             mac = (':'.join(map(lambda n: "%02x" % n, info[18:24])))
             self.request['INTERFACE_MAC'] = mac
         except IOError:
+            self.request['INTERFACE_MAC'] = ''
             self.request['error'] = 502
             self.request['errortext'] = 'could not get MAC address'
         
@@ -147,7 +145,8 @@ class NicReader(mmtemplates.MMTemplate):
             else:
                 self.request['INTERFACE_TYPE'] = "Unspecified interface"
         except IOError:
-            self.request['error'] = 503
+            self.request['INTERFACE_TYPE'] = ""
+            self.request['error'] = 502
             self.request['errortext'] = 'unknown interface type'
             IOError
 
@@ -157,7 +156,7 @@ class NicReader(mmtemplates.MMTemplate):
             # TODO: fix this into a real number!
             self.request['INTERFACE_MTU'] = int(hexlify(info[17:18]), 16) * 256 + int(hexlify(info[16:17]), 16)
         except IOError:
-            self.request['error'] = 504
+            self.request['error'] = 502
             self.request['errortext'] = 'could not get MTU'
             pass
         
@@ -236,12 +235,12 @@ class BandwidthUsage(mmtemplates.MMTemplate):
                 self.request['USED_BANDWIDTH_RX'] = bw_in2 - bw_in
                 self.request['USED_BANDWIDTH_TX'] = bw_out2 - bw_out
             except UnboundLocalError:
-                self.request['error'] = 510
+                self.request['error'] = 503
                 self.request['errortext'] = 'could not calculate current RT and TX'
                 return            
 
         except IOError:
-            self.request['error'] = 510
+            self.request['error'] = 503
             self.request['errortext'] = 'could not calculate current RT and TX'
 
 class WifiReader(mmtemplates.MMTemplate):

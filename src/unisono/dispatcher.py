@@ -359,6 +359,7 @@ class Dispatcher:
             curmm, mmlist, paramap, waitinglist = self.pending_orders.pop(id)
             self.logger.debug("aggregations: %s %s %s %s",
                               curmm, mmlist, paramap, waitinglist)
+            self.logger.debug("agg count: %i", len(waitinglist))
         except KeyError:
             # order has been canceled
             self.logger.debug("Dropping connector %r order %r result" % id)
@@ -366,7 +367,7 @@ class Dispatcher:
 
         if r['error'] != 0:
             self.logger.debug('The result included an error')
-            for o in waitinglist:
+            for o in waitinglist[:]:
                 if len(o["mmlist"]) > 0:
                     if not self.aggregate_order(o):
                         self.queue_order(o)
