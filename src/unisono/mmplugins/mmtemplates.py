@@ -313,7 +313,7 @@ class MMServiceTemplate:
         self.outq = outq
         self.logger.info("started " + self.__class__.__name__ + "!")
         self.mc = mc
-        #mc.register(self.__class__.__name__)
+        mc.register(self.__class__.__name__)
 
     def run(self):
         while (True):
