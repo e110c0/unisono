@@ -37,7 +37,11 @@ from unisono.order import Order
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
-from unisono.mmplugins.mmtemplates import MMTemplate
+from unisono.mmplugins.mmtemplates import MMTemplate, MMMCTemplate, MMServiceTemplate
+# RB
+from unisono.mission_control import MissionControl
+from unisono.mission_control import Message
+#
 
 import logging, copy
 import threading
@@ -123,6 +127,11 @@ class Dispatcher:
         
         self.pending_orders = {}
         self.eventq = Queue()
+        # RB
+        # if mc should filter the receivers the list of plugins should be parameters
+        self.mc = MissionControl(self.eventq)
+        #
+        
         # TODO: add bogus task to help signal handling / cache garbage collection
         self.scheduler = Scheduler(self)
         self.init_database()
@@ -181,8 +190,46 @@ class Dispatcher:
                     mm_thread.setName(mm.__class__.__name__)
                     mm_thread.start()
                     self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+# RB
+                elif type(v) == type and issubclass(v, MMMCTemplate):
+                    orderq = Queue()
+                    msgq = Queue()
+                    self.logger.debug('dispatcher created orderq %s and msgq %s',orderq, msgq)
+                    mm = v(orderq, msgq, self.eventq, self.mc)
+
+                    self.registerMMMC(n, mm)
+                    mm_thread = threading.Thread(target = mm.run, args = ())
+                    # Exit the server thread when the main thread terminates
+                    mm_thread.setDaemon(True)
+                    mm_thread.setName(mm.__class__.__name__)
+                    mm_thread.start()
+                    self.logger.info("M&M&MC %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+
+                elif type(v) == type and issubclass(v, MMServiceTemplate):
+                    msgq = Queue()
+                    self.logger.debug('dispatcher created msgq %s',msgq)
+                    mm = v(msgq, self.eventq, self.mc)
+
+                    self.registerMMService(n, mm)
+                    mm_thread = threading.Thread(target = mm.run, args = ())
+                    # Exit the server thread when the main thread terminates
+                    mm_thread.setDaemon(True)
+                    mm_thread.setName(mm.__class__.__name__)
+                    mm_thread.start()
+                    self.logger.info("M&M&Service %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+#
         self.logger.debug('plugin list: %r' % self.plugins)
         self.logger.debug('registered dataitems: %s', self.dataitems)
+
+# RB
+    def registerMMMC(self, name, mm):
+        # may change that behavior
+        self.registerMM(name, mm)
+
+    def registerMMService(self, name, mm):
+        # may change that behavior
+        self.registerMM(name, mm)
+#
 
     def registerMM(self, name, mm):
         '''
@@ -239,6 +286,14 @@ class Dispatcher:
 #            elif event.type == 'FINISHED':
 #                self.logger.debug('finished %s', event.payload)
 #                self.replyq.put(event)
+#RB
+            elif event.type == 'MESSAGE':
+                self.logger.debug('message: %s', event.payload.msgtype)
+                self.queue_message(event.payload)
+            elif event.type == 'MESSAGE_OUT':
+                self.logger.debug('messageout: %s', event.payload.msgtype)
+                self.mc.put(event.payload)
+#
             else:
                 self.logger.debug('Got an unknown event %r, discarding.' % (event.type,))
 
@@ -270,7 +325,7 @@ class Dispatcher:
             return
         elif self.aggregate_order(order):
             return
-        else: 
+        else:
             self.queue_order(order)
 
     def satisfy_from_cache(self, order):
@@ -321,13 +376,32 @@ class Dispatcher:
         # queue request
         mmq.put(req)
 
+# RB
+    def put_in_mmmcq(self, q, id, request):
+        q.put(request)
+#
+
     def queue_order(self, order):
         self.logger.debug('trying queue')
         id = order['conid'], order.orderid
         curmm = order['mmlist'].pop()
         self.pending_orders[id] = (curmm, order['mmlist'], order, [])
-        self.put_in_mmq(self.plugins[curmm].inq, id, order)
+        self.put_in_mmq(self.plugins[curmm].orderq, id, order)
         return
+
+# RB
+    def queue_message(self, message):
+        self.logger.info("queue_message %s",message.msgtype)
+        id = message.receiver.id # maybe change that
+        #self.pending_messages[id] = (curmm, mmlist, message, [])
+        if message.tomsgqueue == 1:
+            # default case
+            self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
+            self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
+        else:
+            self.put_in_mmmcq(self.plugins[message.receiver.id].orderq, id, message)
+            self.logger.info("queue_message into orderq %s", self.plugins[message.receiver.id].orderq)
+#
 
     def fill_order(self, order, result):
         self.logger.debug('order: %s result: %s',type(order),type(result))
@@ -401,3 +475,4 @@ class Dispatcher:
                 self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
                 if paramap['finished']:
                     self.replyq.put(Event('FINISHED', paramap))
+
