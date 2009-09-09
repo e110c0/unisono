@@ -357,9 +357,6 @@ class Dispatcher:
         try:
             # get the orders and get them out of the pending list
             curmm, mmlist, paramap, waitinglist = self.pending_orders.pop(id)
-            self.logger.debug("aggregations: %s %s %s %s",
-                              curmm, mmlist, paramap, waitinglist)
-            self.logger.debug("agg count: %i", len(waitinglist))
         except KeyError:
             # order has been canceled
             self.logger.debug("Dropping connector %r order %r result" % id)
@@ -372,7 +369,6 @@ class Dispatcher:
                     if not self.aggregate_order(o):
                         self.queue_order(o)
                 else:
-                    self.logger.debug('No more modules to try, passing error to connector.')
                     o['error'] = r['error']
                     o['errortext'] = r['errortext']
                     self.replyq.put(Event('DELIVER', o))
@@ -384,7 +380,6 @@ class Dispatcher:
                 if not self.aggregate_order(paramap):
                     self.queue_order(paramap)
             else:
-                self.logger.debug('No more modules to try, passing error to connector.')
                 paramap['error'] = r['error']
                 paramap['errortext'] = r['errortext']
                 self.replyq.put(Event('DELIVER', paramap))
