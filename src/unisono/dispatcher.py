@@ -53,16 +53,17 @@ class Scheduler:
     '''
 
     class Task:
-        def __init__(self, at, finish, data):
+        def __init__(self, at, interval = 0, finish = None, data = None):
             self.at = at
             self.finish = finish
+            self.interval = interval
             self.data = data
         
         def __lt__(self, other):
             return self.at < other.at
     
         def __repr__(self):
-            return "Task(at=%r, finish=%r, data=%r)" % (self.at, self.finish, self.data)
+            return "Task(at=%r, interval=%r, finish=%r, data=%r)" % (self.at, self.interval, self.finish, self.data)
 
     def __init__(self, parent):
         """ The parent object is a dispatcher. """
@@ -78,13 +79,22 @@ class Scheduler:
 
     def schedule_order(self, order):
         """ Add an order to the task list. """
-        t = Scheduler.Task(int(self.now() + order.parameters["interval"]), int(self.now() + order.parameters["lifetime"]), order)
+        t = Scheduler.Task(
+            int(self.now() + order.parameters["interval"]),
+            order.parameters["interval"],
+            int(self.now() + order.parameters["lifetime"]),
+            order
+        )
         heappush(self.tasks, t)
+    
+    def schedule(self, task):
+        """ Add a generic Task (see schedule_order for orders) """
+        heappush(self.tasks, task)
         
     def cancel_order(self, conid, orderid):
-        self.tasks = [t for t in self.tasks if "orderid" not in t.data or not (t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid))]
+        # filter out tasks with orders matching ids (orderid == None means all orders) 
+        self.tasks = [t for t in self.tasks if not isinstance(t.data, Order) or not (t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid))]
         heapify(self.tasks)
-
         
     def get(self):
         """ Get event, either from schedule or from outside world """
@@ -98,14 +108,15 @@ class Scheduler:
             ev = self.queue.get(timeout=wait)
         except Empty:
             ev = Event("SCHED", nextt.data)
-            nextt.at = self.now() + ev.payload.parameters["interval"]
             self.logger.debug('The next task: %s', nextt)
-            if nextt.at <= nextt.finish:
+            if nextt.interval and (not nextt.finish or nextt.at <= nextt.finish):
+                nextt.at = self.now() + nextt.interval
                 heapreplace(self.tasks, nextt)
             else:
                 self.logger.debug('we should delete this task now! %s', nextt)
                 heappop(self.tasks)
-                nextt.data['finished']= True
+                if isinstance(next.data, dict):
+                    nextt.data['finished']= True
         return ev
 
 class Dispatcher:
@@ -146,6 +157,7 @@ class Dispatcher:
     def init_database(self):
         restoreDataBase()
         self.cache = DataBase()
+        self.scheduler.schedule(Scheduler.Task(self.scheduler.now(), self.config.getint("Cache", "vacinterval"), finish=None, data="VACDB"))
 
     def start_xmlrpcserver(self):
         # TODO: check whether XMLRPCserver is already running
@@ -273,10 +285,15 @@ class Dispatcher:
             elif event.type == 'CANCEL':
                 self.cancel_order(*event.payload)
             elif event.type == 'SCHED':
-                self.logger.debug('scheduler event: %s', event.payload)
                 if event.payload == "IDLE":
                     continue
-                self.process_sched_order(event.payload)
+                elif event.payload == "VACDB":
+                    self.logger.debug('Thou shallst clean thy cache!')
+                    self.cache.vacuum()
+                elif isinstance(event.payload, Order):
+                    self.process_sched_order(event.payload)
+                else:
+                    self.logger.warn('Got invalid sched event: %r', event.payload)
             elif event.type == 'ORDER':
                 self.logger.debug('order: %s', event.payload)
                 self.process_order(event.payload)
