@@ -43,13 +43,13 @@ class MMTemplate:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    def __init__(self, inq, outq):
+    def __init__(self, orderq, outq):
         '''
         init the M&M and start the thread
         '''
         self.cost = 0
         self.dataitems = []
-        self.inq = inq
+        self.orderq = orderq
         self.outq = outq
         self.logger.info("started " + self.__class__.__name__ + "!")
 
@@ -57,7 +57,7 @@ class MMTemplate:
         while (True):
             # wait for event
             self.logger.debug('waiting for an order')
-            self.request = self.inq.get()
+            self.request = self.orderq.get()
             # read values
             self.logger.debug('got an order')
             # check the request
@@ -198,7 +198,7 @@ class MMMCTemplate:
             max_wait_time = 10
             wait_time = 1
             try:
-                self.request = self.mc_inq.get_nowait()
+                self.request = self.mc_orderq.get_nowait()
                 if (self.checkmessage(self.request)):
                     # handle mc message: senderID, message, fromIP, fromPort
                     self.on_message()
