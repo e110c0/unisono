@@ -103,8 +103,7 @@ CPU_CACHE_SIZE			n		*	Size of the cache in KB
 CPU_CORE_COUNT			n		*	number of CPU cores
 CPU_LOAD				n		*	current cpu usage in %
 CPU_LOAD_SYS			n		*	current sys cpu usage in %
-CPU_LOAD_USER			n		*	current user cpu usage in %
-CPU_LOAD_NICE			n		*	current nice cpu usage in %
+CPU_LOAD_USER			n		*	current user(+nice) cpu usage in %
 CPU_LOAD_WIO			n		*	current waiting io cpu usage in %
 CPU_LOAD_IDLE			n		*	current idle cpu usage in %
 SYTEM_LOAD_AVG_NOW		n		*	current sytem load (last minute)
@@ -118,7 +117,6 @@ RAM_FREE				n		*	currently available memory in KB
 SWAP					n		*	system swap in KB
 SWAP_USED				n		*	currently used swap in KB
 SWAP_FREE				n		*	currently available swap in KB
-PERSISTENT_MEMORY		n		*	persistent memory (i.e. HDD, SSD etc) in KB
-PERSISTENT_MEMORY_MOUNT	n		*	path where the root is mounted
+PERSISTENT_MEMORY		n		*	persistent memory for /tmp in KB
 PERSISTENT_MEMORY_USED	n		*	currently used persistent memory in KB
 PERSISTENT_MEMORY_FREE	n		*	currently available persistent memory in KB

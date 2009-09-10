@@ -30,7 +30,7 @@ node_ressources.py
 import threading, logging, re, string, sys
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
-from os import popen
+from os import statvfs
 
 class ResourceReader(mmtemplates.MMTemplate):
     '''
@@ -48,17 +48,13 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'CPU_SPEED',
                           'CPU_CACHE_SIZE',
                           'CPU_CORE_COUNT',
-                          'CPU_LOAD',
-                          'HOST_UPTIME',
                           'RAM',
                           'RAM_USED',
                           'RAM_FREE',
                           'SWAP',
                           'SWAP_USED',
                           'SWAP_FREE',
-                          'PERSISTENT_MEMORY_MOUNT',
-                          'PERSISTENT_MEMORY',
-                          'FREE_PERSISTENT_MEMORY',
+                          'CPU_LOAD',
                           'CPU_LOAD_SYS',
                           'CPU_LOAD_USER',
                           'CPU_LOAD_WIO',
@@ -69,7 +65,6 @@ class ResourceReader(mmtemplates.MMTemplate):
                           'SYSTEM_LOAD_AVG_5MIN',
                           'SYSTEM_LOAD_AVG_15MIN',
                           'PERSISTENT_MEMORY',
-                          'PERSISTENT_MEMORY_MOUNT',
                           'PERSISTENT_MEMORY_USED',
                           'PERSISTENT_MEMORY_FREE',
                           ]
@@ -79,65 +74,65 @@ class ResourceReader(mmtemplates.MMTemplate):
         return True
 
     def measure(self):
+        
+        jiff1 = list(map(int, open("/proc/stat").read().split('\n')[0].split()[1:]))
         cpu = open("/proc/cpuinfo" , "r")
-
         for cpuinfo in cpu:
             cpuinfo = cpuinfo.rstrip('\n')
             if re.match("(.*)model name(.*)", cpuinfo):
                 self.request['CPU_TYPE'] = cpuinfo.split(":")[1].strip()
-#                print(cpuinfo)
             if re.match("(.*)cpu MHz(.*)", cpuinfo):
                 self.request['CPU_SPEED'] = cpuinfo.split(":")[1].strip()
-#                print(cpuinfo)
             if re.match("(.*)cache size(.*)", cpuinfo):
                 self.request['CPU_CACHE_SIZE'] = cpuinfo.split(":")[1].strip().split(" ")[0]
- #               print(cpuinfo)
             if re.match("(.*)cpu cores(.*)", cpuinfo):
                 self.request['CPU_CORE_COUNT'] = cpuinfo.split(":")[1].strip().split(" ")[0]
-#                print(cpuinfo)
-#                print('\n')
         ram = open("/proc/meminfo", "r")
         for meminfo in ram:
             meminfo = meminfo.rstrip('\n')
             if re.match("(.*)MemTotal(.*)", meminfo):
                 self.request['RAM'] = int(meminfo.split(":")[1].strip().split(" ")[0])
-#                print(meminfo)
             if re.match("(.*)MemFree(.*)", meminfo):
                 self.request['RAM_FREE'] = int(meminfo.split(":")[1].strip().split(" ")[0])
-#                print(meminfo)
             if re.match("(.*)SwapTotal(.*)", meminfo):
                 self.request['SWAP'] = int(meminfo.split(":")[1].strip().split(" ")[0])
-#                print(meminfo)
             if re.match("(.*)SwapFree(.*)", meminfo):
                 self.request['SWAP_FREE'] = int(meminfo.split(":")[1].strip().split(" ")[0])
-#                print(meminfo)
-#                print('\n')
                 self.request['RAM_USED'] = self.request['RAM'] - self.request['RAM_FREE']
                 self.request['SWAP_USED'] = self.request['SWAP'] - self.request['SWAP_FREE']
-        tmpdata = popen('vmstat').read().split('\n')[2].strip()
-        self.request['CPU_LOAD_USER'] = tmpdata.split()[12]
-        self.request['CPU_LOAD_SYS'] = tmpdata.split()[13]
-        self.request['CPU_LOAD_IDLE'] = tmpdata.split()[14]
-        self.request['CPU_LOAD_WIO'] = tmpdata.split()[15]
+
+        tmpdata = open('/proc/loadavg').read().split()
+        self.request['SYSTEM_LOAD_AVG_NOW'] = tmpdata[0]
+        self.request['SYSTEM_LOAD_AVG_5MIN'] = tmpdata[1]
+        self.request['SYSTEM_LOAD_AVG_15MIN'] = tmpdata[2]
         
-        tmpdata = popen('uptime').read().split(",",2)[2].strip().split(":")[1].strip()
-        self.request['SYSTEM_LOAD_AVG_NOW'] =  tmpdata.split(", ")[0]
-        self.request['SYSTEM_LOAD_AVG_5MIN'] = tmpdata.split(", ")[1]
-        self.request['SYSTEM_LOAD_AVG_15MIN'] =  tmpdata.split(", ")[2]
+        tmpdata = open("/proc/uptime").read().split()
+        self.request['HOST_UPTIME'] = tmpdata[0]
+        self.request['HOST_UPTIME_IDLE'] = tmpdata[1]
         
-        self.request['HOST_UPTIME'] = open("/proc/uptime").read().split()[0]
-        self.request['HOST_UPTIME_IDLE'] = open("/proc/uptime").read().split()[1]
-        
-        tmpdata = popen('df').read().split("\n")[1]
-        self.request['PERSISTENT_MEMORY_MOUNT'] = tmpdata.split()[0]
-        self.request['PERSISTENT_MEMORY'] = tmpdata.split()[1]
-        self.request['PERSISTENT_MEMORY_USED'] = tmpdata.split()[2]
-        self.request['PERSISTENT_MEMORY_FREE'] = tmpdata.split()[3]
+        tmpdata = statvfs("/var/tmp")
+        self.request['PERSISTENT_MEMORY'] = tmpdata.f_bsize * tmpdata.f_blocks / 1024
+        self.request['PERSISTENT_MEMORY_USED'] = (tmpdata.f_bsize * tmpdata.f_blocks - tmpdata.f_bsize * tmpdata.f_bfree) / 1024
+        self.request['PERSISTENT_MEMORY_FREE'] = tmpdata.f_bsize * tmpdata.f_bavail / 1024
         
         os = open("/proc/version")
         for kernel in os:
             if re.match("(.*)(.*)", kernel):
                 print(kernel)
+
+        jiff2 = list(map(int, open("/proc/stat").read().split('\n')[0].split()[1:]))
+        diff = list(map(lambda x: x[1] - x[0], zip(jiff1, jiff2)))
+        duse = diff[0] + diff[1]
+        dsys = diff[2] + diff[5] + diff[6]
+        didl = diff[3]
+        diow = diff[4]
+        dstl = diff[7]
+        summ = duse + dsys + didl + diow + dstl
+        self.request['CPU_LOAD_USER'] = 100 * duse / summ
+        self.request['CPU_LOAD_SYS'] = 100 * dsys / summ 
+        self.request['CPU_LOAD_IDLE'] = 100 * didl / summ
+        self.request['CPU_LOAD_WIO'] = 100 * diow / summ
+        self.request['CPU_LOAD'] = 100 - self.request['CPU_LOAD_IDLE']
+
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
-        self.logger.debug('result is:', self.request)
