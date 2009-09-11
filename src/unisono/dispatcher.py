@@ -421,7 +421,6 @@ class Dispatcher:
 #
 
     def fill_order(self, order, result):
-        self.logger.debug('order: %s result: %s',type(order),type(result))
         try:
             di = order.dataitem
             order.append_item(di,result[di])

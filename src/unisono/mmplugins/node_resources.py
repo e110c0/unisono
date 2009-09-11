@@ -128,11 +128,18 @@ class ResourceReader(mmtemplates.MMTemplate):
         diow = diff[4]
         dstl = diff[7]
         summ = duse + dsys + didl + diow + dstl
-        self.request['CPU_LOAD_USER'] = 100 * duse / summ
-        self.request['CPU_LOAD_SYS'] = 100 * dsys / summ 
-        self.request['CPU_LOAD_IDLE'] = 100 * didl / summ
-        self.request['CPU_LOAD_WIO'] = 100 * diow / summ
-        self.request['CPU_LOAD'] = 100 - self.request['CPU_LOAD_IDLE']
+        if summ > 0:
+            self.request['CPU_LOAD_USER'] = 100 * duse / summ
+            self.request['CPU_LOAD_SYS'] = 100 * dsys / summ 
+            self.request['CPU_LOAD_IDLE'] = 100 * didl / summ
+            self.request['CPU_LOAD_WIO'] = 100 * diow / summ
+            self.request['CPU_LOAD'] = 100 - self.request['CPU_LOAD_IDLE']
+        else:
+            self.request['CPU_LOAD_USER'] = 0
+            self.request['CPU_LOAD_SYS'] = 0
+            self.request['CPU_LOAD_IDLE'] = 100 
+            self.request['CPU_LOAD_WIO'] = 0
+            self.request['CPU_LOAD'] = 100 - self.request['CPU_LOAD_IDLE']
 
         self.request['error'] = 0
         self.request['errortext'] = 'Measurement successful'
