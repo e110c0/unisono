@@ -44,7 +44,7 @@
 /**
  * receive a packet train
  */
-int recv_train(int train_length, int train_id, int packet_size, int sock_udp, struct timeval *timestamps);
+void recv_train(int train_length, int train_id, int packet_size, int sock_udp, struct timeval *timestamps, int * result);
 
 /**
  * receive a packet fleet

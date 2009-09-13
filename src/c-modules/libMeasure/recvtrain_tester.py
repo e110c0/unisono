@@ -54,8 +54,12 @@ packet_size = 1000
 
 TimeStamps = timeval * train_length
 ts= TimeStamps()
-
-result = libmeasure.recv_train(train_length,train_id,packet_size,sock_udp.fileno(),ts)
+result = c_int(0)
+libmeasure.recv_train(train_length,train_id,packet_size,sock_udp.fileno(),ts, byref(result))
 print(result)
+tsp = []
 for i in ts:
+  if i.tv_sec > 0:
+    tsp.append(i.tv_sec * 1000000 + i.tv_usec)
   print(i.tv_sec,i.tv_usec)
+  print(i.tv_sec * 1000000 + i.tv_usec)

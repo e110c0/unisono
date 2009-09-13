@@ -31,21 +31,21 @@
  * receive a packet train
  */
 
-int recv_train(int train_length, int train_id, int packet_size, int sock_udp, struct timeval *timestamps){
+void recv_train(int train_length, int train_id, int packet_size, int sock_udp, struct timeval *timestamps, int * result){
   char *pack_buf;
 
   struct timeval c_time, select_tv;
   fd_set readset;
   int rcvd = 0,
-      badtrain = 0,
       exp_packet = 0,
       timeout = 5;
   int32_t c_packet, c_train_id;
 
+  *result = 0;
   packet_size = (max_packet_size > packet_size) ? packet_size : max_packet_size;
 
   if ( (pack_buf = malloc(packet_size*sizeof(char)) ) == NULL ){
-    return(-1);
+    *result = -1;
   }
 
   do{
@@ -68,7 +68,7 @@ int recv_train(int train_length, int train_id, int packet_size, int sock_udp, st
                   timestamps[c_packet] = c_time;
                   if (rcvd == train_length) break;
               } else {
-                badtrain = 1;
+                *result = 1;
               }
           }
         } else {
@@ -78,8 +78,6 @@ int recv_train(int train_length, int train_id, int packet_size, int sock_udp, st
       break;
     }
   } while(1);
-
-  return badtrain;
 }
 
 /**

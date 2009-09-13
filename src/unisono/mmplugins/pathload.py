@@ -42,7 +42,7 @@ from unisono.mission_control import Message, Node
 from unisono.event import Event
 
 class timeval(Structure):
-  _fields_ = [("tv_sec", c_ulong),("tv_usec", c_ulong)]
+  _fields_ = [("tv_sec", c_ulong), ("tv_usec", c_ulong)]
 
 class MsgTrainPayload():
     def __init__(self, trainlength, trainid, packetsize, udpsocket, spacing, target):
@@ -53,7 +53,7 @@ class MsgTrainPayload():
         self.spacing = spacing
         self.target = target
 
-    def equals(self,f):
+    def equals(self, f):
         if self.count == f.count and self.size == f.size and self.target.equals(f.target):
             return True
         else:
@@ -69,7 +69,7 @@ class ADR(mmtemplates.MMMCTemplate):
         self.dataitems = ['ADR']
         self.cost = 10000
         self.trainlength = 50
-        self.libmeasure = CDLL(path.join(path.dirname(__file__),'libMeasure.so'))
+        self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def checkmeasurement(self, request):
         return True
@@ -85,9 +85,9 @@ class ADR(mmtemplates.MMMCTemplate):
         # send max packet size
         # get adr
         # calculate result
-        result = self.receiveTrain()
+        result = self.measureADR()
         if result != None:
-            self.request["ADR"] = 31234
+            self.request["ADR"] = result
             self.request['error'] = 0
             self.request['errortext'] = 'Measurement successful'
         else:
@@ -95,16 +95,17 @@ class ADR(mmtemplates.MMMCTemplate):
             self.request['errortext'] = 'error receiving a packet train'
         self.logger.debug('the values are: %s', self.request)
 
-    def receiveTrain(self):
+    def receiveTrain(self, exp_train_id, trainlength):
         # start listener
         size = 1024
         udp_port = 43212
-        sock_udp = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        sock_udp.bind(("",udp_port))
+        sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock_udp.bind(("", udp_port))
 
-        TimeStamps = timeval * self.trainlength
-        ts= TimeStamps()
-        r_thread = threading.Thread(target=self.libmeasure.recv_train,args= (self.trainlength,0,size,sock_udp.fileno(),ts))
+        TimeStamps = timeval * trainlength
+        ts = TimeStamps()
+        result = c_int()
+        r_thread = threading.Thread(target=self.libmeasure.recv_train, args=(trainlength, exp_train_id, size, sock_udp.fileno(), ts, byref(result)))
         # Exit the server thread when the main thread terminates
         r_thread.setDaemon(True)
         r_thread.start()
@@ -114,11 +115,11 @@ class ADR(mmtemplates.MMMCTemplate):
         client_id = self.__name__
         server_ip = self.request['identifier2']
         server_id = "PacketSender"
-        client = Node(client_ip,client_id)
-        server = Node(server_ip,server_id)
-        payload = MsgTrainPayload(self.trainlength,0,size,udp_port,0,client_ip)
-        outmsg = Message(client,server,"TRAIN",payload)
-        self.outq.put(Event("MESSAGE_OUT",outmsg))
+        client = Node(client_ip, client_id)
+        server = Node(server_ip, server_id)
+        payload = MsgTrainPayload(self.trainlength, 0, size, udp_port, 0, client_ip)
+        outmsg = Message(client, server, "TRAIN", payload)
+        self.outq.put(Event("MESSAGE_OUT", outmsg))
         # wait for ack
         message = self.msgq.get()
         if message.msgtype != "TRAIN_ACK":
@@ -134,12 +135,43 @@ class ADR(mmtemplates.MMMCTemplate):
             pass
         else:
             # stop receiver thread
-            r_thread.join()
-            
+            r_thread.join(1.0)
+            self.logger.debug("return code : %i", result.value)
             # get results
             self.logger.debug("got a message: %s", message.msgtype)
-            return message.payload
-        return 
+        return (result.value, ts)
+    
+    def measureADR(self):
+        maxtrain = 5
+        maxtrainlength = 50
+        retry = 0
+        badtrain = True
+        trainlength = 0
+        exptrainid = 0
+        bw = 0.0
+        while retry < maxtrain and badtrain:
+            if trainlength == 5:
+                trainlength = 3
+            else:
+                trainlength = maxtrainlength - retry * 15
+            result = self.receiveTrain(exptrainid, trainlength);
+            # Compute dispersion and bandwidth measurement
+            if result[0] == 0:
+                #check_intr_coalescence
+                ts = []
+                self.logger.debug(result[1])
+                for i in result[1]:
+                    if i.tv_sec > 0:
+                        ts.append(i.tv_sec * 1000000 + i.tv_usec)
+                count = len(ts)
+                delta = ts[count -1 ] - ts[0]
+                bw = 1000000 * (28 + 1024) * 8 * count /delta
+                break;
+            else:
+                #request a new train.
+                retry = retry + 1
+                pass
+        return bw
 
 class PacketSender(mmtemplates.MMServiceTemplate):
     logger = logging.getLogger(__name__)
@@ -149,7 +181,7 @@ class PacketSender(mmtemplates.MMServiceTemplate):
         self.__name__ = "PacketSender"
         super().__init__(*args)
         self.cost = 100
-        self.libmeasure = CDLL(path.join(path.dirname(__file__),'libMeasure.so'))
+        self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def run(self):
         self.logger.info('running')
@@ -157,7 +189,7 @@ class PacketSender(mmtemplates.MMServiceTemplate):
             # wait for event
             self.logger.info(' waiting for an message')
             message = self.msgq.get()
-            self.logger.debug('got request %s',message.msgtype)
+            self.logger.debug('got request %s', message.msgtype)
             # read values
             self.logger.debug(' got an message')
             if (message.msgtype == "TRAIN"):
@@ -172,7 +204,7 @@ class PacketSender(mmtemplates.MMServiceTemplate):
 
     def sendTrain(self, message):
         error = 0
-        if( type(message.payload) == MsgTrainPayload):
+        if(type(message.payload) == MsgTrainPayload):
             if message.sender.ip != message.payload.target:
                 # stop here and send back error
                 error = 123
@@ -180,12 +212,12 @@ class PacketSender(mmtemplates.MMServiceTemplate):
                 # ack train
                 ack = (message.payload.trainid)
                 ackmsg = Message(message.receiver, message.sender, "TRAIN_ACK", ack)
-                ev = Event("MESSAGE_OUT",ackmsg)
+                ev = Event("MESSAGE_OUT", ackmsg)
                 self.outq.put(ev)
                 # start sending
-                sock_udp = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-                sock_udp.bind(("",0))
-                sock_udp.connect(("127.0.0.1",message.payload.udpsocket))
+                sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock_udp.bind(("", 0))
+                sock_udp.connect(("127.0.0.1", message.payload.udpsocket))
                 error = self.libmeasure.send_train(message.payload.trainlength,
                                            message.payload.trainid,
                                            message.payload.packetsize,
@@ -194,8 +226,8 @@ class PacketSender(mmtemplates.MMServiceTemplate):
         else:
             error = 123
         # ack train finish
-        ack = (message.payload.trainid,error)
+        ack = (message.payload.trainid, error)
         ackmsg = Message(message.receiver, message.sender, "TRAIN_ACK_FINISHED", ack)
-        ev = Event("MESSAGE_OUT",ackmsg)
+        ev = Event("MESSAGE_OUT", ackmsg)
         self.outq.put(ev)
             
