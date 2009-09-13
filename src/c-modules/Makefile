@@ -1,4 +1,4 @@
-MODULES = PathMTU Delays
+MODULES = PathMTU Delays libMeasure
 
 all:
 	for dir in $(MODULES); do \
