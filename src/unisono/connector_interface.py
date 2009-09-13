@@ -53,7 +53,7 @@ class ConnectorMap:
     only used by the XML RPC interface, both the server and the client part.
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     def __init__(self, q):
         if isinstance(q, Queue):
             self.eventq = q
@@ -112,7 +112,7 @@ class ConnectorMap:
 
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     '''
     functions available for connectors
     most of the functions reply with a status number. Results are received via
@@ -314,7 +314,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
 class XMLRPCServer:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     def __init__(self, q, dispatcher):
         '''
         create and start a XMLRPC server thread
@@ -351,7 +351,7 @@ class XMLRPCServer:
 ################################################################################
 class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap
@@ -416,12 +416,12 @@ class XMLRPCReplyHandler:
                     self.logger.error('Unknown connector %s, discarding order', result['conid'])
                     self.eventq.put(Event('CANCEL', (result['conid'], result['orderid'])))
                     continue
-                try:
-                    connector.on_result(result)
-                except:
-                    self.logger.error('Connector %s unreachable!', result['conid'])
-                    self.eventq.put(Event('CANCEL', (result['conid'], None)))
-                    self.conmap.deregister_connector(result['conid'])
+#                try:
+                connector.on_result(result)
+#                except:
+#                    self.logger.error('Connector %s unreachable!', result['conid'])
+#                    self.eventq.put(Event('CANCEL', (result['conid'], None)))
+#                    self.conmap.deregister_connector(result['conid'])
             elif event.type == 'DISCARD':
                 # prepare paramap
                 paramap = dict( ((k,v) for (k,v) in event.payload.items() 
