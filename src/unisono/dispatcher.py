@@ -115,7 +115,7 @@ class Scheduler:
             else:
                 self.logger.debug('we should delete this task now! %s', nextt)
                 heappop(self.tasks)
-                if isinstance(next.data, dict):
+                if isinstance(nextt.data, dict):
                     nextt.data['finished']= True
         return ev
 
