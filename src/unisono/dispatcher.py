@@ -359,9 +359,9 @@ class Dispatcher:
                 order['error'] = 0
                 order['errortext'] = 'Everything went fine'
                 self.replyq.put(Event('DELIVER', order))
-                if order['finished']:
-                    self.replyq.put(Event('FINISHED', order))
-                self.logger.debug('cache hit')
+            if order['finished']:
+                self.replyq.put(Event('FINISHED', order))
+            self.logger.debug('cache hit')
             return True
         except NotInCacheError:
             return False
@@ -460,9 +460,12 @@ class Dispatcher:
                     o['error'] = r['error']
                     o['errortext'] = r['errortext']
                     self.replyq.put(Event('DELIVER', o))
-                    if paramap['finished']:
+                    if o['finished']:
                         self.replyq.put(Event('FINISHED', o))
-                waitinglist.remove(o)
+                try:
+                    waitinglist.remove(o)
+                except ValueError:
+                    pass
         else:
             self.logger.debug('Everything\'s fine, delivering results now')
             # cache results
@@ -471,5 +474,5 @@ class Dispatcher:
             for o in waitinglist + [paramap]:
                 if o.istriggermatch(r[o.dataitem]):
                     self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
-                    if o['finished']:
-                        self.replyq.put(Event('FINISHED', o))
+                if o['finished']:
+                    self.replyq.put(Event('FINISHED', o))
