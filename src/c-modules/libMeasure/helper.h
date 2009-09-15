@@ -33,7 +33,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 
-float timeval_delta(struct timeval first, struct timeval second);
+double timeval_delta(struct timeval first, struct timeval second);
 
 void order_int(int32_t unord_arr[], int32_t ord_arr[], int32_t num_elems);
 void order_float(float unord_arr[], float ord_arr[], int32_t num_elems);
