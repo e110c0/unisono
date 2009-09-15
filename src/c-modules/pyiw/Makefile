@@ -6,6 +6,10 @@ GCC   = gcc -Wall
 FLAGS = -I/usr/include/python3.1
 LIBS  = -liw
 
+INSTALL_DIR = ../../unisono/utils
+
+all: dynamic
+
 dynamic: pyiw.c
 	@echo "Dynamically Building/Linking $(NAME)"
 	@$(GCC) $(FLAGS) $(LIBS) $(<) -shared -o $(NAME).so
@@ -18,3 +22,7 @@ clean:
 	@rm -rf *.o
 	@rm -rf $(NAME).so
 	@rm -rf $(NAME).so.t*
+
+install:
+	cp $(NAME).so $(INSTALL_DIR)
+	echo Installed to $(INSTALL_DIR)

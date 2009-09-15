@@ -1,4 +1,4 @@
-MODULES = PathMTU Delays libMeasure
+MODULES = PathMTU Delays libMeasure pyiw
 
 all:
 	for dir in $(MODULES); do \
