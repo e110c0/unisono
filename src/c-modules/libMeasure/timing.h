@@ -26,7 +26,19 @@
  * You should have received a copy of the GNU General Public License
  * along with UNISONO.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef TIMING_H_
+#define TIMING_H_
 
+#include <arpa/inet.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+#include "helper.h"
+#include "mconstants.h"
 /**
  * minimal time the system can sleep un usec
  *
@@ -39,7 +51,7 @@ int min_sleep_usec();
  *
  * return int sleeptime in usec
  */
-int recv_latency();
+int32_t recv_latency();
 
 /**
  * latency for sending packets from the network
@@ -47,3 +59,5 @@ int recv_latency();
  * return int sleeptime in usec
  */
 int send_latency();
+
+#endif /*TIMING_H_*/

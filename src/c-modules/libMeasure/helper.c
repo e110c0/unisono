@@ -28,3 +28,40 @@
  */
 #include "helper.h"
 
+double timeval_delta(struct timeval first, struct timeval second) {
+	int32_t sec_delta, usec_delta;
+	sec_delta = second.tv_sec - first.tv_sec;
+	usec_delta = second.tv_usec - first.tv_usec;
+	return (double) sec_delta * 1000000 + usec_delta;
+}
+
+void order_int(int32_t unord_arr[], int32_t ord_arr[], int32_t num_elems) {
+	int32_t i, j;
+	int32_t temp;
+	for (i = 0; i < num_elems; i++)
+		ord_arr[i] = unord_arr[i];
+	for (i = 1; i < num_elems; i++) {
+		for (j = i - 1; j >= 0; j--)
+			if (ord_arr[j + 1] < ord_arr[j]) {
+				temp = ord_arr[j];
+				ord_arr[j] = ord_arr[j + 1];
+				ord_arr[j + 1] = temp;
+			} else
+				break;
+	}
+}
+void order_float(float unord_arr[], float ord_arr[], int32_t num_elems) {
+	int i, j;
+	float temp;
+	for (i = 0; i < num_elems; i++)
+		ord_arr[i] = unord_arr[i];
+	for (i = 1; i < num_elems; i++) {
+		for (j = i - 1; j >= 0; j--)
+			if (ord_arr[j + 1] < ord_arr[j]) {
+				temp = ord_arr[j];
+				ord_arr[j] = ord_arr[j + 1];
+				ord_arr[j + 1] = temp;
+			} else
+				break;
+	}
+}
