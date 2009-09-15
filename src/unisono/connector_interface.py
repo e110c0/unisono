@@ -257,6 +257,7 @@ class ConnectorFunctions:
         result['time'] = time()
         result[result['dataitem']] = result['result']
         del(result['result'])
+        del(result['accuracy'])
         status = cache.store(result)
         return status
 
