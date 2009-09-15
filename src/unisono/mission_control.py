@@ -269,7 +269,7 @@ class MissionControl():
             self.logger.debug("Socket Error - stopping server")
             self.stop()
             return
-
+#        s.setsockopt(1, socket.SO_CLOEXEC1, 1)
         try: 
             while True:
                 print ("accepting a new connection ...")

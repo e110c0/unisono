@@ -69,6 +69,10 @@ class ADR(mmtemplates.MMMCTemplate):
         self.dataitems = ['ADR']
         self.cost = 10000
         self.trainlength = 50
+        # get max packet size
+        self.rmaxpacketsize = 1
+        self.size = 1024
+        self.udp_port = 43212
         self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def checkmeasurement(self, request):
@@ -81,11 +85,49 @@ class ADR(mmtemplates.MMMCTemplate):
         return True
 
     def measure(self):
+        # setup udp port
+
+        self.sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock_udp.bind(("", self.udp_port))
+        self.logger.debug("got my socket")
+        # setup MC structures
+        client_ip = self.request['identifier1']
+        client_id = self.__name__
+        server_ip = self.request['identifier2']
+        server_id = "PacketSender"
+        self.client = Node(client_ip, client_id)
+        self.server = Node(server_ip, server_id)
         # request from sender: max packet size, min sender delay
-        # send max packet size
+        outmsg = Message(self.client, self.server, "GET_SEND_LATENCY", None)
+        self.outq.put(Event("MESSAGE_OUT", outmsg))
+        outmsg = Message(self.client, self.server, "GET_MAX_PACKETSIZE", None)
+        self.outq.put(Event("MESSAGE_OUT", outmsg))
+        # get receive delay
+        rlat = self.libmeasure.recv_latency(self.sock_udp.fileno(), self.udp_port)
+        i = 0
+        slat = None
+        smaxpacketsize = None
+        while i < 60:
+            i = i+1
+            try:
+                message = self.msgq.get(1)
+            except Empty:
+                if i == 60:
+                    #TODO set correct error code
+                    self.endMeasurement(13)
+                    return
+            if message.msgtype == "SEND_LATENCY":
+                slat = message.payload
+            elif message.msgtype == "MAX_PACKETSIZE":
+                smaxpacketsize = message.payload
+            else:
+                pass
+        if slat == None or smaxpacketsize == None:
+            self.endMeasurement(13) # TODO error code!!
+            return
         # get adr
-        # calculate result
         result = self.measureADR()
+        # calculate result
         if result != None:
             self.request["ADR"] = result
             self.request['error'] = 0
@@ -95,30 +137,18 @@ class ADR(mmtemplates.MMMCTemplate):
             self.request['errortext'] = 'error receiving a packet train'
         self.logger.debug('the values are: %s', self.request)
 
-    def receiveTrain(self, exp_train_id, trainlength):
-        # start listener
-        size = 1024
-        udp_port = 43212
-        sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock_udp.bind(("", udp_port))
-
+    def receiveTrain(self, exp_train_id, trainlength, size):
         TimeStamps = timeval * trainlength
         ts = TimeStamps()
         result = c_int()
-        r_thread = threading.Thread(target=self.libmeasure.recv_train, args=(trainlength, exp_train_id, size, sock_udp.fileno(), ts, byref(result)))
+        r_thread = threading.Thread(target=self.libmeasure.recv_train, args=(trainlength, exp_train_id, size, self.sock_udp.fileno(), ts, byref(result)))
         # Exit the server thread when the main thread terminates
         r_thread.setDaemon(True)
         r_thread.start()
 
         # send train request
-        client_ip = self.request['identifier1']
-        client_id = self.__name__
-        server_ip = self.request['identifier2']
-        server_id = "PacketSender"
-        client = Node(client_ip, client_id)
-        server = Node(server_ip, server_id)
-        payload = MsgTrainPayload(self.trainlength, 0, size, udp_port, 0, client_ip)
-        outmsg = Message(client, server, "TRAIN", payload)
+        payload = MsgTrainPayload(self.trainlength, 0, size, self.udp_port, 0, self.client.ip)
+        outmsg = Message(self.client, self.server, "TRAIN", payload)
         self.outq.put(Event("MESSAGE_OUT", outmsg))
         # wait for ack
         message = self.msgq.get()
@@ -154,7 +184,8 @@ class ADR(mmtemplates.MMMCTemplate):
                 trainlength = 3
             else:
                 trainlength = maxtrainlength - retry * 15
-            result = self.receiveTrain(exptrainid, trainlength);
+
+            result = self.receiveTrain(exptrainid, trainlength, self.size);
             # Compute dispersion and bandwidth measurement
             if result[0] == 0:
                 #check_intr_coalescence
@@ -164,14 +195,18 @@ class ADR(mmtemplates.MMMCTemplate):
                     if i.tv_sec > 0:
                         ts.append(i.tv_sec * 1000000 + i.tv_usec)
                 count = len(ts)
-                delta = ts[count -1 ] - ts[0]
-                bw = 1000000 * (28 + 1024) * 8 * count /delta
+                delta = ts[count - 1 ] - ts[0]
+                bw = 1000000 * (28 + 1024) * 8 * count / delta
                 break;
             else:
                 #request a new train.
                 retry = retry + 1
                 pass
         return bw
+    
+    def endMeasurement(self, error):
+        self.request["error"] = error
+        self.request["errortext"] = ""
 
 class PacketSender(mmtemplates.MMServiceTemplate):
     logger = logging.getLogger(__name__)
@@ -182,7 +217,8 @@ class PacketSender(mmtemplates.MMServiceTemplate):
         super().__init__(*args)
         self.cost = 100
         self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
-
+        self.send_latency = self.libmeasure.send_latency()
+        
     def run(self):
         self.logger.info('running')
         while (True):
@@ -194,6 +230,8 @@ class PacketSender(mmtemplates.MMServiceTemplate):
             self.logger.debug(' got an message')
             if (message.msgtype == "TRAIN"):
                 self.sendTrain(message)
+            elif (message.msgtype == "GET_SEND_LATENCY"):
+                self.outq.put(Event("MESSAGE_OUT", Message(message.receiver, message.sender, "SEND_LATENCY", self.send_latency)))
             else:
                 # stop here and send back error
                 pass
