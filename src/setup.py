@@ -45,9 +45,11 @@ setup(name='UNISONO',
                    Extension('unisono.mmplugins.libDelays',
                              ['c-modules/Delays/mathfunctions.c',
                               'c-modules/Delays/networkfunctions.c',
-                              'c-modules/Delays/Delays.c',
-                              ],
-                              extra_compile_args=['-std=gnu99'])
+                              'c-modules/Delays/Delays.c'],
+                              extra_compile_args=['-std=gnu99']),
+				   Extension('unisono.utils.pyiw',
+							 ['c-modules/pyiw/pyiw.c'],
+                             libraries=['iw'])
                    ],
       data_files=[('/etc/unisono',['../etc/unisono.cfg'])]
      )
