@@ -6,6 +6,9 @@ Created on 14.07.2009
 @author: zxmoo46
 '''
 
+import logging
+logger = logging.getLogger(__file__)
+
 class OrderError(ValueError):
     """ An Error with a numeric status code, much like EnvironmentError's errno """
     def __init__(self, status, *args, **kwargs):
@@ -27,14 +30,16 @@ class Order(dict):
     To access the numeric error code use OrderError.status.
     
     Fields:
-         type (str): 'oneshot', 'periodic' or 'triggered' 
+         type (str): 'oneshot', 'periodic', 'triggered' 
          dataitem (str): a valid dataitem 
          orderid (str): the unique orderid 
     periodic or triggered:
              interval (str) in seconds
              lifetime (str) in seconds
     triggered:
-            lower_threshold, upper_threshold: trigger watermarks (str)
+        either:
+            - a onChange triggered order
+            - lower_threshold, upper_threshold: trigger watermarks (str)
             
     Additional fields are a number of identifiers:
         identifierN with N in (1,2) (str) identifier of the target
@@ -65,13 +70,16 @@ class Order(dict):
                     except (ValueError) as e:
                         raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
             if self.type == "triggered":
-                for key in ('lower_threshold', 'upper_threshold'):
-                    if key not in self['parameters']:
-                        raise OrderKeyMissing(412, "%s needed for triggered orders and not given"%key)
-                        try:
-                            self['parameters'][key] = int(self['parameters'][key])
-                        except (ValueError) as e:
-                            raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
+                # check: either both thresholds are defined or neither
+                keys = ('lower_threshold', 'upper_threshold')
+                if not set(keys).isdisjoint(set(self.keys())):
+                    for key in keys:
+                        if key not in self['parameters']:
+                            raise OrderKeyMissing(412, "%s needed for triggered orders and not given"%key)
+                            try:
+                                self['parameters'][key] = float(self['parameters'][key])
+                            except (ValueError) as e:
+                                raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
         self['finished']= False
 
         # NOTE: we don't check dataitem here b/c we don't have the list of valid dataitems at hand
@@ -80,7 +88,30 @@ class Order(dict):
         """ Is this Order a spawn point for multiple oneshot orders? """
         return self['type'].lower() in ('periodic', 'triggered')
 
-    def append_item(self,key, value):
+    def istriggermatch(self, measured_value):
+        """ check if this order is triggered and value fits trigger criteria. Return True for untriggered orders. """
+        logger.debug("istriggermatch called (conid, orderid, subid) = (%s, %s, %s)",self.conid, self.orderid, self.get("subid", None))
+        if not ("parent" in self and self["parent"].type == "triggered"):
+            return True
+        p = self["parent"]
+        params = p["parameters"]
+        if "lower_threshold" in params:
+            logger.debug("istriggermatch for thresholds")
+            try:
+                v = float(measured_value)
+            except:
+                return False
+            oldval = p.get("lastval", True)
+            val_in_range = params["lower_threshold"] <= v <= params["upper_threshold"]
+            p["lastval"] = val_in_range
+            logger.debug("istriggermatch val_in_range old: %s, now: %s", oldval, val_in_range)
+            return oldval ^ val_in_range
+        else:
+            oldval = p.get("lastval", None)
+            p["lastval"] = measured_value
+            return oldval != measured_value
+
+    def append_item(self, key, value):
         '''
         Append a new item to the order
         '''
@@ -109,6 +140,10 @@ class Order(dict):
         return self["orderid"]
 
     @property
+    def conid(self):
+        return self["conid"]
+
+    @property
     def identifierlist(self):
         ids = {}
         for k,v in self.items():
@@ -122,7 +157,7 @@ class Order(dict):
     
     @property
     def results(self):
-        unneeded = ('type','parameters','dataitem','finished','mmlist')
+        unneeded = ('type', 'parameters', 'dataitem', 'finished', 'mmlist', 'parent')
         results = {}
         for k,v in self.items():
             if k not in unneeded:

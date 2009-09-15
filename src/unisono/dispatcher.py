@@ -325,6 +325,7 @@ class Dispatcher:
     def process_sched_order(self, order):
         order["subid"] += 1
         neword = copy.copy(order)
+        neword["parent"] = order
         neword["type"] = "oneshot"
         self.process_order(neword)
 
@@ -349,17 +350,18 @@ class Dispatcher:
         self.logger.debug('trying cache')
         try:
             result = self.cache.check_for(order)
-            order.update(result)
-            # for at least the ariba connector (deprecated)
-            order.append_item('result',order[order.dataitem])
-#            self.logger.debug('result from cache: %s', result)
-#            self.logger.debug('updated order: %s', order)
-            order['error'] = 0
-            order['errortext'] = 'Everything went fine'
-            self.replyq.put(Event('DELIVER', order))
-            if order['finished']:
-                self.replyq.put(Event('FINISHED', order))
-            self.logger.debug('cache hit')
+            if order.istriggermatch(result[order.dataitem]):
+                order.update(result)
+                # for at least the ariba connector (deprecated)
+                order.append_item('result',order[order.dataitem])
+    #            self.logger.debug('result from cache: %s', result)
+    #            self.logger.debug('updated order: %s', order)
+                order['error'] = 0
+                order['errortext'] = 'Everything went fine'
+                self.replyq.put(Event('DELIVER', order))
+                if order['finished']:
+                    self.replyq.put(Event('FINISHED', order))
+                self.logger.debug('cache hit')
             return True
         except NotInCacheError:
             return False
@@ -435,10 +437,6 @@ class Dispatcher:
             pass
         return order
 
-    def trigger_match(self,order,result):
-        self.logger.debug('checking trigger now')
-        return true
-
     def process_result(self, result):
         self.logger.debug('trying result processing')
         mm = result[0]
@@ -454,7 +452,7 @@ class Dispatcher:
 
         if r['error'] != 0:
             self.logger.debug('The result included an error')
-            for o in waitinglist[:]:
+            for o in waitinglist + [paramap]:
                 if len(o["mmlist"]) > 0:
                     if not self.aggregate_order(o):
                         self.queue_order(o)
@@ -465,30 +463,13 @@ class Dispatcher:
                     if paramap['finished']:
                         self.replyq.put(Event('FINISHED', o))
                 waitinglist.remove(o)
-                
-            if len(mmlist) > 0:
-                if not self.aggregate_order(paramap):
-                    self.queue_order(paramap)
-            else:
-                paramap['error'] = r['error']
-                paramap['errortext'] = r['errortext']
-                self.replyq.put(Event('DELIVER', paramap))
-                if paramap['finished']:
-                    self.replyq.put(Event('FINISHED', paramap))
         else:
             self.logger.debug('Everything\'s fine, delivering results now')
             # cache results
             self.cache.store(copy.copy(r))
             # deliver results
-            for o in waitinglist:
-                # check trigger
-                if (o.type != 'triggered') or (o.type == 'triggered' and self.trigger_match(o,r)):
+            for o in waitinglist + [paramap]:
+                if o.istriggermatch(r[o.dataitem]):
                     self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
                     if o['finished']:
                         self.replyq.put(Event('FINISHED', o))
-            # check trigger
-            if (paramap.type != 'triggered') or (paramap.type == 'triggered' and self.trigger_match(paramap,r)):
-                self.replyq.put(Event('DELIVER', self.fill_order(paramap, r)))
-                if paramap['finished']:
-                    self.replyq.put(Event('FINISHED', paramap))
-
