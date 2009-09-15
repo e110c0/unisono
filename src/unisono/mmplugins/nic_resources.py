@@ -33,7 +33,7 @@ from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from binascii import hexlify
 from os import popen
-import unisono.mmplugins.pyiw
+from unisono.utils import pyiw
 
 def get_interfaces_for_ip(ip):
     
@@ -81,8 +81,8 @@ class NicReader(mmtemplates.MMTemplate):
         super().__init__(*args)
         self.dataitems = [
                           'INTERFACE_TYPE',
-                          'INTERFACE_CAPACITY_RX',
-                          'INTERFACE_CAPACITY_TX',
+#                          'INTERFACE_CAPACITY_RX',
+#                          'INTERFACE_CAPACITY_TX',
                           'INTERFACE_MAC',
                           'INTERFACE_MTU',
                           ]
@@ -282,7 +282,7 @@ class WifiReader(mmtemplates.MMTemplate):
             return
 
         try:
-            wi = unisono.mmplugins.pyiw.WirelessInterface(interface)
+            wi = pyiw.WirelessInterface(interface)
         except pyiw.error as error:
             self.request['error'] = 500
             self.request['errortext'] = error
