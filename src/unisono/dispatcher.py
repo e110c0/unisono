@@ -137,7 +137,7 @@ class Dispatcher:
         Constructor
         '''
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.DEBUG)
+#        self.logger.setLevel(logging.DEBUG)
 
         self.config = configuration.get_configparser()
         
@@ -235,6 +235,7 @@ class Dispatcher:
                 self.logger.error('Could not load plugin %s: %s', p, e)
                 continue
 #
+        self.logger.info("Plugin initialization done, %i plugins with %i dataitems.", len(self.plugins), len(self.dataitems))
         self.logger.debug('plugin list: %r' % self.plugins)
         self.logger.debug('registered dataitems: %s', self.dataitems)
 
@@ -318,7 +319,7 @@ class Dispatcher:
                 self.mc.put(event.payload)
 #
             else:
-                self.logger.debug('Got an unknown event %r, discarding.' % (event.type,))
+                self.logger.warn('Internal error: unknown event %r, discarding.' % (event.type,))
 
     def cancel_order(self, conid, orderid=None):
         """ 
