@@ -192,48 +192,48 @@ class Dispatcher:
                 self.logger.debug('Mod: %s', mod)
                 mod = getattr(mod, p)
 
-            except:
-                self.logger.error('Could not load plugin %s', p)
+                for n, v in vars(mod).items():
+                    if type(v) == type and issubclass(v, MMTemplate):
+                        iq = Queue()
+                        mm = v(iq, self.eventq)
+    
+                        self.registerMM(n, mm)
+                        mm_thread = threading.Thread(target=mm.run)
+                        # Exit the server thread when the main thread terminates
+                        mm_thread.setDaemon(True)
+                        mm_thread.setName(mm.__class__.__name__)
+                        mm_thread.start()
+                        self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+    # RB
+                    elif type(v) == type and issubclass(v, MMMCTemplate):
+                        orderq = Queue()
+                        msgq = Queue()
+                        self.logger.debug('dispatcher created orderq %s and msgq %s',orderq, msgq)
+                        mm = v(orderq, msgq, self.eventq, self.mc)
+    
+                        self.registerMMMC(n, mm)
+                        mm_thread = threading.Thread(target = mm.run, args = ())
+                        # Exit the server thread when the main thread terminates
+                        mm_thread.setDaemon(True)
+                        mm_thread.setName(mm.__class__.__name__)
+                        mm_thread.start()
+                        self.logger.info("M&M&MC %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+    
+                    elif type(v) == type and issubclass(v, MMServiceTemplate):
+                        msgq = Queue()
+                        self.logger.debug('dispatcher created msgq %s',msgq)
+                        mm = v(msgq, self.eventq, self.mc)
+    
+                        self.registerMMService(n, mm)
+                        mm_thread = threading.Thread(target = mm.run, args = ())
+                        # Exit the server thread when the main thread terminates
+                        mm_thread.setDaemon(True)
+                        mm_thread.setName(mm.__class__.__name__)
+                        mm_thread.start()
+                        self.logger.info("M&M&Service %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+            except Exception as e:
+                self.logger.error('Could not load plugin %s: %s', p, e)
                 continue
-            for n, v in vars(mod).items():
-                if type(v) == type and issubclass(v, MMTemplate):
-                    iq = Queue()
-                    mm = v(iq, self.eventq)
-
-                    self.registerMM(n, mm)
-                    mm_thread = threading.Thread(target=mm.run)
-                    # Exit the server thread when the main thread terminates
-                    mm_thread.setDaemon(True)
-                    mm_thread.setName(mm.__class__.__name__)
-                    mm_thread.start()
-                    self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
-# RB
-                elif type(v) == type and issubclass(v, MMMCTemplate):
-                    orderq = Queue()
-                    msgq = Queue()
-                    self.logger.debug('dispatcher created orderq %s and msgq %s',orderq, msgq)
-                    mm = v(orderq, msgq, self.eventq, self.mc)
-
-                    self.registerMMMC(n, mm)
-                    mm_thread = threading.Thread(target = mm.run, args = ())
-                    # Exit the server thread when the main thread terminates
-                    mm_thread.setDaemon(True)
-                    mm_thread.setName(mm.__class__.__name__)
-                    mm_thread.start()
-                    self.logger.info("M&M&MC %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
-
-                elif type(v) == type and issubclass(v, MMServiceTemplate):
-                    msgq = Queue()
-                    self.logger.debug('dispatcher created msgq %s',msgq)
-                    mm = v(msgq, self.eventq, self.mc)
-
-                    self.registerMMService(n, mm)
-                    mm_thread = threading.Thread(target = mm.run, args = ())
-                    # Exit the server thread when the main thread terminates
-                    mm_thread.setDaemon(True)
-                    mm_thread.setName(mm.__class__.__name__)
-                    mm_thread.start()
-                    self.logger.info("M&M&Service %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
 #
         self.logger.debug('plugin list: %r' % self.plugins)
         self.logger.debug('registered dataitems: %s', self.dataitems)
