@@ -155,7 +155,8 @@ class Dispatcher:
         self.start_xmlrpcreplyhandler()
         self.init_plugins()
         
-    def __del__(self):
+    def at_exit(self):
+        """ to be called at system exit """
         self.logger.debug("Calling destructor for Dispatcher")
         self.cache.save()
 
