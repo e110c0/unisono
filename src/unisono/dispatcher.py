@@ -92,9 +92,14 @@ class Scheduler:
         heappush(self.tasks, task)
         
     def cancel_order(self, conid, orderid):
-        # filter out tasks with orders matching ids (orderid == None means all orders) 
-        self.tasks = [t for t in self.tasks if not isinstance(t.data, Order) or not (t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid))]
+        """ Mark order as dead and remove it from task list """
+        self.parent.logger.debug("Scheduler: cancel_order(%s, %s) - my task list is: %r", conid, orderid, self.tasks)
+        for t in self.tasks[:]:
+            if isinstance(t.data, Order) and t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid):
+                t.data.mark_dead()
+                self.tasks.remove(t)
         heapify(self.tasks)
+        self.parent.logger.debug("Task list is now: %r", self.tasks)
         
     def get(self):
         """ Get event, either from schedule or from outside world """
@@ -283,6 +288,7 @@ class Dispatcher:
             if event.type == 'CACHE':
                 pass
             elif event.type == 'CANCEL':
+                self.logger.debug("Cancel order: %s", event.payload)
                 self.cancel_order(*event.payload)
             elif event.type == 'SCHED':
                 if event.payload == "IDLE":
@@ -330,6 +336,8 @@ class Dispatcher:
         self.process_order(neword)
 
     def process_order(self, order):
+        if not order.isalive():
+            return
         # get all possible m&m's
         order['mmlist'] = [i[1] for i in self.dataitems[order.dataitem]]
         # sanity checks
