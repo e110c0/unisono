@@ -72,7 +72,7 @@ class NicReader(mmtemplates.MMTemplate):
     generic template for all M&Ms
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, *args):
         '''
@@ -169,7 +169,7 @@ class NicReader(mmtemplates.MMTemplate):
 
 class BandwidthUsage(mmtemplates.MMTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     def __init__(self, *args):
         super().__init__(*args)
         self.dataitems = [
@@ -245,7 +245,7 @@ class BandwidthUsage(mmtemplates.MMTemplate):
 
 class WifiReader(mmtemplates.MMTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     def __init__(self, *args):
         super().__init__(*args)
         self.dataitems = [

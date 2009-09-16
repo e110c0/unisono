@@ -109,10 +109,8 @@ class MissionControl():
         self.do_quit = False
         self.trigger_wait_time = 3 # time the trigger threads wait, after rescanning a queue
         t_triggerSendQueue = Thread(target = self.triggerSendQueue, args = ())
-        t_triggerSendQueue.daemon = True
         t_triggerSendQueue.start()
         t_Recv = Thread(target = self.receive, args = ())
-        t_Recv.daemon = True
         t_Recv.start()
         self.__modules_dict = {}
         # not needed furthermore
@@ -271,7 +269,7 @@ class MissionControl():
             self.logger.debug("Socket Error - stopping server")
             self.stop()
             return
-#        s.setsockopt(1, socket.SO_CLOEXEC1, 1)
+
         try: 
             while True:
                 print ("accepting a new connection ...")

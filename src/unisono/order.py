@@ -111,29 +111,18 @@ class Order(dict):
             p["lastval"] = measured_value
             return oldval != measured_value
 
-    def isalive(self):
-        if "alive" in self:
-            return self["alive"]
-        elif "parent" in self and "alive" in self["parent"]:
-            return self["parent"]["alive"]
-        else:
-            return True
-
     def append_item(self, key, value):
         '''
         Append a new item to the order
         '''
         self[key] = value
 
-    def get_item(self, key):
+    def get_item(self,key):
         '''
         get the value of key
         '''
         return self[key]
 
-    def mark_dead(self):
-        self["alive"] = False
-        
     @property
     def parameters(self):
         return self['parameters']
