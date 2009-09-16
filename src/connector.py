@@ -35,6 +35,7 @@ import threading
 from sys import stdin
 from time import sleep
 from itertools import count
+from pprint import pprint
 
 counter = 0
 myID = ""
@@ -43,21 +44,25 @@ def on_result(result):
     global counter
     global myID
     counter += 1
-    print("Oh yeah, got my result: %s", result)
+    print("Finally, results!")
+    pprint(result)
 #    if counter < 10:
 #        print('commit order: ' ,
 #              s.commit_order(myID, {'orderid':counter, 'identifier2':'127.0.0.1', 'dataitem':'PATHMTU'}))
 #        pass
 #    else:
 #        print('Done with all 10!')
+    if result["subid"] == 2:
+        print("Now I cancel the order")
+        s.cancel_order(myID, "0")
     return True
 
 def on_discard(result):
-    print("Something happened: %s", result)
+    print("Discard: ", result)
     return True
 
 def on_finished(result):
-    print("Order finished: %s", result)
+    print("Order finished:", result)
     return True
         
 if __name__ == '__main__':
@@ -80,6 +85,7 @@ if __name__ == '__main__':
     print("we do some stuff")
     print(s.system.listMethods())
     print(s.system.methodHelp('list_available_dataitems'))
+    print(s.system.methodHelp('cancel_order'))
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
@@ -101,8 +107,8 @@ if __name__ == '__main__':
                                                       'identifier1':localip,
                                                       'identifier2':remoteip,
                                                       'type':'triggered',
-                                                      'parameters' : {'interval': '8', 'lifetime': '30','lower_threshold': 100, 'upper_threshold':200},
-                                                      'dataitem':'SHARED_BANDWIDTH_RX'}))
+                                                      'parameters' : {'interval': '8', 'lifetime': '30','lower_threshold': 4000, 'upper_threshold':5500},
+                                                      'dataitem':'RTT'}))
 #    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
 #                                                      'identifier1':localip,
 #                                                      'identifier2':remoteip,

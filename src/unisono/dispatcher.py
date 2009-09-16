@@ -92,9 +92,14 @@ class Scheduler:
         heappush(self.tasks, task)
         
     def cancel_order(self, conid, orderid):
-        # filter out tasks with orders matching ids (orderid == None means all orders) 
-        self.tasks = [t for t in self.tasks if not isinstance(t.data, Order) or not (t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid))]
+        """ Mark order as dead and remove it from task list """
+        self.parent.logger.debug("Scheduler: cancel_order(%s, %s) - my task list is: %r", conid, orderid, self.tasks)
+        for t in self.tasks[:]:
+            if isinstance(t.data, Order) and t.data["conid"] == conid and (orderid is None or t.data["orderid"] == orderid):
+                t.data.mark_dead()
+                self.tasks.remove(t)
         heapify(self.tasks)
+        self.parent.logger.debug("Task list is now: %r", self.tasks)
         
     def get(self):
         """ Get event, either from schedule or from outside world """
@@ -132,7 +137,7 @@ class Dispatcher:
         Constructor
         '''
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.INFO)
 
         self.config = configuration.get_configparser()
         
@@ -150,7 +155,8 @@ class Dispatcher:
         self.start_xmlrpcreplyhandler()
         self.init_plugins()
         
-    def __del__(self):
+    def at_exit(self):
+        """ to be called at system exit """
         self.logger.debug("Calling destructor for Dispatcher")
         self.cache.save()
 
@@ -187,49 +193,50 @@ class Dispatcher:
                 self.logger.debug('Mod: %s', mod)
                 mod = getattr(mod, p)
 
-            except:
-                self.logger.error('Could not load plugin %s', p)
+                for n, v in vars(mod).items():
+                    if type(v) == type and issubclass(v, MMTemplate):
+                        iq = Queue()
+                        mm = v(iq, self.eventq)
+    
+                        self.registerMM(n, mm)
+                        mm_thread = threading.Thread(target=mm.run)
+                        # Exit the server thread when the main thread terminates
+                        mm_thread.setDaemon(True)
+                        mm_thread.setName(mm.__class__.__name__)
+                        mm_thread.start()
+                        self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+    # RB
+                    elif type(v) == type and issubclass(v, MMMCTemplate):
+                        orderq = Queue()
+                        msgq = Queue()
+                        self.logger.debug('dispatcher created orderq %s and msgq %s',orderq, msgq)
+                        mm = v(orderq, msgq, self.eventq, self.mc)
+    
+                        self.registerMMMC(n, mm)
+                        mm_thread = threading.Thread(target = mm.run, args = ())
+                        # Exit the server thread when the main thread terminates
+                        mm_thread.setDaemon(True)
+                        mm_thread.setName(mm.__class__.__name__)
+                        mm_thread.start()
+                        self.logger.info("M&M&MC %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+    
+                    elif type(v) == type and issubclass(v, MMServiceTemplate):
+                        msgq = Queue()
+                        self.logger.debug('dispatcher created msgq %s',msgq)
+                        mm = v(msgq, self.eventq, self.mc)
+    
+                        self.registerMMService(n, mm)
+                        mm_thread = threading.Thread(target = mm.run, args = ())
+                        # Exit the server thread when the main thread terminates
+                        mm_thread.setDaemon(True)
+                        mm_thread.setName(mm.__class__.__name__)
+                        mm_thread.start()
+                        self.logger.info("M&M&Service %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
+            except Exception as e:
+                self.logger.error('Could not load plugin %s: %s', p, e)
                 continue
-            for n, v in vars(mod).items():
-                if type(v) == type and issubclass(v, MMTemplate):
-                    iq = Queue()
-                    mm = v(iq, self.eventq)
-
-                    self.registerMM(n, mm)
-                    mm_thread = threading.Thread(target=mm.run)
-                    # Exit the server thread when the main thread terminates
-                    mm_thread.setDaemon(True)
-                    mm_thread.setName(mm.__class__.__name__)
-                    mm_thread.start()
-                    self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
-# RB
-                elif type(v) == type and issubclass(v, MMMCTemplate):
-                    orderq = Queue()
-                    msgq = Queue()
-                    self.logger.debug('dispatcher created orderq %s and msgq %s',orderq, msgq)
-                    mm = v(orderq, msgq, self.eventq, self.mc)
-
-                    self.registerMMMC(n, mm)
-                    mm_thread = threading.Thread(target = mm.run, args = ())
-                    # Exit the server thread when the main thread terminates
-                    mm_thread.setDaemon(True)
-                    mm_thread.setName(mm.__class__.__name__)
-                    mm_thread.start()
-                    self.logger.info("M&M&MC %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
-
-                elif type(v) == type and issubclass(v, MMServiceTemplate):
-                    msgq = Queue()
-                    self.logger.debug('dispatcher created msgq %s',msgq)
-                    mm = v(msgq, self.eventq, self.mc)
-
-                    self.registerMMService(n, mm)
-                    mm_thread = threading.Thread(target = mm.run, args = ())
-                    # Exit the server thread when the main thread terminates
-                    mm_thread.setDaemon(True)
-                    mm_thread.setName(mm.__class__.__name__)
-                    mm_thread.start()
-                    self.logger.info("M&M&Service %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
 #
+        self.logger.info("Plugin initialization done, %i plugins with %i dataitems.", len(self.plugins), len(self.dataitems))
         self.logger.debug('plugin list: %r' % self.plugins)
         self.logger.debug('registered dataitems: %s', self.dataitems)
 
@@ -283,6 +290,7 @@ class Dispatcher:
             if event.type == 'CACHE':
                 pass
             elif event.type == 'CANCEL':
+                self.logger.debug("Cancel order: %s", event.payload)
                 self.cancel_order(*event.payload)
             elif event.type == 'SCHED':
                 if event.payload == "IDLE":
@@ -312,7 +320,7 @@ class Dispatcher:
                 self.mc.put(event.payload)
 #
             else:
-                self.logger.debug('Got an unknown event %r, discarding.' % (event.type,))
+                self.logger.warn('Internal error: unknown event %r, discarding.' % (event.type,))
 
     def cancel_order(self, conid, orderid=None):
         """ 
@@ -330,6 +338,8 @@ class Dispatcher:
         self.process_order(neword)
 
     def process_order(self, order):
+        if not order.isalive():
+            return
         # get all possible m&m's
         order['mmlist'] = [i[1] for i in self.dataitems[order.dataitem]]
         # sanity checks

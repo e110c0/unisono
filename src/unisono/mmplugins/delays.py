@@ -64,7 +64,7 @@ class Delays(mmtemplates.MMcTemplate):
     Wrapper class for the Delays module
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, *args):
         '''

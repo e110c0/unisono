@@ -72,10 +72,16 @@ def main():
     else:
         logger.info("UNISONO ---- start in foreground")
     # init dispatcher
-    dp = Dispatcher()
-    dp.run()
-    logger.info('shutting down.')
-
+    try:
+        dp = Dispatcher()
+        dp.run()
+    except BaseException as out:
+        logger.warn("Shutting down because of %r", out)
+        dp.at_exit()
+        for t in threading.enumerate():
+            if not t.daemon and t != threading.current_thread():
+                logger.warn("Non-daemon-thread %s still running on main thread exit", t)
+        exit(1)
 
 if __name__ == '__main__':
     main()
