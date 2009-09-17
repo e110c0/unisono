@@ -245,10 +245,9 @@ class DataBase():
         if storagemode == 'persistent':
             self.logger.info('Persistent mode, storing db at %s.', persistentfile)
             self.vacuum()
-            c = self.dbcon.cursor()
             with open(persistentfile, 'w') as f:
-                for line in c.iterdump():
-                    f.write('%s\n', line)
+                for line in self.dbcon.iterdump():
+                    f.write(line + "\n")
 
 #    def restore(self):
 #        '''
