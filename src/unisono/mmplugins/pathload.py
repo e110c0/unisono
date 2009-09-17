@@ -61,7 +61,7 @@ class MsgTrainPayload():
 
 class ADR(mmtemplates.MMMCTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, *args):
         self.__name__ = "ADR"
@@ -118,15 +118,22 @@ class ADR(mmtemplates.MMMCTemplate):
                     return
             if message.msgtype == "SEND_LATENCY":
                 slat = message.payload
+                self.logger.debug("Sender latency: %i", slat)
             elif message.msgtype == "MAX_PACKETSIZE":
                 smaxpacketsize = message.payload
+                self.logger.debug("Sender maxpacket: %i", smaxpacketsize)
             else:
+                self.logger.debug("unknown message: %s.",message.msgtype) 
                 pass
+            if slat != None and smaxpacketsize != None:
+                break
         if slat == None or smaxpacketsize == None:
             self.endMeasurement(13) # TODO error code!!
             return
         # get adr
+        self.logger.debug("starting ADR measurement...")
         result = self.measureADR()
+        self.logger.debug("starting ADR measurement... done!")
         # calculate result
         if result != None:
             self.request["ADR"] = result
@@ -210,7 +217,7 @@ class ADR(mmtemplates.MMMCTemplate):
 
 class PacketSender(mmtemplates.MMServiceTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, *args):
         self.__name__ = "PacketSender"
@@ -218,6 +225,7 @@ class PacketSender(mmtemplates.MMServiceTemplate):
         self.cost = 100
         self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
         self.send_latency = self.libmeasure.send_latency()
+        self.maxpacketsize = 1400
         
     def run(self):
         self.logger.info('running')
@@ -231,7 +239,19 @@ class PacketSender(mmtemplates.MMServiceTemplate):
             if (message.msgtype == "TRAIN"):
                 self.sendTrain(message)
             elif (message.msgtype == "GET_SEND_LATENCY"):
-                self.outq.put(Event("MESSAGE_OUT", Message(message.receiver, message.sender, "SEND_LATENCY", self.send_latency)))
+                self.outq.put(
+                    Event("MESSAGE_OUT", 
+                          Message(message.receiver, 
+                                  message.sender, 
+                                  "SEND_LATENCY", 
+                                  self.send_latency)))
+            elif (message.msgtype == "GET_MAX_PACKETSIZE"):
+                self.outq.put(
+                    Event("MESSAGE_OUT", 
+                           Message(message.receiver, 
+                                   message.sender, 
+                                   "MAX_PACKETSIZE", 
+                                   self.maxpacketsize)))
             else:
                 # stop here and send back error
                 pass
