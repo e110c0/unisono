@@ -137,7 +137,7 @@ class Dispatcher:
         Constructor
         '''
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
 
         self.config = configuration.get_configparser()
         

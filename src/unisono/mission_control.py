@@ -94,7 +94,7 @@ class MissionControl():
     '''
 
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, outq):
         '''
@@ -129,11 +129,11 @@ class MissionControl():
         if sender not in self.__modules_dict:
             self.__modules_dict.setdefault(sender) # this may have a value ?!
         else:
-            print (sender,"is already registered")
-        #print ("done reg")
+            self.logger.debug(sender + " is already registered")
+        #self.logger.debug ("done reg")
 
     def put(self, message):
-        #print ("put",sender,receiver,message)
+        #self.logger.debug ("put",sender,receiver,message)
         #with self.lock:
         # check if sender is registered
         if message.sender.id in self.__modules_dict:
@@ -148,31 +148,31 @@ class MissionControl():
             self.__receive_queue.put(ev)
 
     def get(self, receiverID):
-        #print ("get an item for",receiver)
+        #self.logger.debug ("get an item for",receiver)
         #with self.lock:
         # check if sender is registered
         if receiverID in self.__modules_dict:
             # queue (sender, receiver, message)
             cqueue = self.__modules_dict.get(receiverID)
-            #print ("getting a mailbox item ...",receiver)
+            #self.logger.debug ("getting a mailbox item ...",receiver)
             try:
                 c_item = cqueue.get_nowait()
                 senderID = c_item[0]
                 message = c_item[1]
                 fromIP = c_item[2]
                 fromPort = c_item[3]
-                #print ("getting (sender,message):",c_item)
-                #print ("done get")
+                #self.logger.debug ("getting (sender,message):",c_item)
+                #self.logger.debug ("done get")
                 return  (senderID, message,fromIP,fromPort)
             except queue.Empty:
-                print ("no message available for",receiverID)
+                self.logger.debug ("no message available for",receiverID)
                 return ("","","","")
 
     def triggerSendQueue(self):
         while True:
             if self.do_quit:
                 break
-            #print("triggerSendQueue")
+            #self.logger.debug("triggerSendQueue")
             #with self.lock:
             # check if new message should be sent
             try:
@@ -180,17 +180,17 @@ class MissionControl():
                 self.send(message.sender.id, message.receiver.id, message.receiver.ip, message.receiver.port, message)
             except queue.Empty:
                 time.sleep(self.trigger_wait_time)
-            #print ("done tsq")
+            #self.logger.debug ("done tsq")
 
     def triggerReceiveQueue(self):
         while True:
             if self.do_quit:
                 break
-            #print("triggerReceiveQueue")
+            #self.logger.debug("triggerReceiveQueue")
             # check if new message arrived
             try:
                 #event = self.__receive_queue.get_nowait()
-                #print("trq: handling",current)
+                #self.logger.debug("trq: handling",current)
                 # push message to modules mailbox
                 '''
                 senderID = current[0]
@@ -201,17 +201,17 @@ class MissionControl():
                 with self.lock:
                     if receiverID in self.__modules_dict:
                         cqueue = self.__modules_dict.pop(receiverID)
-                        #print ("storing into mailbox",receiver,cqueue)
+                        #self.logger.debug ("storing into mailbox",receiver,cqueue)
                         cqueue.put((senderID,message,fromIP,fromPort))
                         self.__modules_dict.setdefault(receiverID, cqueue)
-                    #print ("stored",receiver,cqueue,"into mailbox of",receiver)
+                    #self.logger.debug ("stored",receiver,cqueue,"into mailbox of",receiver)
                     else: # reply with an error message
-                        print ("(EE)",receiver,"has no mailbox")
+                        self.logger.debug ("(EE)",receiver,"has no mailbox")
                 '''
                 #self.outq.put(event)
             except queue.Empty:
                 time.sleep(self.trigger_wait_time)
-            #print ("done trq")
+            #self.logger.debug ("done trq")
 
     def send(self, senderID, receiverID, destIP, destPort, message):
         '''
@@ -236,7 +236,7 @@ class MissionControl():
             maybe add identifiers for the modules and the mission control
             '''
             #s_out = '' + sender + reveicer + message
-            #print ("sending:",s_out)
+            #self.logger.debug ("sending:",s_out)
             s.send(pickle.dumps(message))
             #s.send(message)
             # TODO error handling
@@ -274,14 +274,14 @@ class MissionControl():
 #        s.setsockopt(1, socket.SO_CLOEXEC1, 1)
         try: 
             while True:
-                print ("accepting a new connection ...")
+                self.logger.debug ("accepting a new connection ...")
                 try:
                     komm, addr = s.accept()
                 except KeyboardInterrupt:
-                    print ("KeyboardInterrupt - stopping server")
+                    self.logger.debug ("KeyboardInterrupt - stopping server")
                     self.stop()
                     break
-                print (addr, "connected")
+                self.logger.debug ("%s connected", addr)
 #                while True:
                 data = pickle.loads(komm.recv(1024))
                 if not data:
