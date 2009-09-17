@@ -122,6 +122,10 @@ class ADR(mmtemplates.MMMCTemplate):
             elif message.msgtype == "MAX_PACKETSIZE":
                 smaxpacketsize = message.payload
                 self.logger.debug("Sender maxpacket: %i", smaxpacketsize)
+            elif message.msgtype.startswith("ERR_"):
+                self.logger.debug("There is no receiver available on the other side: %s", message.msgtype)
+                self.endMeasurement(13) # TODO error code!!
+                return
             else:
                 self.logger.debug("unknown message: %s.",message.msgtype) 
                 pass
@@ -135,7 +139,7 @@ class ADR(mmtemplates.MMMCTemplate):
         result = self.measureADR()
         self.logger.debug("starting ADR measurement... done!")
         # calculate result
-        if result != None:
+        if result not in (None,0.0):
             self.request["ADR"] = result
             self.request['error'] = 0
             self.request['errortext'] = 'Measurement successful'
@@ -202,11 +206,16 @@ class ADR(mmtemplates.MMMCTemplate):
                     if i.tv_sec > 0:
                         ts.append(i.tv_sec * 1000000 + i.tv_usec)
                 count = len(ts)
-                delta = ts[count - 1 ] - ts[0]
-                bw = 1000000 * (28 + 1024) * 8 * count / delta
-                break;
+                if count > 0:
+                    delta = ts[count - 1 ] - ts[0]
+                    bw = 1000000 * (28 + 1024) * 8 * count / delta
+                    break;
+                else:
+                    self.logger.debug("did not receive any data, let's try again!")
+                    retry = retry + 1
             else:
                 #request a new train.
+                self.logger.debug("received a bad train, let's try again!")
                 retry = retry + 1
                 pass
         return bw
@@ -275,7 +284,7 @@ class PacketSender(mmtemplates.MMServiceTemplate):
                 # start sending
                 sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 sock_udp.bind(("", 0))
-                sock_udp.connect(("127.0.0.1", message.payload.udpsocket))
+                sock_udp.connect(("", message.payload.udpsocket))
                 error = self.libmeasure.send_train(message.payload.trainlength,
                                            message.payload.trainid,
                                            message.payload.packetsize,
