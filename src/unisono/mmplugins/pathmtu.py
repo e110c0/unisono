@@ -46,7 +46,7 @@ class PathMTU(mmtemplates.MMcTemplate):
     Wrapper class for the PathMTU module
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFOw)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, *args):
         '''
