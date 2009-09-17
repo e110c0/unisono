@@ -417,12 +417,12 @@ class XMLRPCReplyHandler:
                     self.logger.error('Unknown connector %s, discarding order', result['conid'])
                     self.eventq.put(Event('CANCEL', (result['conid'], result['orderid'])))
                     continue
-#                try:
-                connector.on_result(result)
-#                except:
-#                    self.logger.error('Connector %s unreachable!', result['conid'])
-#                    self.eventq.put(Event('CANCEL', (result['conid'], None)))
-#                    self.conmap.deregister_connector(result['conid'])
+                try:
+                    connector.on_result(result)
+                except:
+                    self.logger.error('Connector %s unreachable!', result['conid'])
+                    self.eventq.put(Event('CANCEL', (result['conid'], None)))
+                    self.conmap.deregister_connector(result['conid'])
             elif event.type == 'DISCARD':
                 # prepare paramap
                 paramap = dict( ((k,v) for (k,v) in event.payload.items() 
