@@ -50,18 +50,6 @@ class Node():
         else:
             return False
 
-class Msg_Fleet():
-    def __init__(self, n, k, node=None):
-        self.target = node
-        self.count = n
-        self.size = k
-
-    def equals(self,f):
-        if self.count == f.count and self.size == f.size and self.target.equals(f.target):
-            return True
-        else:
-            return False
-
 class Message():
 
     logger = logging.getLogger(__name__)
@@ -69,22 +57,14 @@ class Message():
 
     def __init__(self,sender,receiver,msgtype,payload):
         '''
-        to service modules
-        - SEND_FLEET: send n packets with size bytes to destination:port over udp
-
-        to mm_mc_module
-        - ACK_SEND_FLEET
-
-        [orders
-        - MAX_BW: send a fleet
-        - USED_BW: get current bw used by target
-        ]
+        Message object are exchanged between MissionControls
+        msgtype and payload can be defined by each module using the 
+        MissionControl.
         '''
         self.msgtype=msgtype # which cmd shall be executed
         self.sender = sender
         self.receiver = receiver
         self.payload = payload
-        self.dataitems = ['MC_REQUEST']
         self.tomsgqueue = 1
 
 class MissionControl():
