@@ -284,12 +284,13 @@ class PacketSender(mmtemplates.MMServiceTemplate):
                 # start sending
                 sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 sock_udp.bind(("", 0))
-                sock_udp.connect(("", message.payload.udpsocket))
+                sock_udp.connect((message.payload.target, message.payload.udpsocket))
                 error = self.libmeasure.send_train(message.payload.trainlength,
                                            message.payload.trainid,
                                            message.payload.packetsize,
                                            sock_udp.fileno(),
                                            message.payload.spacing)
+                sock_udp.close()
         else:
             error = 123
         # ack train finish
