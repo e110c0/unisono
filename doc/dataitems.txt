@@ -47,7 +47,7 @@
 # Data items for link properties (2 identifier)
 # bandwidth
 AVAILABLE_BANDWIDTH		l		i				available Bandwidth from NodeID2 -> NodeID1 in bit/s
-ADR 					l		i				guessed value: upper bound for availBW, lower bound for capacity in bit/s
+ADR 					l		i		*		guessed value: upper bound for availBW, lower bound for capacity in bit/s
 CAPACITY				l		i				capacity of the Link between NodeID2 -> NodeID1 in bit/s
 
 # round trip time
@@ -71,7 +71,8 @@ LOSS					l		i		*		end-to-end loss estimation in %
 QOS_E2E					l		s				end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
 
 # Multicast
-IP_MULTICAST_SUPPORT	l		i				IP multicast support: 0 = false, 1 = true
+IP_MULTICAST_SUPPORT	n		i				IP multicast support: 0 = false, 1 = true
+IP_MULTICAST_CONN       l       i               IP multicast connectivity
 
 # Data items for interface properties (1 identifier)
 # generic
@@ -85,6 +86,7 @@ USED_BANDWIDTH_RX		i		i		*	current in use RX bandwidth in bit/s
 USED_BANDWIDTH_TX		i		i		*	current in use TX bandwidth in bit/s
 
 # wireless
+# wlan
 WLAN_ESSID				i		s		*	essid of the current wlan connection
 WLAN_MODE				i		s		*	mode of the wireless network
 WLAN_AP_MAC				i		s		*	MAC address of the access point (in int64_t)
