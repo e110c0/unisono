@@ -61,4 +61,3 @@ class cValues(mmtemplates.MMTemplate):
                 self.request['error'] = 312
                 self.request['errortext'] = 'No value configured'
         self.logger.debug('the values are: %s', self.request)
-
