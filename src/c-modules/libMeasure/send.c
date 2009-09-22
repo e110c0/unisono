@@ -57,7 +57,7 @@ int send_train(int train_length, int32_t train_id, int packet_size, int sock_udp
     pack_buf[i]=(char)(random()&0x000000ff);
   }
 
-  for (pack_id=0; pack_id < train_length;){
+  for (pack_id=0; pack_id < train_length - 1;){
     pack_id_n = htonl(pack_id++);
     memcpy(pack_buf+sizeof(int32_t), &pack_id_n, sizeof(int32_t));
     send(sock_udp, pack_buf, packet_size,0 ) ;
