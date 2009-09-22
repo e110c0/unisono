@@ -1,3 +1,18 @@
+= v0.1.0 2009-09-22 =
+
+new features:
+ * triggered orders
+ * more data items supported
+ * more strict error handling
+ * full caching, db cleanup/store/restore
+
+new requirements:
+ * libiw
+ * python 3.1
+
+bugfixes:
+ * lots
+
 = v0.0.1 2009-06-07 =
 
 This is a sneak preview of the UNISONO service. Internal interfaces are still a matter of changes. External (i.e. the XML-RPC interface) might be extended in future releases.
