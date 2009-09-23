@@ -32,6 +32,7 @@ import logging
 import socket
 import threading
 from uuid import uuid1
+from time import time
 
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
@@ -55,7 +56,8 @@ class MulticastTester(mmtemplates.MMTemplate):
         self.cost = 5000
         self.wait = 5 # waiting time in seconds
         config = configuration.get_configparser()
-
+        # dict for receiver: ip:timestamp
+        self.receiver = {}
         try:
             self.mcip = config.get('Multicast Tester', 'groupip')
         except:
@@ -69,8 +71,17 @@ class MulticastTester(mmtemplates.MMTemplate):
         except:
             pass
         # prepare socket
-        self.socket = socket.socket(type = socket.SOCK_DGRAM)
-        self.socket.bind(("",self.mcport))
+        any = "0.0.0.0"
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 
+                                    socket.IPPROTO_UDP)
+        self.socket.bind((any, self.mcport))
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 7)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.setsockopt(socket.IPPROTO_IP,
+                               socket.IP_ADD_MEMBERSHIP, 
+                               socket.inet_aton(self.mcip) + 
+                               socket.inet_aton(any))
+        
         #self.socket.connect((self.mcip,self.mcport))
         
     def run(self, *args):
@@ -86,44 +97,60 @@ class MulticastTester(mmtemplates.MMTemplate):
     def checkrequest(self, request):
         return True
 
+    def prepareResult(self, address, result):
+        self.request['IP_MULTICAST_CONN'] = result
+        self.request['error'] = 0
+        self.request['errortext'] = 'Measurement successful'
+
     def measure(self):
         i = 0
-        repliers = []
+        id = uuid1()
         while i < self.retries:
+            # check for data in receiver dict
+            if request['identifier2'] in self.receiver.keys():
+                self.prepareResult(request['identifier2'], True)
+                return
             # send a packet
-            self.sendEchoRequest()
+            self.sendEchoRequest(id, i)
+            i = i + 1
             # wait for replies
             sleep(self.wait)
-            if received > 0:
-                break
-            else:
-                i = i + 1
-        for r in repliers:
-            # prepare a result
-            # send it to the dispatcher
-            pass
+        # no reply received: prepare negative result
+        self.prepareResult(request['identifier2'], False)
 
-    def sendEchoRequest(self):
-        # generate id
-        id = uuid1()
+    def sendEchoRequest(self, id, count):
         # prepare packet
+        payload = id.bytes + bytes(i) + bytes("MULTICAST_ECHO_REQST", "ascii")
         # send packet
+        self.socket.sendto(payload, (self.mcip, self.mcport))
         pass
 
-    def sendEchoReply(self, echoId):
+    def sendEchoReply(self, id, count):
         # prepare packet
+        payload = id.bytes + bytes(i) + bytes("MULTICAST_ECHO_REPLY", "ascii")
         # send packet
+        self.socket.sendto(payload, (self.mcip, self.mcport))
         pass
     
     def receive(self):
         '''
             
         '''
-        # if not sender == receiver
-            # if request: send reply
+        while True:
+            data, addr = self.socket.recvfrom(1500)
+            # if not sender == receiver
             # for all: prepare result
-        pass
-    
+            self.receiver[addr] = time()
+            # TODO each received packet should be put into the global cache.
+            # may require some restructuring in the dispatcher
+            #self.prepareResult(addr)
+            id = uuid.UUID(bytes = data[:16])
+            counter = int(data[16:17])
+            msg =  data[17:]
+            # if request: send reply
+            if msg == "MULTICAST_ECHO_REQST":
+                self.sendEchoReply(id, counter)
+
 #class MulticastEchoReplier(mmtemplates.MMServiceTemplate):
 #    '''
 #    Service M&M for the MulticastTester. It replies to UNISONO Multicast Echo
