@@ -53,6 +53,6 @@ int send_train(int train_length, int train_id, int packet_size, int sock_udp, in
 /**
  * send a packet fleet
  */
-int send_fleet();
+int send_fleet(int train_count, int train_length, int packet_size, int sock_udp, int spacing);
 
 #endif /*SEND_H_*/

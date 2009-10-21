@@ -39,17 +39,19 @@
 
 #include <stdio.h>
 
+#include <netinet/in.h>
+
 #include "helper.h"
 #include "mconstants.h"
 /**
  * receive a packet train
  */
-void recv_train(int train_length, int train_id, int packet_size, int sock_udp, struct timeval *timestamps, int * result);
+void recv_train(int train_length, int train_id, int packet_size, int sock_udp, struct timeval *timestamps, int *result);
 
 /**
  * receive a packet fleet
  */
-int recv_fleet();
+int recv_fleet(int fleet_count, int train_length, int packet_size, int sock_udp, struct timeval *timestamps);
 
 #endif /*RECV_H_*/
 

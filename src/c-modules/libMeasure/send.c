@@ -57,7 +57,7 @@ int send_train(int train_length, int32_t train_id, int packet_size, int sock_udp
     pack_buf[i]=(char)(random()&0x000000ff);
   }
 
-  for (pack_id=0; pack_id < train_length - 1;){
+  for (pack_id=0; pack_id < train_length-1;){
     pack_id_n = htonl(pack_id++);
     memcpy(pack_buf+sizeof(int32_t), &pack_id_n, sizeof(int32_t));
     send(sock_udp, pack_buf, packet_size,0 ) ;
@@ -74,6 +74,20 @@ int send_train(int train_length, int32_t train_id, int packet_size, int sock_udp
 /**
  * send a packet fleet
  */
-int send_fleet(){
+int send_fleet(int train_count, int train_length, int packet_size, int sock_udp, int spacing){
+
+  if(train_count < 1)
+    return(-1);
+
+  int32_t train_id = 0;
+  int send_trains_latency = 1000;
+
+  do{
+    packet_size = (max_packet_size > packet_size) ? packet_size : max_packet_size;
+    send_train(train_length, train_id, packet_size, sock_udp, spacing);
+    train_id++;
+    usleep(send_trains_latency);
+  }while(train_id < train_count);
+
   return 0;
 }

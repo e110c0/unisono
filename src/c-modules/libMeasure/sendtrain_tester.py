@@ -47,5 +47,13 @@ libmeasure = CDLL(path.join(getcwd(),'libMeasure.so'))
 sock_udp = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 sock_udp.bind(("",0))
 sock_udp.connect(("127.0.0.1",43212))
+'''
 result = libmeasure.send_train(45,0,1000,sock_udp.fileno(),0)
+print(result)
+
+result = libmeasure.send_train(45,1,1000,sock_udp.fileno(),0)
+print(result)
+'''
+
+result = libmeasure.send_fleet(10,50,1000,sock_udp.fileno(),0)
 print(result)
