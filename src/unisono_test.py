@@ -37,17 +37,20 @@ import unittest
 import unisono.test.connector_interface
 import unisono.test.nic_resources
 import unisono.test.order
+import unisono.test.mission_control
 
 # init testsuites
 connector_interface_testsuite = unisono.test.connector_interface.suite()
 order_testsuite = unisono.test.order.suite()
 nic_resources_testsuite = unisono.test.nic_resources.suite()
+mission_control_testsuite = unisono.test.mission_control.suite()
 
 # join testsuites
 alltests = unittest.TestSuite((
         connector_interface_testsuite,
         order_testsuite,
         nic_resources_testsuite
+#        mission_control_testsuite
         ))
 
 # init testrunner as textbased runner
