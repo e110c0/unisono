@@ -137,7 +137,7 @@ class Dispatcher:
         Constructor
         '''
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.INFO)
 
         self.config = configuration.get_configparser()
         
@@ -313,10 +313,10 @@ class Dispatcher:
 #                self.replyq.put(event)
 #RB
             elif event.type == 'MESSAGE':
-                self.logger.debug('message: %s', event.payload.msgtype)
+                #self.logger.debug('message: %s', event.payload.msgtype)
                 self.queue_message(event.payload)
             elif event.type == 'MESSAGE_OUT':
-                self.logger.debug('messageout: %s', event.payload.msgtype)
+                #self.logger.debug('messageout: %s', event.payload.msgtype)
                 self.mc.put(event.payload)
 #
             else:
