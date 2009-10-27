@@ -52,7 +52,7 @@ def on_result(result):
 #        pass
 #    else:
 #        print('Done with all 10!')
-    if result["subid"] == 2:
+    if "subid" in result.keys() and result["subid"] == 2:
         print("Now I cancel the order")
         s.cancel_order(myID, "0")
     return True

@@ -33,14 +33,13 @@ from queue import Queue, Empty
 from time import time as system_time
 from unisono.db import DataBase, restoreDataBase
 from unisono.db import NotInCacheError
-from unisono.order import Order
+from unisono.order import Order, InternalOrder, RemoteOrder
 from unisono.connector_interface import XMLRPCServer, XMLRPCReplyHandler
 from unisono.event import Event
 from unisono.utils import configuration
 from unisono.mmplugins.mmtemplates import MMTemplate, MMMCTemplate, MMServiceTemplate
 # RB
-from unisono.mission_control import MissionControl
-from unisono.mission_control import Message
+from unisono.mission_control import MissionControl, Message, Node
 #
 
 import logging, copy
@@ -318,6 +317,9 @@ class Dispatcher:
             elif event.type == 'MESSAGE_OUT':
                 #self.logger.debug('messageout: %s', event.payload.msgtype)
                 self.mc.put(event.payload)
+            elif event.type == 'INTERN_ORDER':
+                # handle it like a normal order, but get the result and put it into a response message
+                self.process_order(event.payload)
 #
             else:
                 self.logger.warn('Internal error: unknown event %r, discarding.' % (event.type,))
@@ -368,7 +370,26 @@ class Dispatcher:
     #            self.logger.debug('updated order: %s', order)
                 order['error'] = 0
                 order['errortext'] = 'Everything went fine'
-                self.replyq.put(Event('DELIVER', order))
+                o = order
+                r = order[order.dataitem]
+                if issubclass(type(o), InternalOrder):
+                    receiver = Node(None,order['moduleid'])
+                    message = Message(None,receiver,'RESULT',None,{order.dataitem:r})
+                    self.put_in_mmmcq(self.plugins[o['moduleid']].msgq, o['moduleid'], message)
+                    self.logger.info("queue_message into msgq %s", self.plugins[o['moduleid']].msgq)
+                elif issubclass(type(o), RemoteOrder):
+                        sender = Node(o['senderip'], o['senderid'])
+                        receiver = Node(o['receiverip'], o['receiverid'])
+                        o['errorcode'] = 0
+                        o['result'] = r[o['dataitem']]
+                        msgtype = 'RESULT'
+                        payload = o
+                        outmsg = Message(sender,receiver,msgtype,payload,r[o['dataitem']])
+                        # queues response in dispatcher queue
+                        ev = Event("MESSAGE_OUT",outmsg)
+                        self.eventq.put(ev)
+                else:
+                    self.replyq.put(Event('DELIVER', order))
             if order['finished']:
                 self.replyq.put(Event('FINISHED', order))
             self.logger.debug('cache hit')
@@ -401,6 +422,15 @@ class Dispatcher:
         # create request for MM
         req = order.identifierlist
         req['id'] = id
+        
+        if 'moduleid' in order:
+            req['moduleid'] = order['moduleid']
+        if 'identifier1' in order:
+            req['identifier1'] = order['identifier1']
+        if 'identifier2' in order:
+            req['identifier2'] = order['identifier2']
+        self.logger.info(req)
+        
         #self.logger.debug['stripped request: %s', req]
         # queue request
         mmq.put(req)
@@ -412,6 +442,11 @@ class Dispatcher:
 
     def queue_order(self, order):
         self.logger.debug('trying queue')
+        if issubclass(type(order), InternalOrder):
+            id = order['moduleid'], order.orderid
+        elif issubclass(type(order), RemoteOrder):
+            id = 'mc', order.orderid
+        else:
         id = order['conid'], order.orderid
         curmm = order['mmlist'].pop()
         self.pending_orders[id] = (curmm, order['mmlist'], order, [])
@@ -420,16 +455,32 @@ class Dispatcher:
 
 # RB
     def queue_message(self, message):
-        self.logger.info("queue_message %s",message.msgtype)
-        id = message.receiver.id # maybe change that
-        #self.pending_messages[id] = (curmm, mmlist, message, [])
-        if message.tomsgqueue == 1:
-            # default case
-            self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
-            self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
+        if message.msgtype == 'REMOTE_ORDER':
+            self.process_order(message.payload)
+            
+        elif message.msgtype == "RESULT":
+            self.logger.info("queue_message %s",message.msgtype)
+            id = message.sender.id # maybe change that
+            #self.pending_messages[id] = (curmm, mmlist, message, [])
+            if message.tomsgqueue == 1:
+                # default case
+                self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
+                self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
+            else:
+                self.put_in_mmmcq(self.plugins[message.receiver.id].orderq, id, message)
+                self.logger.info("queue_message into orderq %s", self.plugins[message.receiver.id].orderq)
+                
         else:
-            self.put_in_mmmcq(self.plugins[message.receiver.id].orderq, id, message)
-            self.logger.info("queue_message into orderq %s", self.plugins[message.receiver.id].orderq)
+            self.logger.info("queue_message %s",message.msgtype)
+            id = message.receiver.id # maybe change that
+            #self.pending_messages[id] = (curmm, mmlist, message, [])
+            if message.tomsgqueue == 1:
+                # default case
+                self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
+                self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
+            else:
+                self.put_in_mmmcq(self.plugins[message.receiver.id].orderq, id, message)
+                self.logger.info("queue_message into orderq %s", self.plugins[message.receiver.id].orderq)
 #
 
     def fill_order(self, order, result):
@@ -452,6 +503,7 @@ class Dispatcher:
         mm = result[0]
         r = result[1]
         id = r['id']
+
         try:
             # get the orders and get them out of the pending list
             curmm, mmlist, paramap, waitinglist = self.pending_orders.pop(id)
@@ -469,7 +521,24 @@ class Dispatcher:
                 else:
                     o['error'] = r['error']
                     o['errortext'] = r['errortext']
-                    self.replyq.put(Event('DELIVER', o))
+                    
+                    if issubclass(type(o), InternalOrder):
+                        message = Message(None,None,'ERROR',None,None)
+                        self.put_in_mmmcq(self.plugins[o['moduleid']].msgq, o['moduleid'], message)
+                        self.logger.info("queue_message into msgq %s", self.plugins[o['moduleid']].msgq)
+                    elif issubclass(type(o), RemoteOrder):
+                        receiver = Node(o['senderip'], o['senderid'])
+                        sender = Node(o['receiverip'], o['receiverid'])
+                        o['errorcode'] = -1
+                        msgtype = 'ERROR'
+                        payload = o
+                        outmsg = Message(sender,receiver,msgtype,payload)
+                        # queues response in dispatcher queue
+                        ev = Event("MESSAGE_OUT",outmsg)
+                        self.eventq.put(ev)
+                    else:
+                        self.replyq.put(Event('DELIVER', o))
+                    
                     if o['finished']:
                         self.replyq.put(Event('FINISHED', o))
                 try:
@@ -483,6 +552,22 @@ class Dispatcher:
             # deliver results
             for o in waitinglist + [paramap]:
                 if o.istriggermatch(r[o.dataitem]):
-                    self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
+                    if issubclass(type(o), InternalOrder):
+                        message = Message(None,None,'RESULT',None,r)
+                        self.put_in_mmmcq(self.plugins[o['moduleid']].msgq, o['moduleid'], message)
+                        self.logger.info("queue_message into msgq %s", self.plugins[o['moduleid']].msgq)
+                    elif issubclass(type(o), RemoteOrder):
+                        receiver = Node(o['senderip'], o['senderid'])
+                        sender = Node(o['receiverip'], o['receiverid'])
+                        o['errorcode'] = 0
+                        o['result'] = r[o['dataitem']]
+                        msgtype = 'RESULT'
+                        payload = o
+                        outmsg = Message(sender,receiver,msgtype,payload,r[o['dataitem']])
+                        # queues response in dispatcher queue
+                        ev = Event("MESSAGE_OUT",outmsg)
+                        self.eventq.put(ev)
+                    else:
+                        self.replyq.put(Event('DELIVER', self.fill_order(o, r)))
                 if o['finished']:
                     self.replyq.put(Event('FINISHED', o))

@@ -38,6 +38,7 @@ from threading import Lock
 from threading import Thread
 from unisono.utils import configuration
 from unisono.event import Event
+from unisono.order import RemoteOrder
 
 class Node():
     def __init__(self,t_ip,t_id):
@@ -69,7 +70,7 @@ class Message():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    def __init__(self,sender,receiver,msgtype,payload):
+    def __init__(self,sender,receiver,msgtype,payload,result=None):
         '''
         to service modules
         - SEND_FLEET: send n packets with size bytes to destination:port over udp
@@ -87,6 +88,7 @@ class Message():
         self.receiver = receiver
         self.payload = payload
         self.dataitems = ['MC_REQUEST']
+        self.result = result
         self.tomsgqueue = 1
 
 class MissionControlRequestHandler(StreamRequestHandler):
@@ -117,7 +119,7 @@ class MissionControlRequestHandler(StreamRequestHandler):
                 receiverID = data.receiver.id
                 # check if receiver is registered
 
-                if self.server.isRegistered(receiverID):
+                if self.server.isRegistered(receiverID) or type(data.payload) == RemoteOrder:
                     # send event to dispatcher
                     eventmsg = Message(data.sender,data.receiver,data.msgtype,data.payload)
                     ev = Event("MESSAGE",eventmsg)
@@ -131,6 +133,7 @@ class MissionControlRequestHandler(StreamRequestHandler):
                 else:
                     # create err_respone to requesting remote module
                     self.logger.debug("receiver not available")
+                    self.logger.debug(receiverID)
                     msgtype = "ERR_"+data.msgtype
                     outmsg = Message(data.receiver,data.sender,msgtype,data)
                     data_out = pickle.dumps(outmsg)
@@ -202,7 +205,7 @@ class MissionControl(TCPServer):
             self.logger.debug('put(): wrong data type')
             return -1
         # check if sender is registered
-        if message.sender.id in self.__modules_dict__:
+        if message.sender.id in self.__modules_dict__ or type(message.payload) == RemoteOrder:
             self.logger.info('queue outmsg')
             self.__send_queue.put(message)
         else:

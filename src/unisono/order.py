@@ -7,6 +7,7 @@ Created on 14.07.2009
 '''
 
 import logging
+import time
 logger = logging.getLogger(__file__)
 
 class OrderError(ValueError):
@@ -90,7 +91,8 @@ class Order(dict):
 
     def istriggermatch(self, measured_value):
         """ check if this order is triggered and value fits trigger criteria. Return True for untriggered orders. """
-        logger.debug("istriggermatch called (conid, orderid, subid) = (%s, %s, %s)",self.conid, self.orderid, self.get("subid", None))
+        if not (issubclass(type(self), InternalOrder) or issubclass(type(self), RemoteOrder)):
+            logger.debug("istriggermatch called (conid, orderid, subid) = (%s, %s, %s)",self.conid, self.orderid, self.get("subid", None))
         if not ("parent" in self and self["parent"].type == "triggered"):
             return True
         p = self["parent"]
@@ -177,3 +179,16 @@ class Order(dict):
     
     def __repr__(self):
         return "Order(%s)"%(super().__repr__(),)
+
+class InternalOrder(Order):
+    def __init__(self, module_id, *args, **kwargs):
+        order_id = time.time()
+        kwargs.update({'orderid':str(order_id),'moduleid':str(module_id),'type':'oneshot'})
+        super().__init__(*args, **kwargs)
+
+
+class RemoteOrder(Order):
+    def __init__(self, sender, receiver, *args, **kwargs):
+        order_id = time.time()
+        kwargs.update({'orderid':str(order_id),'senderip':str(sender.ip), 'senderid':str(sender.id), 'receiverip':str(receiver.ip), 'receiverid':str(receiver.id),'type':'oneshot'})
+        super().__init__(*args, **kwargs)

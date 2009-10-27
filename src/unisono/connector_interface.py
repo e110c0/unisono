@@ -419,7 +419,8 @@ class XMLRPCReplyHandler:
                     continue
                 try:
                     connector.on_result(result)
-                except:
+                except Exception as e:
+                    self.logger.debug(e)
                     self.logger.error('Connector %s unreachable!', result['conid'])
                     self.eventq.put(Event('CANCEL', (result['conid'], None)))
                     self.conmap.deregister_connector(result['conid'])

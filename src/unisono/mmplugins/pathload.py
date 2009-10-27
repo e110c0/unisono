@@ -61,7 +61,7 @@ class MsgTrainPayload():
 
 class ADR(mmtemplates.MMMCTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, *args):
         self.__name__ = "ADR"
@@ -72,7 +72,7 @@ class ADR(mmtemplates.MMMCTemplate):
         # get max packet size
         self.rmaxpacketsize = 1
         self.size = 1024
-        self.udp_port = 45654
+        self.udp_port = 43212
         self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def checkmeasurement(self, request):

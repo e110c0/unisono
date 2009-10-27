@@ -33,6 +33,7 @@ from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from unisono.mission_control import Message, Msg_Fleet, Node
 from unisono.event import Event
+from unisono.order import InternalOrder
 from queue import Empty
 import time
 from ctypes import *
@@ -83,6 +84,8 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
                 # 2) maximum train length?
                 # 3.1) request fleet
                 # 3.1.1) create request message
+                self.logger.info("got an request")
+                self.logger.info(self.request)
                 snd_ip = self.request['identifier1']
                 snd_id = self.__name__
                 rcv_ip = self.request['identifier2']
@@ -93,7 +96,7 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
                 #93303,7 kbits/sec
                 #48213,3 kbits/sec
                 train_count = 10 # number ob trains sent
-                train_length = 50 # packet count
+                train_length = 10 # packet count
                 packet_size = 1460
                 fl_rcv = sender
                 payload = Msg_Fleet(train_count,train_length,packet_size,fl_rcv)
@@ -213,7 +216,7 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
                     new_other_diff = (sorted_list[int((vec_len / 2) - 1)] + sorted_list[int(vec_len / 2)]) / 2.0
                 else:
                     new_other_diff = vec_diffs[int((vec_len + 1) / 2)]
-                new_other_bw = ((28+packet_size) << 3) * train_length / new_other_diff
+                new_other_bw = ((28+packet_size) << 3) * (train_length-1) / new_other_diff
                 print("new other_diff", new_other_diff, "bw: ", new_other_bw,"bps")
                 #
                 '''
@@ -260,7 +263,8 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
                 '''
                 
                 #self.request[di] = str((mean_bw / 1024) // 1024) + " MBit/s"
-                self.request[di] = str((new_other_bw / 1000) // 1000) + " MBit/s"
+                #self.request[di] = str((new_other_bw / 1000) // 1000)
+                self.request[di] = int(new_other_bw)
                 self.request['error'] = 0
                 self.request['errortext'] = 'Measurement successful'
             except:

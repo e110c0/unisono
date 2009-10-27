@@ -54,30 +54,19 @@ packet_size = 1000
 
 TimeStamps = timeval * train_length
 ts= TimeStamps()
-<<<<<<< .working
-result = c_int(0)
-libmeasure.recv_train(train_length,train_id,packet_size,sock_udp.fileno(),ts, byref(result))
-=======
 ts2= TimeStamps()
 ATimeStamps = TimeStamps * fleet_count
 tts = ATimeStamps()
 '''
 result = c_int(0)
 libmeasure.recv_train(train_length,0,packet_size,sock_udp.fileno(),ts, byref(result))
->>>>>>> .merge-right.r1935
 print(result)
-<<<<<<< .working
-tsp = []
-=======
 tsp = []
 tsp2 = []
->>>>>>> .merge-right.r1935
 for i in ts:
   if i.tv_sec > 0:
     tsp.append(i.tv_sec * 1000000 + i.tv_usec)
   print(i.tv_sec,i.tv_usec)
-<<<<<<< .working
-  print(i.tv_sec * 1000000 + i.tv_usec)=======
   print(i.tv_sec * 1000000 + i.tv_usec)
 
 result2 = c_int(0)
@@ -95,4 +84,3 @@ for j in tts:
   for i in j:
     print(i.tv_sec,i.tv_usec)
     print(i.tv_sec * 1000000 + i.tv_usec)
->>>>>>> .merge-right.r1935
