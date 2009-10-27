@@ -447,7 +447,7 @@ class Dispatcher:
         elif issubclass(type(order), RemoteOrder):
             id = 'mc', order.orderid
         else:
-        id = order['conid'], order.orderid
+            id = order['conid'], order.orderid
         curmm = order['mmlist'].pop()
         self.pending_orders[id] = (curmm, order['mmlist'], order, [])
         self.put_in_mmq(self.plugins[curmm].orderq, id, order)
