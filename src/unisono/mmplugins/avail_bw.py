@@ -4,9 +4,9 @@ avail_bw.py
  Created on: Oct 13, 2009
  Authors: rb
  
- $LastChangedBy: zxmzr67 $
- $LastChangedDate: 2009-08-12 12:12:13 +0200 (Mi, 12. Aug 2009) $
- $Revision: 1679 $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
  
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  

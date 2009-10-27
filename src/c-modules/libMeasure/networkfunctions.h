@@ -4,9 +4,9 @@
  *        Created on: Dec 11, 2008
  *           Authors: alex, dh
  *
- *    $LastChangedBy: haage $
- *  $LastChangedDate: 2009-07-16 15:56:35 +0200 (Thu, 16 Jul 2009) $
- *         $Revision: 1526 $
+ *    $LastChangedBy$
+ *  $LastChangedDate$
+ *         $Revision$
  *
  * (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  *

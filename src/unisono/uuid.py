@@ -5,9 +5,9 @@ uuid.py
  Created on: Mar 23, 2009
  Authors: zxmoo46
  
- $LastChangedBy: $
- $LastChangedDate: $
- $Revision: $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
  
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  

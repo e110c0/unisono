@@ -4,9 +4,9 @@ pyiw.c
  Created on: Aug 26, 2009
  Authors: dh
 
- $LastChangedBy: haage $
- $LastChangedDate: 2009-08-28 11:58:31 +0200 (Fri, 28 Aug 2009) $
- $Revision: 1721 $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
 
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
 

@@ -4,9 +4,9 @@ fleet.py
  Created on: Apr 23, 2009
  Authors: rb
  
- $LastChangedBy: haage $
- $LastChangedDate: 2009-07-29 13:50:57 +0200 (Mi, 29. Jul 2009) $
- $Revision: 1608 $
+ $LastChangedBy$
+ $LastChangedDate$
+ $Revision$
  
  (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
  
