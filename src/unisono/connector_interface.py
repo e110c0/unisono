@@ -209,7 +209,7 @@ class ConnectorFunctions:
                 return 404
         else:
             self.logger.error('Connector %s is unknown, discarding order!', conid)
-            status = 401
+            return 401
         return 0
 
     def cancel_order(self, callerid, orderid):
