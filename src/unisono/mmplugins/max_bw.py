@@ -56,7 +56,7 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
         self.dataitems = ['MAX_BANDWIDTH']
         self.cost = 100
 
-        lib_path = path.join(getcwd()+'/c-modules/libMeasure')
+        lib_path = path.dirname(__file__)
         self.logger.debug(path.join(lib_path,'libMeasure.so'))
         cdll.LoadLibrary(path.join(lib_path,'libMeasure.so'))
         self.libmeasure = CDLL(path.join(lib_path,'libMeasure.so'))
