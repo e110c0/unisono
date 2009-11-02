@@ -46,10 +46,7 @@ class Fleet(mmtemplates.MMServiceTemplate):
         self.dataitems = [] # TODO maybe remove that
         self.cost = 100
 
-        lib_path = path.join(getcwd()+'/c-modules/libMeasure')
-        self.logger.debug(path.join(lib_path,'libMeasure.so'))
-        cdll.LoadLibrary(path.join(lib_path,'libMeasure.so'))
-        self.libmeasure = CDLL(path.join(lib_path,'libMeasure.so'))
+        self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def run(self):
         self.logger.info('running')

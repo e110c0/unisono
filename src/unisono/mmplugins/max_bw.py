@@ -53,13 +53,10 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
     def __init__(self, *args):
         self.__name__ = "maxBandwidth"
         super().__init__(*args)
-        self.dataitems = ['MAX_BANDWIDTH']
+        self.dataitems = ['CAPACITY']
         self.cost = 100
 
-        lib_path = path.dirname(__file__)
-        self.logger.debug(path.join(lib_path,'libMeasure.so'))
-        cdll.LoadLibrary(path.join(lib_path,'libMeasure.so'))
-        self.libmeasure = CDLL(path.join(lib_path,'libMeasure.so'))
+        self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def checkmeasurement(self, request):
         return True
