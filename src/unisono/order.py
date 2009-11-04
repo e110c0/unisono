@@ -96,13 +96,15 @@ class Order(dict):
             if self.type == "triggered":
                 # check: either both thresholds are defined or neither
                 keys = ('lower_threshold', 'upper_threshold')
-                if not set(keys).isdisjoint(set(self.keys())):
+                if not set(keys).isdisjoint(set(self['parameters'].keys())):
                     for key in keys:
-                        if key not in self['parameters']:
+                        if key not in self['parameters'].keys():
                             raise OrderKeyMissing(412, "%s needed for triggered orders and not given"%key)
+                        else:
                             try:
                                 self['parameters'][key] = float(self['parameters'][key])
                             except (ValueError) as e:
+                                logger.error(e)
                                 raise OrderKeyInvalid(411, "%s parameter invalid"%key) from e
         self['finished']= False
 
