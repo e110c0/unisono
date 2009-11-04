@@ -36,6 +36,7 @@ from time import time
 
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
+from unisono.dataitem import DataItem
 
 class MulticastTester(mmtemplates.MMTemplate):
     '''
@@ -52,7 +53,7 @@ class MulticastTester(mmtemplates.MMTemplate):
         Constructor
         '''
         super().__init__(*args)
-        self.dataitems = ['IP_MULTICAST_CONN']
+        self.dataitems = [DataItem('IP_MULTICAST_CONN',2,600,1200)]
         self.cost = 5000
         self.wait = 5 # waiting time in seconds
         config = configuration.get_configparser()

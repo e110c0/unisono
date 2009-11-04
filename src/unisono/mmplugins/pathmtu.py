@@ -31,6 +31,7 @@ import logging
 from unisono.mmplugins import mmtemplates
 from ctypes import *
 from os import path
+from unisono.dataitem import DataItem
 
 class PathMTUResult(Structure):
     '''
@@ -56,7 +57,8 @@ class PathMTU(mmtemplates.MMcTemplate):
         self.libfile = path.join(path.dirname(__file__), 'libPathMTU.so')
         self.cresstruct = PathMTUResult()
         self.cost = 10000
-        self.dataitems = ['PATHMTU','HOPCOUNT']
+        self.dataitems = [DataItem('PATHMTU',2,600,1200),
+                          DataItem('HOPCOUNT',2,600,1200)]
         self.load_library()
 
     def checkrequest(self, request):

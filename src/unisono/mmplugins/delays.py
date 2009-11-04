@@ -29,6 +29,7 @@ delays.py
 '''
 import logging
 from unisono.mmplugins import mmtemplates
+from unisono.dataitem import DataItem
 from ctypes import *
 from os import getuid, path
 
@@ -74,18 +75,18 @@ class Delays(mmtemplates.MMcTemplate):
         self.libfile = path.join(path.dirname(__file__),'libDelays.so')
         self.cost = 10000
         self.cresstruct = DelaysResult()
-        self.dataitems = ['HOPCOUNT',
-                          'RTT',
-                          'RTT_MIN',
-                          'RTT_MAX',
-                          'RTT_DEVIATION',
-                          'RTT_JITTER',
-                          'OWD',
-                          'OWD_MIN',
-                          'OWD_MAX',
-                          'OWD_DEVIATION',
-                          'OWD_JITTER',
-                          'LOSSRATE']
+        self.dataitems = [DataItem('HOPCOUNT',2,600,1200),
+                          DataItem('RTT',2,60,120),
+                          DataItem('RTT_MIN',2,60,120),
+                          DataItem('RTT_MAX',2,60,120),
+                          DataItem('RTT_DEVIATION',2,60,120),
+                          DataItem('RTT_JITTER',2,60,120),
+                          DataItem('OWD',2,60,120),
+                          DataItem('OWD_MIN',2,60,120),
+                          DataItem('OWD_MAX',2,60,120),
+                          DataItem('OWD_DEVIATION',2,60,120),
+                          DataItem('OWD_JITTER',2,60,120),
+                          DataItem('LOSSRATE',2,60,120)]
         self.load_library()
 
     def checkrequest(self, request):

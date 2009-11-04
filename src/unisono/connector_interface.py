@@ -122,6 +122,7 @@ class ConnectorFunctions:
         self.eventq = q
         self.conmap = conmap
         self.dispatcher = dispatcher
+        self.dataitemprops = self.dispatcher.dataitemprops
 
     def register_connector(self, port):
         '''
@@ -171,7 +172,7 @@ class ConnectorFunctions:
         return string - all available data items
         '''
         self.logger.debug('RPC function \'list_available_dataitems\'.')
-        return sorted(list(self.dispatcher.dataitems.keys()))
+        return sorted(list(self.dataitemprops.keys()))
 
     def commit_order(self, conid, paramap):
         '''
@@ -201,10 +202,14 @@ class ConnectorFunctions:
             except ValueError as e:
                 self.logger.error(e)
                 return e.status
-            if order.dataitem in self.dispatcher.dataitems.keys():
-                # create event and put it in the eventq
-                order.append_item('conid',conid)
-                self.eventq.put(Event('ORDER', order))
+            # check whether dataitem exists and identifier count is correct
+            if (order.dataitem in self.dataitemprops.keys()):
+                if (len(order.identifierlist) >= self.dataitemprops[order.dataitem].identifier_count):
+                    # create event and put it in the eventq
+                    order.append_item('conid',conid)
+                    self.eventq.put(Event('ORDER', order))
+                else:
+                    return 409
             else:
                 return 404
         else:
@@ -253,7 +258,7 @@ class ConnectorFunctions:
         '''
         #  TODO: create event and put it in the eventq
         #self.eventq.put(Event('CACHE', result))
-        cache = DataBase()
+        cache = DataBase(self.dataitemprops)
         result['time'] = time()
         result[result['dataitem']] = result['result']
         del(result['result'])
@@ -279,7 +284,7 @@ class ConnectorFunctions:
         # TODO: really check the cache as soon as it is implemented.
         try:
             self.logger.debug('check db for %s', paramap)
-            cache = DataBase()
+            cache = DataBase(self.dataitemprops)
             result = cache.check_for(paramap)
             paramap.update(result)
 #            paramap[paramap['dataitem']] = result

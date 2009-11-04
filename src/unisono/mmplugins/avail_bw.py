@@ -34,6 +34,8 @@ from unisono.utils import configuration
 from unisono.mission_control import Message, Msg_Fleet, Node
 from unisono.order import InternalOrder, RemoteOrder
 from unisono.event import Event
+from unisono.dataitem import DataItem
+
 from queue import Empty
 import time
 from ctypes import *
@@ -47,9 +49,8 @@ class availBandwidth(mmtemplates.MMMCTemplate):
     logger.setLevel(logging.DEBUG)
 
     def __init__(self, *args):
-        self.__name__ = "availBandwidth"
         super().__init__(*args)
-        self.dataitems = ['AVAIL_BANDWIDTH']
+        self.dataitems = [DataItem('AVAILABLE_BANDWIDTH',2,60,120)]
         self.cost = 100
         '''
         lib_path = path.join(getcwd()+'/c-modules/libMeasure')
@@ -81,7 +82,7 @@ class availBandwidth(mmtemplates.MMMCTemplate):
                 '''
                 # TODO
                 module_id = self.__name__
-                req_di = 'MAX_BANDWIDTH'
+                req_di = 'CAPACITY'
                 #req_di = 'USED_BANDWIDTH_TX'
                 #req_di = 'USED_BANDWIDTH_RX'
                 order = InternalOrder(module_id, {'dataitem':req_di, 'identifier1':self.request['identifier1'], 'identifier2':self.request['identifier2']}) # TODO: here we should add the remote station
@@ -130,7 +131,7 @@ class availBandwidth(mmtemplates.MMMCTemplate):
                 result = message.result
                 '''
                 
-                req_di = 'MAX_BANDWIDTH'
+                req_di = 'CAPACITY'
                 max_bw = int(self.run_internal_order(req_di)) # bw between both nodes
                 if max_bw == None:
                     raise

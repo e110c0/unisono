@@ -40,6 +40,7 @@ from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from unisono.mission_control import Message, Node
 from unisono.event import Event
+from unisono.dataitem import DataItem
 
 class timeval(Structure):
   _fields_ = [("tv_sec", c_ulong), ("tv_usec", c_ulong)]
@@ -66,7 +67,7 @@ class ADR(mmtemplates.MMMCTemplate):
     def __init__(self, *args):
         self.__name__ = "ADR"
         super().__init__(*args)
-        self.dataitems = ['ADR']
+        self.dataitems = [DataItem('ADR',2,120,240)]
         self.cost = 10000
         self.trainlength = 50
         # get max packet size

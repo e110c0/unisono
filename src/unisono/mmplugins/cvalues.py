@@ -30,10 +30,11 @@ cvalues.py
 import logging
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
+from unisono.dataitem import DataItem
 
 class cValues(mmtemplates.MMTemplate):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     '''
     This class provides user-definde (==configured) values for the applications
     each value will be found in the cvalue section of unisono.cfg
@@ -42,7 +43,8 @@ class cValues(mmtemplates.MMTemplate):
     '''
     def __init__(self, *args):
         super().__init__(*args)
-        self.dataitems = ['SHARED_BANDWIDTH_RX', 'SHARED_BANDWIDTH_TX']
+        self.dataitems = [DataItem('SHARED_BANDWIDTH_RX',0,100,600), 
+                          DataItem('SHARED_BANDWIDTH_TX',0,100,600)]
         self.cost = 100
 
     def checkrequest(self, request):
@@ -54,7 +56,7 @@ class cValues(mmtemplates.MMTemplate):
         self.logger.debug('cValues options: %s', options)
         for di in self.dataitems:
             try:
-                self.request[di] = config.get('cValues', di)
+                self.request[di.name] = config.get('cValues', di.name)
                 self.request['error'] = 0
                 self.request['errortext'] = 'Measurement successful'
             except:

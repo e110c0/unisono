@@ -31,9 +31,11 @@ nic_resources.py
 import threading, logging, re, string, sys, fcntl, socket, time, math
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
+from unisono.dataitem import DataItem
 from binascii import hexlify
 from os import popen
 from unisono.utils import pyiw
+from unisono.dataitem import DataItem
 
 def get_interfaces_for_ip(ip):
     
@@ -80,11 +82,11 @@ class NicReader(mmtemplates.MMTemplate):
         '''
         super().__init__(*args)
         self.dataitems = [
-                          'INTERFACE_TYPE',
+                          DataItem('INTERFACE_TYPE',1,1000,1000),
 #                          'INTERFACE_CAPACITY_RX',
 #                          'INTERFACE_CAPACITY_TX',
-                          'INTERFACE_MAC',
-                          'INTERFACE_MTU',
+                          DataItem('INTERFACE_MAC',1,1000,1000),
+                          DataItem('INTERFACE_MTU',1,1000,1000)
                           ]
         self.cost = 500
 
@@ -173,8 +175,8 @@ class BandwidthUsage(mmtemplates.MMTemplate):
     def __init__(self, *args):
         super().__init__(*args)
         self.dataitems = [
-                          'USED_BANDWIDTH_RX',
-                          'USED_BANDWIDTH_TX'
+                          DataItem('USED_BANDWIDTH_RX',1,0,30),
+                          DataItem('USED_BANDWIDTH_TX',1,0,30)
                           ]
         self.cost = 2000
 
@@ -249,16 +251,16 @@ class WifiReader(mmtemplates.MMTemplate):
     def __init__(self, *args):
         super().__init__(*args)
         self.dataitems = [
-                          'WLAN_ESSID',
-                          'WLAN_MODE',
-                          'WLAN_AP_MAC',
-                          'WLAN_LINK',
+                          DataItem('WLAN_ESSID',1,1000,1000),
+                          DataItem('WLAN_MODE',1,1000,1000),
+                          DataItem('WLAN_AP_MAC',1,1000,1000),
+                          DataItem('WLAN_LINK',1,1000,1000),
 #                          'WLAN_SIGNAL',
 #                          'WLAN_NOISE',
 #                          'WLAN_SIGNOISE_RATIO',
-                          'WLAN_CHANNEL',
-                          'WLAN_FREQUENCY',
-                          'WLAN_PROTOCOL'
+                          DataItem('WLAN_CHANNEL',1,1000,1000),
+                          DataItem('WLAN_FREQUENCY',1,1000,1000),
+                          DataItem('WLAN_PROTOCOL',1,1000,1000)
                           ]
         self.cost = 500
 

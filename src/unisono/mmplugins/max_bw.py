@@ -34,6 +34,8 @@ from unisono.utils import configuration
 from unisono.mission_control import Message, Msg_Fleet, Node
 from unisono.event import Event
 from unisono.order import InternalOrder
+from unisono.dataitem import DataItem
+
 from queue import Empty
 import time
 from ctypes import *
@@ -53,9 +55,8 @@ class maxBandwidth(mmtemplates.MMMCTemplate):
     def __init__(self, *args):
         self.__name__ = "maxBandwidth"
         super().__init__(*args)
-        self.dataitems = ['CAPACITY']
-        self.cost = 100
-
+        self.dataitems = [DataItem('CAPACITY',2,600,1200)]
+        self.cost = 5000
         self.libmeasure = CDLL(path.join(path.dirname(__file__), 'libMeasure.so'))
 
     def checkmeasurement(self, request):

@@ -36,6 +36,8 @@ from time import time
 from unisono.event import Event
 from unisono.mission_control import Message
 
+from unisono.dataitem import DataItem
+
 class MMTemplate:
     '''
     generic template for all M&Ms

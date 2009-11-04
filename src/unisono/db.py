@@ -40,6 +40,8 @@ class NotInCacheError(Exception):
 class InvalidTableLayout(Exception):
     pass
 
+class InvalidCacheRequest(Exception):
+    pass
 
 class DataBase():
     '''
@@ -48,8 +50,8 @@ class DataBase():
     This class provides a generic interface for all caching purposes.
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    def __init__(self):
+    logger.setLevel(logging.DEBUG)
+    def __init__(self, diprops):
         '''
         The first instance of DataBase creates a mysqlite database at the 
         configured location. All further instances connect to this existing
@@ -64,7 +66,8 @@ class DataBase():
             self.logger.debug('Connecting to DB at default location')
             dbfile = ':memory:'
         self.dbcon = sqlite3.connect(dbfile)
-
+        self.dataitemprops = diprops
+        
     def create_table(self, name, idcount, valuetype):
         '''
         Create a new table in the cache
@@ -106,18 +109,20 @@ class DataBase():
         self.logger.debug('Checking db for %s', paramap)
         result = {}
         table = paramap['dataitem']
+        idcount = self.dataitemprops[table].identifier_count
         if 'identifier1' in paramap.keys():
             identifier1 = paramap['identifier1']
         else:
-            raise NotInCacheError
-        if 'identifier2' in paramap.keys():
-            identifier2 = paramap['identifier2']
-        else:
-            identifier2 = None
+            raise InvalidCacheRequest
+        if idcount == 2:
+            if 'identifier2' in paramap.keys():
+                identifier2 = paramap['identifier2']
+            else:
+                raise InvalidCacheRequest
         age = time.time() - self.get_max_dataitem_age(table)
         c = self.dbcon.cursor()
         try:
-            if identifier2 != None:
+            if idcount == 2:
                 c.execute("select * from " + table + " where identifier1=? and identifier2=? and time>? order by time desc;", (identifier1, identifier2, age))
             else:
                 c.execute("select * from " + table + " where identifier1=? and time>? order by time desc;", (identifier1, age))
@@ -142,53 +147,47 @@ class DataBase():
         self.logger.debug('Storing %s', paramap)
         # get all stuff out of the paramap
         timestamp = paramap['time']
-        del paramap['time']
-        identifier1 = paramap['identifier1']
-        del paramap['identifier1']
-        if 'identifier2' in paramap.keys():
-            identifier2 = paramap['identifier2']
-            del paramap['identifier2']
-        else:
-            identifier2 = None
-        # delete what we do not need
-        for i in ('dataitem','id','error','errortext','type','subid','parameters'):
-            try:
-                del paramap[i]
-            except KeyError as e:
-                self.logger.debug('couldn\'t delete items: %s', e)
-        # process data items
-        self.logger.debug('storing dataitems: %s', paramap)
-        c = self.dbcon.cursor()
-        if identifier2 != None:
-            for d, v in paramap.items():
-                try:
-                    c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
-                except sqlite3.OperationalError:
-                    if type(v) == str:
-                        t = 'TEXT'
-                    elif type(v) == int:
-                        t = 'INT'
-                    elif type(v) == float:
-                        t = 'REAL'
-                    else: 
-                        t = 'NULL'
-                    self.create_table(d, 2, t)
-                    c.execute("insert into " + d + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
-        else:
-            for d, v in paramap.items():
-                try:
-                    c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
-                except sqlite3.OperationalError:
-                    if type(v) == str:
-                        t = 'TEXT'
-                    elif type(v) == int:
-                        t = 'INT'
-                    elif type(v) == float:
-                        t = 'REAL'
+        for k,v in paramap.items():
+            if k in self.dataitemprops.keys():
+                idcount = self.dataitemprops[k].identifier_count
+                if 'identifier1' in paramap.keys():
+                    identifier1 = paramap['identifier1']
+                else:
+                    raise InvalidCacheRequest
+                if idcount == 2:
+                    if 'identifier2' in paramap.keys():
+                        identifier2 = paramap['identifier2']
                     else:
-                        t = 'NULL'
-                    self.create_table(d, 1, t)
-                    c.execute("insert into " + d + " values (?, ?, ?);", (identifier1, timestamp, v))
+                        raise InvalidCacheRequest
+                c = self.dbcon.cursor()
+                if idcount == 2:
+                    try:
+                        c.execute("insert into " + k + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
+                    except sqlite3.OperationalError:
+                        if type(v) == str:
+                            t = 'TEXT'
+                        elif type(v) == int:
+                            t = 'INT'
+                        elif type(v) == float:
+                            t = 'REAL'
+                        else:
+                            t = 'NULL'
+                        self.create_table(k, 2, t)
+                        c.execute("insert into " + k + " values (?, ?, ?, ?);", (identifier1, identifier2, timestamp, v))
+                else:
+                    try:
+                        c.execute("insert into " + k + " values (?, ?, ?);", (identifier1, timestamp, v))
+                    except sqlite3.OperationalError:
+                        if type(v) == str:
+                            t = 'TEXT'
+                        elif type(v) == int:
+                            t = 'INT'
+                        elif type(v) == float:
+                            t = 'REAL'
+                        else:
+                            t = 'NULL'
+                        self.create_table(k, 1, t)
+                        c.execute("insert into " + k + " values (?, ?, ?);", (identifier1, timestamp, v))
         self.dbcon.commit()
         return status
     
@@ -265,7 +264,7 @@ class DataBase():
 #            self.logger.info('Persistent mode, restoring db from %s.', persistentfile)
 #            c = self.dbcon.cursor()
 
-    def get_max_dataitem_age(self, dataitem):
+    def get_max_dataitem_age(self, dataitem, local=True):
         '''
         get the maximum age an cache entry of dataitem is allowed to have before
         it cannot be reused.
@@ -273,9 +272,15 @@ class DataBase():
         @param dataitem: name of the dataitem
         @return: int maximum age in seconds
         '''
-        return 10
+        try:
+            if local == True:
+                return self.dataitemprops[dataitem].local_cache_time
+            else:
+                return self.dataitemprops[dataitem].remote_cache_time
+        except:
+            return 10
 
-def restoreDataBase():
+def restoreDataBase(diprops):
     '''
     restoreDataBase handles the first initialization of the cache database in UNISONO
     It takes care of creating, restoring and initial cleanup of the database.
@@ -285,7 +290,7 @@ def restoreDataBase():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     config = configuration.get_configparser()
-    db = DataBase()
+    db = DataBase(diprops)
     dbcon = db.dbcon
     c = dbcon.cursor()
     

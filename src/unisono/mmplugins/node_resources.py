@@ -31,6 +31,7 @@ import threading, logging, re, string, sys
 from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import statvfs
+from unisono.dataitem import DataItem
 
 class ResourceReader(mmtemplates.MMTemplate):
     '''
@@ -44,29 +45,29 @@ class ResourceReader(mmtemplates.MMTemplate):
         init the M&M and start the thread
         '''
         super().__init__(*args)
-        self.dataitems = ['CPU_TYPE',
-                          'CPU_SPEED',
-                          'CPU_CACHE_SIZE',
-                          'CPU_CORE_COUNT',
-                          'RAM',
-                          'RAM_USED',
-                          'RAM_FREE',
-                          'SWAP',
-                          'SWAP_USED',
-                          'SWAP_FREE',
-                          'CPU_LOAD',
-                          'CPU_LOAD_SYS',
-                          'CPU_LOAD_USER',
-                          'CPU_LOAD_WIO',
-                          'CPU_LOAD_IDLE',
-                          'HOST_UPTIME',
-                          'HOST_UPTIME_IDLE',
-                          'SYSTEM_LOAD_AVG_NOW',
-                          'SYSTEM_LOAD_AVG_5MIN',
-                          'SYSTEM_LOAD_AVG_15MIN',
-                          'PERSISTENT_MEMORY',
-                          'PERSISTENT_MEMORY_USED',
-                          'PERSISTENT_MEMORY_FREE',
+        self.dataitems = [DataItem('CPU_TYPE',0,1000,1000),
+                          DataItem('CPU_SPEED',0,1000,1000),
+                          DataItem('CPU_CACHE_SIZE',0,1000,1000),
+                          DataItem('CPU_CORE_COUNT',0,1000,1000),
+                          DataItem('RAM',0,1000,1000),
+                          DataItem('RAM_USED',0,0,120),
+                          DataItem('RAM_FREE',0,0,120),
+                          DataItem('SWAP',0,1000,1000),
+                          DataItem('SWAP_USED',0,0,120),
+                          DataItem('SWAP_FREE',0,0,120),
+                          DataItem('CPU_LOAD',0,0,120),
+                          DataItem('CPU_LOAD_SYS',0,0,120),
+                          DataItem('CPU_LOAD_USER',0,0,120),
+                          DataItem('CPU_LOAD_WIO',0,0,120),
+                          DataItem('CPU_LOAD_IDLE',0,0,120),
+                          DataItem('HOST_UPTIME',0,0,1000),
+                          DataItem('HOST_UPTIME_IDLE',0,0,1000),
+                          DataItem('SYSTEM_LOAD_AVG_NOW',0,0,120),
+                          DataItem('SYSTEM_LOAD_AVG_5MIN',0,0,300),
+                          DataItem('SYSTEM_LOAD_AVG_15MIN',0,0,900),
+                          DataItem('PERSISTENT_MEMORY',0,1000,1000),
+                          DataItem('PERSISTENT_MEMORY_USED',0,0,120),
+                          DataItem('PERSISTENT_MEMORY_FREE',0,0,120),
                           ]
         self.cost = 500
 

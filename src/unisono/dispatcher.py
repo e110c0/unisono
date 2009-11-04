@@ -136,7 +136,7 @@ class Dispatcher:
         Constructor
         '''
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
 
         self.config = configuration.get_configparser()
         
@@ -149,10 +149,11 @@ class Dispatcher:
         
         # TODO: add bogus task to help signal handling / cache garbage collection
         self.scheduler = Scheduler(self)
+        self.init_plugins()
         self.init_database()
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
-        self.init_plugins()
+
         
     def at_exit(self):
         """ to be called at system exit """
@@ -160,8 +161,8 @@ class Dispatcher:
         self.cache.save()
 
     def init_database(self):
-        restoreDataBase()
-        self.cache = DataBase()
+        restoreDataBase(self.dataitemprops)
+        self.cache = DataBase(self.dataitemprops)
         self.scheduler.schedule(Scheduler.Task(self.scheduler.now(), self.config.getint("Cache", "vacinterval"), finish=None, data="VACDB"))
 
     def start_xmlrpcserver(self):
@@ -177,6 +178,7 @@ class Dispatcher:
         self.plugins = {}
         # list of dataitems with the registered plugin and its cost
         self.dataitems = {}
+        self.dataitemprops = {}
         # initialize M&Ms
 
         try:
@@ -196,7 +198,7 @@ class Dispatcher:
                     if type(v) == type and issubclass(v, MMTemplate):
                         iq = Queue()
                         mm = v(iq, self.eventq)
-    
+                        self.logger.debug("created module at this point")
                         self.registerMM(n, mm)
                         mm_thread = threading.Thread(target=mm.run)
                         # Exit the server thread when the main thread terminates
@@ -204,7 +206,6 @@ class Dispatcher:
                         mm_thread.setName(mm.__class__.__name__)
                         mm_thread.start()
                         self.logger.info("M&M %s loop running in thread: %s", mm.__class__.__name__, mm_thread.name)
-    # RB
                     elif type(v) == type and issubclass(v, MMMCTemplate):
                         orderq = Queue()
                         msgq = Queue()
@@ -234,12 +235,11 @@ class Dispatcher:
             except Exception as e:
                 self.logger.error('Could not load plugin %s: %s', p, e)
                 continue
-#
         self.logger.info("Plugin initialization done, %i plugins with %i dataitems.", len(self.plugins), len(self.dataitems))
         self.logger.debug('plugin list: %r' % self.plugins)
         self.logger.debug('registered dataitems: %s', self.dataitems)
+        self.logger.debug('registered dataitem properties: %s', self.dataitemprops)
 
-# RB
     def registerMMMC(self, name, mm):
         # may change that behavior
         self.registerMM(name, mm)
@@ -254,18 +254,18 @@ class Dispatcher:
         To be able to use a M&M plugin, its provided dataitems must be globally
         registered.
         '''
+        self.logger.debug("Registrating %s", name)
         self.plugins[name] = mm
-        di = mm.availableDataItems()
         cost = mm.getCost()
-        self.logger.debug('Data items: %s', di)
-        self.logger.debug('Cost: %s', cost)
         # merge with current dataitem list
-        for i in di:
-            if i in self.dataitems.keys():
-                self.dataitems[i].append((cost, name))
-                self.dataitems[i].sort()
+        for i in mm.availableDataItems():
+            if i.name in self.dataitems.keys():
+                self.dataitems[i.name].append((cost, name))
+                self.dataitems[i.name].sort()
             else:
-                self.dataitems[i] = [(cost, name)]
+                self.dataitems[i.name] = [(cost, name)]
+            if i.name not in self.dataitemprops.keys():
+                self.dataitemprops[i.name] = i
 
     def deregisterMM(self, name):
         '''
@@ -273,10 +273,11 @@ class Dispatcher:
         This can be used for runtime module deactivation.
         '''
         self.logger.debug('Unregistering %s', name)
-        di = self.plugins[name].availableDataItems()
-        for i in di:
+        for i in self.plugins[name].availableDataItems():
             # only delete the correspondent entry
             self.dataitems = [i for i in self.dataitems if i[1] != name]
+            if i.name not in self.dataitems.keys():
+                del self.dataitemprops[i.name]
         del self.plugins[name]
 
     def run(self):
