@@ -209,7 +209,7 @@ class ADR(mmtemplates.MMMCTemplate):
                 count = len(ts)
                 if count > 0:
                     delta = ts[count - 1 ] - ts[0]
-                    bw = 1000000 * (28 + 1024) * 8 * count / delta
+                    bw = int(1000000 * (28 + 1024) * 8 * count / delta)
                     break;
                 else:
                     self.logger.debug("did not receive any data, let's try again!")

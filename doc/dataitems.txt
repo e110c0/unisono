@@ -46,9 +46,9 @@
 # name					type	result	impl	explanation
 # Data items for link properties (2 identifier)
 # bandwidth
-AVAILABLE_BANDWIDTH		l		i				available Bandwidth from NodeID2 -> NodeID1 in bit/s
+AVAILABLE_BANDWIDTH		l		i		*		available Bandwidth from NodeID2 -> NodeID1 in bit/s
 ADR 					l		i		*		guessed value: upper bound for availBW, lower bound for capacity in bit/s
-CAPACITY				l		i				capacity of the Link between NodeID2 -> NodeID1 in bit/s
+CAPACITY				l		i		*		capacity of the Link between NodeID2 -> NodeID1 in bit/s
 
 # round trip time
 RTT						l		i		*		average round trip time NodeID1 -> NodeID2 -> NodeID1 in usec
@@ -66,19 +66,19 @@ OWD_JITTER				l		i		*		owd jitter
 
 PATHMTU					l		i		*		minimal MTU between NodeID1 und NodeID2 in byte
 HOPCOUNT				l		i		*		number of hops between NodeID1 und NodeID2
-LOSS					l		i		*		end-to-end loss estimation in %
+LOSSRATE				l		i		*		end-to-end loss estimation in %
 # QoS
 QOS_E2E					l		s				end2end QoS: 0 = N/A, 1 = diffserv, 2 = intserv, 4 = NSIS, and sums
 
 # Multicast
 IP_MULTICAST_SUPPORT	n		i				IP multicast support: 0 = false, 1 = true
-IP_MULTICAST_CONN       l       i               IP multicast connectivity
+IP_MULTICAST_CONN	l	i	*	IP multicast connectivity
 
 # Data items for interface properties (1 identifier)
 # generic
 INTERFACE_TYPE			i		s		*	type of network interface
-INTERFACE_CAPACITY_RX	i		i		*	max receive capacity of the interface in bit/s
-INTERFACE_CAPACITY_TX	i		i		*	max send capacity of the interface in bit/s
+INTERFACE_CAPACITY_RX	i		i			max receive capacity of the interface in bit/s
+INTERFACE_CAPACITY_TX	i		i			max send capacity of the interface in bit/s
 INTERFACE_MAC			i		s		*	MAC address of the interface in bit/s
 INTERFACE_MTU			i		i		*	MTU of the interface in bytes
 
@@ -114,9 +114,9 @@ CPU_LOAD_SYS			n		i		*	current sys cpu usage in %
 CPU_LOAD_USER			n		i		*	current user(+nice) cpu usage in %
 CPU_LOAD_WIO			n		i		*	current waiting io cpu usage in %
 CPU_LOAD_IDLE			n		i		*	current idle cpu usage in %
-SYTEM_LOAD_AVG_NOW		n		i		*	current sytem load (last minute)
-SYSTEM_LOAD_AVG_5MIN	n		i		*	system load during the last 5 minutes
-SYSTEM_LOAD_AVG_15MIN	n		i		*	system load during the last 5 minutes
+SYSTEM_LOAD_AVG_NOW		n		f		*	current sytem load (last minute)
+SYSTEM_LOAD_AVG_5MIN	n		f		*	system load during the last 5 minutes
+SYSTEM_LOAD_AVG_15MIN	n		f		*	system load during the last 5 minutes
 HOST_UPTIME				n		i		*	uptime of the host in seconds
 HOST_UPTIME_IDLE		n		i		*	time the host was idle since boot in seconds
 RAM						n		i		*	sytem memory in KB

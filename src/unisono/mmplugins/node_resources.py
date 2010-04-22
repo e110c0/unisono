@@ -32,6 +32,7 @@ from unisono.mmplugins import mmtemplates
 from unisono.utils import configuration
 from os import statvfs
 from unisono.dataitem import DataItem
+from time import sleep
 
 class ResourceReader(mmtemplates.MMTemplate):
     '''
@@ -103,24 +104,25 @@ class ResourceReader(mmtemplates.MMTemplate):
                 self.request['SWAP_USED'] = self.request['SWAP'] - self.request['SWAP_FREE']
 
         tmpdata = open('/proc/loadavg').read().split()
-        self.request['SYSTEM_LOAD_AVG_NOW'] = tmpdata[0]
-        self.request['SYSTEM_LOAD_AVG_5MIN'] = tmpdata[1]
-        self.request['SYSTEM_LOAD_AVG_15MIN'] = tmpdata[2]
+        self.request['SYSTEM_LOAD_AVG_NOW'] = float(tmpdata[0])
+        self.request['SYSTEM_LOAD_AVG_5MIN'] = float(tmpdata[1])
+        self.request['SYSTEM_LOAD_AVG_15MIN'] = float(tmpdata[2])
         
         tmpdata = open("/proc/uptime").read().split()
         self.request['HOST_UPTIME'] = tmpdata[0]
         self.request['HOST_UPTIME_IDLE'] = tmpdata[1]
         
         tmpdata = statvfs("/var/tmp")
-        self.request['PERSISTENT_MEMORY'] = tmpdata.f_bsize * tmpdata.f_blocks / 1024
-        self.request['PERSISTENT_MEMORY_USED'] = (tmpdata.f_bsize * tmpdata.f_blocks - tmpdata.f_bsize * tmpdata.f_bfree) / 1024
-        self.request['PERSISTENT_MEMORY_FREE'] = tmpdata.f_bsize * tmpdata.f_bavail / 1024
+        self.request['PERSISTENT_MEMORY'] = int( tmpdata.f_bsize * tmpdata.f_blocks / 1024 )
+        self.request['PERSISTENT_MEMORY_USED'] = int( (tmpdata.f_bsize * tmpdata.f_blocks - tmpdata.f_bsize * tmpdata.f_bfree) / 1024 )
+        self.request['PERSISTENT_MEMORY_FREE'] = int(tmpdata.f_bsize * tmpdata.f_bavail / 1024)
         
         os = open("/proc/version")
         for kernel in os:
             if re.match("(.*)(.*)", kernel):
-                print(kernel)
-
+                #print(kernel)
+                pass
+        sleep(1)
         jiff2 = list(map(int, open("/proc/stat").read().split('\n')[0].split()[1:]))
         diff = list(map(lambda x: x[1] - x[0], zip(jiff1, jiff2)))
         duse = diff[0] + diff[1]
@@ -130,11 +132,11 @@ class ResourceReader(mmtemplates.MMTemplate):
         dstl = diff[7]
         summ = duse + dsys + didl + diow + dstl
         if summ > 0:
-            self.request['CPU_LOAD_USER'] = 100 * duse / summ
-            self.request['CPU_LOAD_SYS'] = 100 * dsys / summ 
-            self.request['CPU_LOAD_IDLE'] = 100 * didl / summ
-            self.request['CPU_LOAD_WIO'] = 100 * diow / summ
-            self.request['CPU_LOAD'] = 100 - self.request['CPU_LOAD_IDLE']
+            self.request['CPU_LOAD_USER'] = int(100 * duse / summ)
+            self.request['CPU_LOAD_SYS'] = int(100 * dsys / summ)
+            self.request['CPU_LOAD_IDLE'] = int(100 * didl / summ)
+            self.request['CPU_LOAD_WIO'] = int(100 * diow / summ)
+            self.request['CPU_LOAD'] = int(100 - self.request['CPU_LOAD_IDLE'])
         else:
             self.request['CPU_LOAD_USER'] = 0
             self.request['CPU_LOAD_SYS'] = 0

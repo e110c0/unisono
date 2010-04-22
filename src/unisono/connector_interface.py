@@ -35,7 +35,7 @@ from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpc.client import ServerProxy
 from queue import Queue
 from unisono.event import Event
-from unisono.db import NotInCacheError
+from unisono.db import NotInCacheError, InvalidCacheRequest
 from unisono.db import DataBase
 from unisono.order import Order
 from time import time
@@ -53,7 +53,7 @@ class ConnectorMap:
     only used by the XML RPC interface, both the server and the client part.
     '''
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     def __init__(self, q):
         if isinstance(q, Queue):
             self.eventq = q
@@ -112,7 +112,7 @@ class ConnectorMap:
 
 class ConnectorFunctions:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     '''
     functions available for connectors
     most of the functions reply with a status number. Results are received via
@@ -291,13 +291,20 @@ class ConnectorFunctions:
 #            paramap['result'] = result
             paramap['error'] = 0
             paramap['errortext'] = 'Everything went fine'
-
+            self.logger.debug("found result: %s", result)
         except NotInCacheError:
             paramap['error'] = 404
             paramap['errortext'] = 'Data item not found in cache'
+            self.logger.debug("Data item not found in cache")
+        except InvalidCacheRequest:
+            paramap['error'] = 409
+            paramap['errortext'] = 'Invalid Cache Request'
+            self.logger.debug("Invalid Cache Request")
+
         # we have a strict policy for XMLRPC: everything is a string!
         if "result" in paramap.keys() and type(result["result"]) is not 'string':
             paramap["result"] = str(paramap["result"])
+        self.logger.debug(paramap)
         return paramap
 
 # Threaded XMPRPC server
@@ -357,7 +364,7 @@ class XMLRPCServer:
 ################################################################################
 class XMLRPCReplyHandler:
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self, conmap, replyq, eventq):
         self.conmap = conmap

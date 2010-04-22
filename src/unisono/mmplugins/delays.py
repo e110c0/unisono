@@ -55,7 +55,7 @@ class DelaysResult(Structure):
                 ('OWD_MAX', c_int),
                 ('OWD_DEVIATION', c_int),
                 ('OWD_JITTER', c_int),
-                ('LOSSRATE', c_int),
+                ('LOSS', c_int),
                 ('error', c_int),
                 ('errortext', c_char_p)]
 
@@ -76,17 +76,17 @@ class Delays(mmtemplates.MMcTemplate):
         self.cost = 10000
         self.cresstruct = DelaysResult()
         self.dataitems = [DataItem('HOPCOUNT',2,600,1200),
-                          DataItem('RTT',2,60,120),
-                          DataItem('RTT_MIN',2,60,120),
-                          DataItem('RTT_MAX',2,60,120),
-                          DataItem('RTT_DEVIATION',2,60,120),
-                          DataItem('RTT_JITTER',2,60,120),
-                          DataItem('OWD',2,60,120),
-                          DataItem('OWD_MIN',2,60,120),
-                          DataItem('OWD_MAX',2,60,120),
-                          DataItem('OWD_DEVIATION',2,60,120),
-                          DataItem('OWD_JITTER',2,60,120),
-                          DataItem('LOSSRATE',2,60,120)]
+                          DataItem('RTT',2,10,120),
+                          DataItem('RTT_MIN',2,10,120),
+                          DataItem('RTT_MAX',2,10,120),
+                          DataItem('RTT_DEVIATION',2,10,120),
+                          DataItem('RTT_JITTER',2,10,120),
+                          DataItem('OWD',2,10,120),
+                          DataItem('OWD_MIN',2,10,120),
+                          DataItem('OWD_MAX',2,10,120),
+                          DataItem('OWD_DEVIATION',2,10,120),
+                          DataItem('OWD_JITTER',2,10,120),
+                          DataItem('LOSS',2,10,120)]
         self.load_library()
 
     def checkrequest(self, request):
