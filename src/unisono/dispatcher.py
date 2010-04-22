@@ -293,6 +293,7 @@ class Dispatcher:
                 self.logger.debug("Cancel order: %s", event.payload)
                 self.cancel_order(*event.payload)
             elif event.type == 'SCHED':
+                self.logger.debug('scheduler event: %s', event.payload)
                 if event.payload == "IDLE":
                     continue
                 elif event.payload == "VACDB":
@@ -430,7 +431,7 @@ class Dispatcher:
             req['identifier1'] = order['identifier1']
         if 'identifier2' in order:
             req['identifier2'] = order['identifier2']
-        self.logger.info(req)
+        self.logger.debug(req)
         
         #self.logger.debug['stripped request: %s', req]
         # queue request
@@ -485,6 +486,7 @@ class Dispatcher:
 #
 
     def fill_order(self, order, result):
+        self.logger.debug('order: %s result: %s',type(order),type(result))
         try:
             di = order.dataitem
             order.append_item(di,result[di])
@@ -498,6 +500,10 @@ class Dispatcher:
         except KeyError:
             pass
         return order
+
+    def trigger_match(self,order,result):
+        self.logger.debug('checking trigger now')
+        return true
 
     def process_result(self, result):
         self.logger.debug('trying result processing')
