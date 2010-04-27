@@ -1,3 +1,15 @@
+= v0.2.0 2010-04-27 =
+
+SpoVNet 1.0 Demonstrator Release
+
+new features:
+ * new M&Ms for bandwidth measurements, Multicast detection
+ * communication handler for orchestrated measurements
+ * handling incorrect orders and requests more solid
+
+bugfixes:
+ * lots
+
 = v0.1.0 2009-09-22 =
 
 new features:
