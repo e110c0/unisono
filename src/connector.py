@@ -2,14 +2,11 @@
 '''
 connector.py
 
- Created on: Mar 23, 2009
- Authors: dh
+ Created on: Thu 04, 2010
+ Authors: cd
  
- $LastChangedBy$
- $LastChangedDate$
- $Revision$
  
- (C) 2008-2009 by Computer Networks and Internet, University of Tuebingen
+ (C) 2010 by I8, TUM
  
  This file is part of UNISONO Unified Information Service for Overlay 
  Network Optimization.
@@ -29,114 +26,49 @@ connector.py
  
 '''
 
-from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
-import xmlrpc.client
-import threading
-from sys import stdin
-from time import sleep
-from itertools import count
+'''
+Sample to demonstrate usage of unisono client
+'''
+
+from unisono import connection
+
 from pprint import pprint
+from sys import stdin
 
-counter = 0
-myID = ""
+if __name__=="__main__":
+	#connect to local xml rpc server
+	c = connection.Client("127.0.0.1", 45312)
+	
+	localip = '127.0.0.1'
+	remoteip = '131.159.14.169'
+	
+	#build normal unisono order, don't care about orderid
+	order = {'identifier1':localip,
+			'identifier2':remoteip,
+			'type':'periodic',
+			'parameters' : {'interval': '3', 'lifetime': '30'},
+			'dataitem':'RTT'}
+	
+	
+	#define a callback which will be called when our result arrives
+	def callback(result):
+		print("got a result:")
+		pprint(result)
+	
+	
+	ret = c.commit_order(order, callback)
+	
+	#could be used later ....
+	orderid = ret[0]
+	return_code = ret[1]
+	
+	print("press any key ....")
+	ch = stdin.read(1)
+	
+	#cancel periodic order
+	c.cancel_order(c.getId(), orderid)
+	
+	#we are done, be polite!
+	c.close()
 
-def on_result(result):
-    global counter
-    global myID
-    counter += 1
-    print("Finally, results!")
-    pprint(result)
-#    if counter < 10:
-#        print('commit order: ' ,
-#              s.commit_order(myID, {'orderid':counter, 'identifier2':'127.0.0.1', 'dataitem':'PATHMTU'}))
-#        pass
-#    else:
-#        print('Done with all 10!')
-    if "subid" in result.keys() and result["subid"] == 2:
-        print("Now I cancel the order")
-        s.cancel_order(myID, "0")
-    return True
 
-def on_discard(result):
-    print("Discard: ", result)
-    return True
-
-def on_finished(result):
-    print("Order finished:", result)
-    return True
-        
-if __name__ == '__main__':
-    orderid = count()
-
-    # start server to get the result...
-    server = SimpleXMLRPCServer(("localhost", 43222), logRequests=False)
-    print("Listening on port 43222...")
-    server.register_multicall_functions()
-    server.register_function(on_result, 'on_result')
-    server.register_function(on_discard, 'on_discard')
-    server.register_function(on_finished, 'on_finished')
-    thread = threading.Thread(target=server.serve_forever)
-    # Exit the server thread when the main thread terminates
-    thread.setDaemon(True)
-    thread.start()
-    
-    s = xmlrpc.client.ServerProxy('http://localhost:45312/unisono')
-    # Print list of available methods
-    print("we do some stuff")
-    print(s.system.listMethods())
-    print(s.system.methodHelp('list_available_dataitems'))
-    print(s.system.methodHelp('cancel_order'))
-    myID = s.register_connector(43222)
-    print('my ID is: ' + myID)
-    print(s.list_available_dataitems())
-    localip = '127.0.0.1'
-    remoteip = '134.2.172.172'
-#    for i in s.list_available_dataitems():
-#        print('my order:', {'orderid': str(next(orderid)), 
-#                                                      'identifier1':localip,
-#                                                      'identifier2':remoteip,
-#                                                      'type':'oneshot',
-#                                                      'dataitem':i})
-#        print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-#                                                      'identifier1':localip,
-#                                                      'identifier2':remoteip,
-#                                                      'type':'oneshot',
-#                                                      'dataitem':i}))
-
-    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-                                                      'identifier1':localip,
-                                                      'identifier2':remoteip,
-                                                      'type':'triggered',
-                                                      'parameters' : {'interval': '8', 'lifetime': '30','lower_threshold': 4000, 'upper_threshold':5500},
-                                                      'dataitem':'RTT'}))
-#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-#                                                      'identifier1':localip,
-#                                                      'identifier2':remoteip,
-#                                                      'parameters' : {'interval': '10', 'lifetime':'30', 'upper_threshold' : '', 'lower_threshold' : ''},
-#                                                      'type':'triggered',
-#                                                      'dataitem':'INTERFACE_TYPE'}))
-#    sleep(3)
-#    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
-#                                                  'identifier1':'193.196.31.38',
-#                                                  'identifier2':remoteip,
-#                                                  'type':'oneshot',
-#                                                  'dataitem':'RTT_MIN'}))
-#    sleep(3)
-### cache testing:
-#    print('check cache: ' , s.check_cache(myID, {
-#                                              'identifier1':localip,
-#                                              'identifier2':remoteip,
-#                                              'dataitem':'INTERFACE_MAC'}))
-#    print('check cache: ' , s.check_cache(myID, {
-#                                              'identifier1':localip,
-#                                              'identifier2':remoteip,
-#                                              'dataitem':'RTT_MIN'}))
-
-#    print('cache result:', s.cache_result({
-#                                              'identifier1':localip,
-#                                              'identifier2':remoteip,
-#                                              'result':'123456',
-#                                              'dataitem':'SWAP'}))
-    ch = stdin.read(1)
-    print('shutting down.')
-    print(s.unregister_connector(myID))
