@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module unisono.connection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="unisono.html"><font color="#ffffff">unisono</font></a>.connection</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/korny/net/my_svn/unisono/src/unisono/connection.py">/home/korny/net/my_svn/unisono/src/unisono/connection.py</a></font></td></tr></table>
+    <p><tt>connection.py<br>
+&nbsp;<br>
+&nbsp;Created&nbsp;on:&nbsp;Wed&nbsp;03,&nbsp;2010<br>
+&nbsp;Authors:&nbsp;cd<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;(C)&nbsp;2010&nbsp;by&nbsp;I8,&nbsp;TUM<br>
+&nbsp;<br>
+&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;UNISONO&nbsp;Unified&nbsp;Information&nbsp;Service&nbsp;for&nbsp;Overlay&nbsp;<br>
+&nbsp;Network&nbsp;Optimization.<br>
+&nbsp;<br>
+&nbsp;UNISONO&nbsp;is&nbsp;free&nbsp;software:&nbsp;you&nbsp;can&nbsp;redistribute&nbsp;it&nbsp;and/or&nbsp;modify<br>
+&nbsp;it&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;as&nbsp;published&nbsp;by<br>
+&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;2&nbsp;of&nbsp;the&nbsp;License,&nbsp;or<br>
+&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.<br>
+&nbsp;<br>
+&nbsp;UNISONO&nbsp;is&nbsp;distributed&nbsp;in&nbsp;the&nbsp;hope&nbsp;that&nbsp;it&nbsp;will&nbsp;be&nbsp;useful,<br>
+&nbsp;but&nbsp;WITHOUT&nbsp;ANY&nbsp;WARRANTY;&nbsp;without&nbsp;even&nbsp;the&nbsp;implied&nbsp;warranty&nbsp;of<br>
+&nbsp;MERCHANTABILITY&nbsp;or&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE.&nbsp;&nbsp;See&nbsp;the<br>
+&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;for&nbsp;more&nbsp;details.<br>
+&nbsp;<br>
+&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License<br>
+&nbsp;along&nbsp;with&nbsp;UNISONO.&nbsp;&nbsp;If&nbsp;not,&nbsp;see&nbsp;&lt;<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="socket.html">socket</a><br>
+</td><td width="25%" valign=top><a href="threading.html">threading</a><br>
+<a href="time.html">time</a><br>
+</td><td width="25%" valign=top><a href="xmlrpc.html">xmlrpc</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="unisono.connection.html#Client">Client</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Client">class <strong>Client</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;client&nbsp;to&nbsp;connect&nbsp;to&nbsp;the&nbsp;local&nbsp;unisono&nbsp;server.&nbsp;<br>
+&nbsp;<br>
+commit_order&nbsp;is&nbsp;ready&nbsp;to&nbsp;use,&nbsp;no&nbsp;registering&nbsp;or&nbsp;orderid&nbsp;handling&nbsp;needed.<br>
+&nbsp;<br>
+The&nbsp;interface&nbsp;will&nbsp;be&nbsp;kept&nbsp;constant&nbsp;when&nbsp;unisono&nbsp;is&nbsp;changed&nbsp;from<br>
+xml-rpc&nbsp;to&nbsp;json.&nbsp;Methods&nbsp;marked&nbsp;with&nbsp;*deprecated&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;deprecated<br>
+when&nbsp;the&nbsp;unisono&nbsp;interface&nbsp;is&nbsp;changed&nbsp;to&nbsp;json.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Client-__init__"><strong>__init__</strong></a>(self, remote_addr, remote_port)</dt></dl>
+
+<dl><dt><a name="Client-cache_result"><strong>cache_result</strong></a>(self, result)</dt><dd><tt>*deprecated<br>
+See&nbsp;documentation.</tt></dd></dl>
+
+<dl><dt><a name="Client-cancel_order"><strong>cancel_order</strong></a>(self, callerid, orderid)</dt><dd><tt>See&nbsp;documentation.</tt></dd></dl>
+
+<dl><dt><a name="Client-check_cache"><strong>check_cache</strong></a>(self, paramap)</dt><dd><tt>*deprecated<br>
+See&nbsp;documentation.</tt></dd></dl>
+
+<dl><dt><a name="Client-close"><strong>close</strong></a>(self)</dt><dd><tt>close&nbsp;connection&nbsp;with&nbsp;remote&nbsp;server.&nbsp;Many&nbsp;orders&nbsp;can&nbsp;be&nbsp;given&nbsp;with&nbsp;one<br>
+connection.</tt></dd></dl>
+
+<dl><dt><a name="Client-commit_order"><strong>commit_order</strong></a>(self, order, callback_result, callback_discard<font color="#909090">=None</font>, callback_finished<font color="#909090">=None</font>)</dt><dd><tt>See&nbsp;documentation.<br>
+&nbsp;<br>
+parameters<br>
+order&nbsp;-&nbsp;a&nbsp;valid&nbsp;unisono&nbsp;order.&nbsp;orderid&nbsp;will&nbsp;be&nbsp;assigned&nbsp;dynamically<br>
+callback_*&nbsp;-&nbsp;the&nbsp;callback&nbsp;functions&nbsp;triggerd&nbsp;by&nbsp;remote<br>
+&nbsp;<br>
+!!WARNING!!&nbsp;return&nbsp;value&nbsp;differs&nbsp;from&nbsp;documentation<br>
+returns&nbsp;tuple&nbsp;a&nbsp;tuple&nbsp;of&nbsp;(orderid,&nbsp;status)</tt></dd></dl>
+
+<dl><dt><a name="Client-forward_received_packet"><strong>forward_received_packet</strong></a>(self, packet)</dt><dd><tt>*deprecated<br>
+See&nbsp;documentation.</tt></dd></dl>
+
+<dl><dt><a name="Client-getId"><strong>getId</strong></a>(self)</dt><dd><tt>return&nbsp;the&nbsp;ID&nbsp;returned&nbsp;by&nbsp;register_connector</tt></dd></dl>
+
+<dl><dt><a name="Client-getOrderId"><strong>getOrderId</strong></a>(self)</dt><dd><tt>*deprecated&nbsp;-&nbsp;use&nbsp;commit&nbsp;order&nbsp;and&nbsp;don't&nbsp;care&nbsp;about&nbsp;orderids<br>
+return&nbsp;a&nbsp;_new_&nbsp;and&nbsp;unused&nbsp;orderid,&nbsp;safe&nbsp;to&nbsp;use&nbsp;for&nbsp;periodic&nbsp;orders</tt></dd></dl>
+
+<dl><dt><a name="Client-list_available_dataitems"><strong>list_available_dataitems</strong></a>(self)</dt><dd><tt>See&nbsp;documentation.</tt></dd></dl>
+
+<dl><dt><a name="Client-register_connector"><strong>register_connector</strong></a>(self, port)</dt><dd><tt>*deprecated&nbsp;-&nbsp;generate&nbsp;new&nbsp;<a href="#Client">Client</a><br>
+See&nbsp;documentation.</tt></dd></dl>
+
+<dl><dt><a name="Client-unregister_connector"><strong>unregister_connector</strong></a>(self, callerid)</dt><dd><tt>*deprecated&nbsp;-&nbsp;use&nbsp;close&nbsp;and&nbsp;only&nbsp;one&nbsp;connection&nbsp;per&nbsp;client<br>
+See&nbsp;documentation.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>logger</strong> = &lt;logging.Logger object at 0xb7383dec&gt;</dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-sleep"><strong>sleep</strong></a>(...)</dt><dd><tt><a href="#-sleep">sleep</a>(seconds)<br>
+&nbsp;<br>
+Delay&nbsp;execution&nbsp;for&nbsp;a&nbsp;given&nbsp;number&nbsp;of&nbsp;seconds.&nbsp;&nbsp;The&nbsp;argument&nbsp;may&nbsp;be<br>
+a&nbsp;floating&nbsp;point&nbsp;number&nbsp;for&nbsp;subsecond&nbsp;precision.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>stdin</strong> = &lt;_io.TextIOWrapper name='&lt;stdin&gt;' encoding='UTF-8'&gt;</td></tr></table>
+</body></html>
