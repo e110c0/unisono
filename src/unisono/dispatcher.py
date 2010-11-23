@@ -358,8 +358,8 @@ class Dispatcher:
         # get all possible m&m's
         order['mmlist'] = [i[1] for i in self.dataitems[order.dataitem]]
         # handle remote orders
-        if order.identifierlist()[0] in self.ips:
-        	self.logger.debug("yeah, got a remote order, pushing it out")
+        if order.identifierlist[0] in self.ips:
+        	self.logger.debug("=========  yeah, got a remote order, pushing it out ========")
         
         # sanity checks
         if order.type in ("periodic", "triggered"):
