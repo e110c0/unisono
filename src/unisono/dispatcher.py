@@ -45,6 +45,16 @@ from unisono.mission_control import MissionControl, Message, Node
 import logging, copy
 import threading
 
+# TODO: move to an appropriate location
+# TODO: work for all IF not only the primary
+import socket
+def getIpAddresses(): 
+    addrList = socket.getaddrinfo(socket.gethostname(), None) 
+
+    ipList=[] 
+    for item in addrList: 
+        ipList.append(item[4][0]) 
+    return ipList
 
 class Scheduler:
     '''
@@ -154,7 +164,9 @@ class Dispatcher:
         self.start_xmlrpcserver()
         self.start_xmlrpcreplyhandler()
 
-        
+        # memorize local IPs
+        self.ips = getIpAddresses()
+
     def at_exit(self):
         """ to be called at system exit """
         self.logger.debug("Calling destructor for Dispatcher")
@@ -247,7 +259,6 @@ class Dispatcher:
     def registerMMService(self, name, mm):
         # may change that behavior
         self.registerMM(name, mm)
-#
 
     def registerMM(self, name, mm):
         '''
@@ -346,6 +357,10 @@ class Dispatcher:
             return
         # get all possible m&m's
         order['mmlist'] = [i[1] for i in self.dataitems[order.dataitem]]
+        # handle remote orders
+        if order.identifierlist()[0] in self.ips:
+        	self.logger.debug("yeah, got a remote order, pushing it out")
+        
         # sanity checks
         if order.type in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
