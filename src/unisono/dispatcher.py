@@ -320,15 +320,15 @@ class Dispatcher:
             elif event.type == 'RESULT':
                 self.logger.debug('result. %s', event.payload)
                 self.process_result(event.payload)
-#            elif event.type == 'FINISHED':
-#                self.logger.debug('finished %s', event.payload)
-#                self.replyq.put(event)
+            elif event.type == 'FINISHED':
+                self.logger.debug('finished %s', event.payload)
+                self.replyq.put(event)
 #RB
             elif event.type == 'MESSAGE':
-                #self.logger.debug('message: %s', event.payload.msgtype)
+                self.logger.debug('message: %s', event.payload.msgtype)
                 self.queue_message(event.payload)
             elif event.type == 'MESSAGE_OUT':
-                #self.logger.debug('messageout: %s', event.payload.msgtype)
+                self.logger.debug('messageout: %s', event.payload.msgtype)
                 self.mc.put(event.payload)
             elif event.type == 'INTERN_ORDER':
                 # handle it like a normal order, but get the result and put it into a response message
@@ -357,11 +357,7 @@ class Dispatcher:
             return
         # get all possible m&m's
         order['mmlist'] = [i[1] for i in self.dataitems[order.dataitem]]
-        # handle remote orders
-        if not order.identifierlist["identifier1"] in self.ips:
-           self.logger.debug("=========  yeah, got a remote order, pushing it out ========")
-           return
-        # sanity checks
+        # handle periodic and triggered
         if order.type in ("periodic", "triggered"):
             self.logger.debug('Got a periodic or triggered order')
             order.append_item('subid', - 1)
@@ -370,6 +366,12 @@ class Dispatcher:
             return
         if self.satisfy_from_cache(order):
             return
+        # handle remote orders
+        #if not order.identifierlist["identifier1"] in self.ips:
+           #self.logger.debug("=========  yeah, got a remote order, pushing it out ========")
+           # create message
+           # send out to remote host
+           #return
         elif self.aggregate_order(order):
             return
         else:
@@ -408,6 +410,7 @@ class Dispatcher:
                 else:
                     self.replyq.put(Event('DELIVER', order))
             if order['finished']:
+                self.logger.debug('Finished Order, create FINISHED event')
                 self.replyq.put(Event('FINISHED', order))
             self.logger.debug('cache hit')
             return True
