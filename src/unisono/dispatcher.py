@@ -367,11 +367,19 @@ class Dispatcher:
         if self.satisfy_from_cache(order):
             return
         # handle remote orders
-        #if not order.identifierlist["identifier1"] in self.ips:
-           #self.logger.debug("=========  yeah, got a remote order, pushing it out ========")
+        if not order.identifierlist["identifier1"] in self.ips:
+           self.logger.debug("=========  yeah, got a remote order, pushing it out ========")
            # create message
+           snd_ip = self.ips[0]
+           snd_id = 'Dispatcher'
+           rcv_ip = order['identifier1']
+           rcv_id = 'Dispatcher'
+           sender = Node(snd_ip,snd_id)
+           receiver = Node(rcv_ip,rcv_id)
+           message = Message(sender, receiver, "REMOTE_ORDER",RemoteOrder(sender, receiver, order))
+           self.eventq.put(Event("MESSAGE_OUT",message))
            # send out to remote host
-           #return
+           return
         elif self.aggregate_order(order):
             return
         else:

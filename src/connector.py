@@ -39,7 +39,7 @@ if __name__=="__main__":
 	#connect to local xml rpc server
 	c = connection.Client("127.0.0.1", 45312)
 	
-	localip = '127.0.0.1'
+	localip = '131.159.20.119'
 	remoteip = '131.159.14.169'
 	
 	#build normal unisono order, don't care about orderid
