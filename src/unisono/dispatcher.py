@@ -53,7 +53,7 @@ def getIpAddresses():
 
     ipList=[] 
     for item in addrList:
-        if (":" not in item):
+        if (":" not in item[4][0]):
             ipList.append(item[4][0])
     return ipList
 
