@@ -52,8 +52,9 @@ def getIpAddresses():
     addrList = socket.getaddrinfo(socket.gethostname(), None) 
 
     ipList=[] 
-    for item in addrList: 
-        ipList.append(item[4][0]) 
+    for item in addrList:
+        if (":" not in item):
+            ipList.append(item[4][0])
     return ipList
 
 class Scheduler:
@@ -492,9 +493,15 @@ class Dispatcher:
             #self.pending_messages[id] = (curmm, mmlist, message, [])
             if message.tomsgqueue == 1:
                 # default case
+                self.logger.debug("running tomsgqueue")
+                self.logger.debug(message.sender.ip)
+                self.logger.debug(message.receiver.ip)
+                self.logger.debug(message.payload)
+
                 self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
                 self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
             else:
+                self.logger.debug("running tomsgqueue else")
                 self.put_in_mmmcq(self.plugins[message.receiver.id].orderq, id, message)
                 self.logger.info("queue_message into orderq %s", self.plugins[message.receiver.id].orderq)
                 
@@ -585,17 +592,20 @@ class Dispatcher:
             # deliver results
             for o in waitinglist + [paramap]:
                 if o.istriggermatch(r[o.dataitem]):
+                    self.logger.debug(o)
                     if issubclass(type(o), InternalOrder):
                         message = Message(None,None,'RESULT',None,r)
                         self.put_in_mmmcq(self.plugins[o['moduleid']].msgq, o['moduleid'], message)
-                        self.logger.info("queue_message into msgq %s", self.plugins[o['moduleid']].msgq)
+                        self.logger.info("queue_message into msgq %s",  self.plugins[o['moduleid']].msgq)
                     elif issubclass(type(o), RemoteOrder):
+                        self.logger.debug("It's the result for a remote order")
                         receiver = Node(o['senderip'], o['senderid'])
                         sender = Node(o['receiverip'], o['receiverid'])
-                        o['errorcode'] = 0
-                        o['result'] = r[o['dataitem']]
+                        self.logger.debug("sender: %s", sender.ip)
+                        self.logger.debug("receiver: %s", receiver.ip)
                         msgtype = 'RESULT'
-                        payload = o
+                        payload = self.fill_order(o, r)
+                        self.logger.debug("payload %s", o)
                         outmsg = Message(sender,receiver,msgtype,payload,r[o['dataitem']])
                         # queues response in dispatcher queue
                         ev = Event("MESSAGE_OUT",outmsg)

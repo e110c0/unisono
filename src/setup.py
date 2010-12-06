@@ -53,10 +53,10 @@ setup(name='UNISONO',
                               'c-modules/libMeasure/recv.c' ,
                               'c-modules/libMeasure/send.c',
                               'c-modules/libMeasure/timing.c'],
-                              extra_compile_args=['-std=gnu99']),
-                   Extension('unisono.utils.pyiw',
-                             ['c-modules/pyiw/pyiw.c'],
-                             libraries=['iw'])
+                              extra_compile_args=['-std=gnu99'])#,
+		   #Extension('unisono.utils.pyiw',
+		   #          ['c-modules/pyiw/pyiw.c'],
+		   #          libraries=['iw'])
                    ],
       data_files=[('/etc/unisono', ['../etc/unisono.cfg'])]
      )
