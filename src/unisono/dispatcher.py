@@ -497,9 +497,12 @@ class Dispatcher:
                 self.logger.debug(message.sender.ip)
                 self.logger.debug(message.receiver.ip)
                 self.logger.debug(message.payload)
-
-                self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
-                self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
+                if message.receiver.id == "Dispatcher":
+                    self.logger.debug("result for Dispatcher")
+                    self.eventq.put(Event('RESULT', [self.__class__.__name__, message.payload]))
+                else:
+                    self.put_in_mmmcq(self.plugins[message.receiver.id].msgq, id, message)
+                    self.logger.info("queue_message into msgq %s", self.plugins[message.receiver.id].msgq)
             else:
                 self.logger.debug("running tomsgqueue else")
                 self.put_in_mmmcq(self.plugins[message.receiver.id].orderq, id, message)
