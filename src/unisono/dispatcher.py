@@ -531,6 +531,12 @@ class Dispatcher:
     def fill_order(self, order, result):
         self.logger.debug('order: %s result: %s',type(order),type(result))
         try:
+            order['error'] = result['error']
+            order['errortext'] = result['errortext']
+        except KeyError:
+            order['error'] = 666
+            order['errortext'] = 'error code not in result'
+        try:
             di = order.dataitem
             order.append_item(di,result[di])
             # for at least the ariba connector (deprecated)
