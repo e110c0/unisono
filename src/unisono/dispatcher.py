@@ -529,7 +529,6 @@ class Dispatcher:
 #
 
     def fill_order(self, order, result):
-        self.logger.debug('order: %s result: %s',type(order),type(result))
         try:
             order['error'] = result['error']
             order['errortext'] = result['errortext']
@@ -608,11 +607,16 @@ class Dispatcher:
         else:
             self.logger.debug('Everything\'s fine, delivering results now')
             # cache results
-            self.cache.store(copy.copy(r))
+            try:
+                self.cache.store(copy.copy(r))
+            except KeyError:
+                # result had no timestamp, must be from remote
+                # create a current timestamp, should be accurate enough
+                r['time'] = system_time()
+                self.cache.store(copy.copy(r))
             # deliver results
             for o in waitinglist + [paramap]:
                 if o.istriggermatch(r[o.dataitem]):
-                    self.logger.debug(o)
                     if issubclass(type(o), InternalOrder):
                         message = Message(None,None,'RESULT',None,r)
                         self.put_in_mmmcq(self.plugins[o['moduleid']].msgq, o['moduleid'], message)

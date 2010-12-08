@@ -89,8 +89,8 @@ if __name__ == '__main__':
     myID = s.register_connector(43222)
     print('my ID is: ' + myID)
     print(s.list_available_dataitems())
-    localip = '127.0.0.1'
-    remoteip = '134.2.172.172'
+    localip = '131.159.20.45'
+    remoteip = '131.159.14.169'
 #    for i in s.list_available_dataitems():
 #        print('my order:', {'orderid': str(next(orderid)), 
 #                                                      'identifier1':localip,
@@ -106,8 +106,8 @@ if __name__ == '__main__':
     print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
                                                       'identifier1':localip,
                                                       'identifier2':remoteip,
-                                                      'type':'triggered',
-                                                      'parameters' : {'interval': '8', 'lifetime': '30','lower_threshold': 4000, 'upper_threshold':5500},
+                                                      'type':'oneshot',
+#                                                      'parameters' : {'interval': '8', 'lifetime': '30','lower_threshold': 4000, 'upper_threshold':5500},
                                                       'dataitem':'RTT'}))
 #    print('commit order: ' ,s.commit_order(myID, {'orderid': str(next(orderid)), 
 #                                                      'identifier1':localip,

@@ -381,6 +381,8 @@ class XMLRPCReplyHandler:
         self.logger.debug(self.conmap.conmap)
         uri = 'http://' + self.conmap.conmap[conid][0] + ':' + str(self.conmap.conmap[conid][1]) + "/RPC2"
         connector = ServerProxy(uri)
+        self.logger.debug(uri)
+        self.logger.debug(connector)
         return connector
 
     def run(self):

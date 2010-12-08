@@ -39,15 +39,15 @@ if __name__=="__main__":
 	#connect to local xml rpc server
 	c = connection.Client("127.0.0.1", 45312)
 	
-	localip = '85.214.236.18'
-#	localip = '131.159.20.45'
+#	localip = '85.214.236.18'
+	localip = '131.159.20.45'
 	remoteip = '131.159.14.169'
 	
 	#build normal unisono order, don't care about orderid
 	order = {'identifier1':localip,
 			'identifier2':remoteip,
-			'type':'oneshot',
-			#'parameters' : {'interval': '3', 'lifetime': '30'},
+			'type':'periodic',
+			'parameters' : {'interval': '3', 'lifetime': '30'},
 			'dataitem':'RTT'}
 	
 	
