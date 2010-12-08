@@ -46,8 +46,8 @@ if __name__=="__main__":
 	#build normal unisono order, don't care about orderid
 	order = {'identifier1':localip,
 			'identifier2':remoteip,
-			'type':'oneshot',
-#			'parameters' : {'interval': '3', 'lifetime': '30'},
+			'type':'periodic',
+			'parameters' : {'interval': '3', 'lifetime': '30'},
 			'dataitem':'RTT'}
 	
 	
