@@ -631,7 +631,7 @@ class Dispatcher:
                         payload = self.fill_order(o, r)
                         payload['error'] = r['error']
                         payload['errortext'] = r['errortext']
-                        payload['errorcode'] = r['errorcode']
+                        payload['time'] = r['time']
                         self.logger.debug("payload %s", o)
                         outmsg = Message(sender,receiver,msgtype,payload,r[o['dataitem']])
                         # queues response in dispatcher queue
