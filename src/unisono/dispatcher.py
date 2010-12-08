@@ -529,12 +529,12 @@ class Dispatcher:
 #
 
     def fill_order(self, order, result):
-        try:
-            order['error'] = result['error']
-            order['errortext'] = result['errortext']
-        except KeyError:
-            order['error'] = 666
-            order['errortext'] = 'error code not in result'
+#        try:
+#            order['error'] = result['error']
+#            order['errortext'] = result['errortext']
+#        except KeyError:
+#            order['error'] = 666
+#            order['errortext'] = 'error code not in result'
         try:
             di = order.dataitem
             order.append_item(di,result[di])
@@ -629,6 +629,9 @@ class Dispatcher:
                         self.logger.debug("receiver: %s", receiver.ip)
                         msgtype = 'RESULT'
                         payload = self.fill_order(o, r)
+                        payload['error'] = r['error']
+                        payload['errortext'] = r['errortext']
+                        payload['errorcode'] = r['errorcode']
                         self.logger.debug("payload %s", o)
                         outmsg = Message(sender,receiver,msgtype,payload,r[o['dataitem']])
                         # queues response in dispatcher queue
