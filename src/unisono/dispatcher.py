@@ -377,7 +377,14 @@ class Dispatcher:
            rcv_id = 'Dispatcher'
            sender = Node(snd_ip,snd_id)
            receiver = Node(rcv_ip,rcv_id)
-           message = Message(sender, receiver, "REMOTE_ORDER",RemoteOrder(sender, receiver, order))
+           r = RemoteOrder(sender, receiver, order)
+           #force orderid to be the same as the original order!
+           self.logger.debug("remote order: %s",r)
+           message = Message(sender, receiver, "REMOTE_ORDER",r)
+           # save it to pending orders
+           id = order['conid'], order.orderid
+           curmm = order['mmlist'].pop()
+           self.pending_orders[id] = (curmm, [], order, [])
            self.eventq.put(Event("MESSAGE_OUT",message))
            # send out to remote host
            return
@@ -545,8 +552,12 @@ class Dispatcher:
         self.logger.debug('trying result processing')
         mm = result[0]
         r = result[1]
-        id = r['id']
-
+        id = ""
+        try:
+            id = r['id']
+        except KeyError:
+            id = (r['conid'],r['orderid'])
+            self.logger.debug("had to recreate the id: %s", id)
         try:
             # get the orders and get them out of the pending list
             curmm, mmlist, paramap, waitinglist = self.pending_orders.pop(id)

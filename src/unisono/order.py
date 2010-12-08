@@ -214,6 +214,10 @@ class InternalOrder(Order):
 
 class RemoteOrder(Order):
     def __init__(self, sender, receiver, *args, **kwargs):
-        order_id = time.time()
-        kwargs.update({'orderid':str(order_id),'senderip':str(sender.ip), 'senderid':str(sender.id), 'receiverip':str(receiver.ip), 'receiverid':str(receiver.id),'type':'oneshot'})
-        super().__init__(*args, **kwargs)
+        try:
+            kwargs.update({'senderip':str(sender.ip), 'senderid':str(sender.id), 'receiverip':str(receiver.ip), 'receiverid':str(receiver.id),'type':'oneshot'})
+            super().__init__(*args, **kwargs)
+        except OrderKeyMissing:
+            order_id = time.time()
+            kwargs.update({'orderid':str(order_id),'senderip':str(sender.ip), 'senderid':str(sender.id), 'receiverip':str(receiver.ip), 'receiverid':str(receiver.id),'type':'oneshot'})
+            super().__init__(*args, **kwargs)
